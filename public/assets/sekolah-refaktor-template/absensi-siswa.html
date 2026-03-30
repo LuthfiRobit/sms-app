@@ -1,0 +1,740 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <title>Presensi Siswa - SIMS Terpadu</title>
+    <!-- [Meta] -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="Presensi Siswa - Sistem Informasi Manajemen Sekolah Terpadu" />
+
+    <!-- [Favicon] icon -->
+    <link rel="icon" href="organisasi-template/assets/images/favicon.svg" type="image/x-icon" />
+    <!-- [Google Font] Family -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+        id="main-font-link" />
+    <!-- [Template Icons] -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <!-- [Template CSS Files] -->
+    <link rel="stylesheet" href="organisasi-template/assets/css/style.css" id="main-style-link" />
+    <link rel="stylesheet" href="organisasi-template/assets/css/style-preset.css" />
+    <link rel="stylesheet" href="organisasi-template/assets/css/custom-style.css" />
+
+    <!-- [Libraries: SweetAlert2] -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* Status Radio Button Group */
+        .status-radio-group .btn-check:checked+.btn-outline-success {
+            background-color: #2ca87f;
+            border-color: #2ca87f;
+            color: #fff;
+        }
+
+        .status-radio-group .btn-check:checked+.btn-outline-warning {
+            background-color: #dc9a08;
+            border-color: #dc9a08;
+            color: #fff;
+        }
+
+        .status-radio-group .btn-check:checked+.btn-outline-danger {
+            background-color: #dc2626;
+            border-color: #dc2626;
+            color: #fff;
+        }
+
+        .status-radio-group .btn-check:checked+.btn-outline-info {
+            background-color: #3ec9d6;
+            border-color: #3ec9d6;
+            color: #fff;
+        }
+
+        .status-radio-group .btn {
+            padding: 0.35rem 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Stat cards small */
+        .stat-card-sm .card-body {
+            padding: 0.75rem 1rem;
+        }
+
+        .stat-card-sm .f-24 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .stat-card-sm .avtar-s {
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
+        }
+
+        .stat-card-sm p {
+            font-size: 0.75rem;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- [ Pre-loader ] start -->
+    <div class="loader-bg">
+        <div class="loader-track">
+            <div class="loader-fill"></div>
+        </div>
+    </div>
+    <!-- [ Pre-loader ] End -->
+
+    <!-- [ Sidebar Menu ] start -->
+    <nav class="pc-sidebar">
+        <div class="navbar-wrapper">
+            <div class="m-header">
+                <a href="index.html" class="b-brand text-primary">
+                    <h3 class="m-0 fw-bold text-primary">SIMS Terpadu</h3>
+                </a>
+            </div>
+            <div class="navbar-content">
+                <ul class="pc-navbar">
+                    <!-- 1. Dashboard -->
+                    <li class="pc-item pc-caption"><label>Dashboard</label><i class="bi bi-speedometer2"></i></li>
+                    <li class="pc-item">
+                        <a href="index.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-speedometer2"></i></span>
+                            <span class="pc-mtext">Akademik</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="dashboard-keuangan.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-pie-chart-fill"></i></span>
+                            <span class="pc-mtext">Keuangan</span>
+                        </a>
+                    </li>
+
+                    <!-- 2. Data Master -->
+                    <li class="pc-item pc-caption"><label>Data Master</label><i class="bi bi-database"></i></li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-building"></i></span><span
+                                class="pc-mtext">Identitas & Wilayah</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="identitas-sekolah.html">Profil Sekolah</a></li>
+                            <li class="pc-item"><a class="pc-link" href="identitas-tahun-ajaran.html">Tahun Ajaran &
+                                    Semester</a></li>
+                            <li class="pc-item"><a class="pc-link" href="identitas-kurikulum.html">Kurikulum</a></li>
+                            <li class="pc-item"><a class="pc-link" href="identitas-wilayah.html">Referensi Wilayah</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-mortarboard"></i></span><span class="pc-mtext">Org. &
+                                Akademik</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="master-jurusan.html">Jurusan / Peminatan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="master-tingkat.html">Tingkat Kelas</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-kelas.html">Rombel (Kelas)</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-mapel.html">Mata Pelajaran</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-mapping-jurusan.html">Mapping Jurusan
+                                    <-> Mapel</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-calendar3"></i></span><span
+                                class="pc-mtext">Sarana &
+                                Jadwal</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="master-gedung.html">Gedung</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-ruangan.html">Ruang Kelas / Lab</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-jam.html">Slot Jam Pelajaran</a></li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-kalender.html">Kalender Akademik</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-shield-shaded"></i></span><span class="pc-mtext">Kedisiplinan &
+                                Pres.</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="master-pelanggaran.html">Jenis Pelanggaran</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="master-prestasi.html">Jenis Prestasi</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-sanksi.html">Tindakan / Sanksi</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-wallet2"></i></span><span
+                                class="pc-mtext">Master Keuangan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="keuangan-komponen.html">Komponen Biaya</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-kategori.html">Kategori Biaya</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-metode.html">Metode Pembayaran</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-diskon.html">Diskon & Beasiswa</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- 3. Manajemen Pengguna -->
+                    <li class="pc-item pc-caption"><label>Manajemen Pengguna</label><i class="bi bi-people-fill"></i>
+                    </li>
+                    <li class="pc-item">
+                        <a href="master-guru.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-people-fill"></i></span>
+                            <span class="pc-mtext">Data GTK</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="master-siswa.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-person-badge-fill"></i></span>
+                            <span class="pc-mtext">Data Siswa (Induk)</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="master-siswa-status.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-person-check-fill"></i></span>
+                            <span class="pc-mtext">Status Siswa</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="user-role.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-shield-lock-fill"></i></span>
+                            <span class="pc-mtext">Hak Akses & Role</span>
+                        </a>
+                    </li>
+
+                    <!-- 4. Operasional -->
+                    <li class="pc-item pc-caption"><label>Operasional</label><i class="bi bi-briefcase"></i></li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-person-plus-fill"></i></span><span class="pc-mtext">PPDB</span><span
+                                class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="ppdb-pengaturan.html">Pengaturan PPDB</a></li>
+                            <li class="pc-item"><a class="pc-link" href="ppdb-rekrutmen.html">Data Pendaftar</a></li>
+                            <li class="pc-item"><a class="pc-link" href="ppdb-verifikasi.html">Verifikasi & Seleksi</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="ppdb-daftar-ulang.html">Daftar Ulang</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu active pc-trigger">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-journal-text"></i></span><span class="pc-mtext">Akademik</span><span
+                                class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="akademik-jadwal.html">Penjadwalan KBM</a></li>
+                            <li class="pc-item active"><a class="pc-link" href="absensi-siswa.html">Presensi Siswa</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="jurnal-mengajar.html">Presensi & Jurnal
+                                    Guru</a></li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-nilai.html">Nilai (F & S)</a></li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-rapor.html">E-Rapor</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-bank"></i></span><span
+                                class="pc-mtext">Keuangan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="keuangan-tagihan.html">Tagihan Siswa</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-pembayaran.html">Transaksi
+                                    Pembayaran</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-tunggakan.html">Tunggakan</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-laporan.html">Laporan & Arus Kas</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-emoji-smile-fill"></i></span><span
+                                class="pc-mtext">Kesiswaan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="siswa-profil.html">Profil & Riwayat</a></li>
+                            <li class="pc-item"><a class="pc-link" href="siswa-disiplin.html">Kedisiplinan & SIP</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="siswa-prestasi.html">Prestasi & Organisasi</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="siswa-bk.html">Bimbingan Konseling</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-box-seam-fill"></i></span><span class="pc-mtext">Sarana
+                                Prasarana</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="sarpras-aset.html">Inventaris Barang</a></li>
+                            <li class="pc-item"><a class="pc-link" href="sarpras-ruangan.html">Inventaris Ruangan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="sarpras-pinjam.html">Peminjaman Aset</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-mortarboard-fill"></i></span><span class="pc-mtext">Kelulusan &
+                                Alumni</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="akademik-kelulusan.html">Validasi Kelulusan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-lulus.html">Status Lulus</a></li>
+                            <li class="pc-item"><a class="pc-link" href="kesiswaan-alumni.html">Database Alumni</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- 5. Laporan & Pengaturan -->
+                    <li class="pc-item pc-caption"><label>Laporan & Pengaturan</label><i
+                            class="bi bi-file-earmark-bar-graph"></i></li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-file-earmark-bar-graph"></i></span><span class="pc-mtext">Laporan &
+                                Audit</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="laporan-rekap.html">Rekap Laporan</a></li>
+                            <li class="pc-item"><a class="pc-link" href="laporan-akademik.html">Laporan Akademik</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="laporan-kesiswaan.html">Laporan Kesiswaan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="laporan-ppdb.html">Laporan PPDB</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-gear-wide-connected"></i></span><span
+                                class="pc-mtext">Pengaturan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="pengaturan.html">Konfigurasi Sistem</a></li>
+                            <li class="pc-item"><a class="pc-link" href="advanced-rbac.html">Advanced RBAC</a></li>
+                            <li class="pc-item"><a class="pc-link" href="db-maintenance.html">Database Maintenance</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- [ Sidebar Menu ] end -->
+
+    <!-- [ Header Topbar ] start -->
+    <header class="pc-header">
+        <div class="header-wrapper">
+            <div class="me-auto pc-mob-drp">
+                <ul class="list-unstyled">
+                    <li class="pc-h-item header-mobile-collapse">
+                        <a href="#" class="pc-head-link head-link-secondary ms-0" id="sidebar-hide"><i
+                                class="bi bi-list"></i></a>
+                    </li>
+                    <li class="pc-h-item pc-sidebar-popup">
+                        <a href="#" class="pc-head-link head-link-secondary ms-0" id="mobile-collapse"><i
+                                class="bi bi-list"></i></a>
+                    </li>
+                    <li class="pc-h-item d-none d-md-inline-flex">
+                        <h5 class="mb-0 fw-bold"><span class="text-muted fw-light">Akademik /</span> Presensi Siswa</h5>
+                    </li>
+                </ul>
+            </div>
+            <div class="ms-auto">
+                <ul class="list-unstyled">
+                    <li class="dropdown pc-h-item">
+                        <a class="pc-head-link head-link-secondary dropdown-toggle arrow-none me-0"
+                            data-bs-toggle="dropdown" href="#" role="button">
+                            <i class="bi bi-bell"></i><span class="badge bg-danger pc-h-badge">3</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-notification dropdown-menu-end pc-h-dropdown">
+                            <div class="dropdown-header">
+                                <h5>Notifikasi</h5>
+                            </div>
+                            <div class="text-center py-2"><a href="#!" class="link-primary">Lihat semua</a></div>
+                        </div>
+                    </li>
+                    <li class="dropdown pc-h-item header-user-profile">
+                        <a class="pc-head-link head-link-primary dropdown-toggle arrow-none me-0"
+                            data-bs-toggle="dropdown" href="#" role="button">
+                            <img src="organisasi-template/assets/images/user/avatar-2.jpg" alt="user-image"
+                                class="user-avtar" />
+                        </a>
+                        <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
+                            <div class="dropdown-header">
+                                <h4>Halo, <span class="small text-muted">Admin Sekolah</span></h4>
+                                <p class="text-muted">Administrator</p>
+                                <hr />
+                                <a href="login.html" class="dropdown-item"><i
+                                        class="ti ti-logout"></i><span>Logout</span></a>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </header>
+    <!-- [ Header ] end -->
+
+    <!-- [ Main Content ] start -->
+    <div class="pc-container">
+        <div class="pc-content">
+
+            <!-- Summary Stats Cards -->
+            <div class="row mb-3">
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card-sm bg-success text-white">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="avtar avtar-s bg-white rounded-circle me-2"><i
+                                    class="bi bi-check-lg text-success"></i></div>
+                            <div>
+                                <span class="f-24 d-block">28</span>
+                                <p class="opacity-75">Hadir Hari Ini</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card-sm bg-warning text-white">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="avtar avtar-s bg-white rounded-circle me-2"><i
+                                    class="bi bi-heart-pulse text-warning"></i></div>
+                            <div>
+                                <span class="f-24 d-block">2</span>
+                                <p class="opacity-75">Sakit</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card-sm bg-info text-white">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="avtar avtar-s bg-white rounded-circle me-2"><i
+                                    class="bi bi-file-earmark-text text-info"></i></div>
+                            <div>
+                                <span class="f-24 d-block">1</span>
+                                <p class="opacity-75">Izin</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card-sm bg-danger text-white">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="avtar avtar-s bg-white rounded-circle me-2"><i
+                                    class="bi bi-x-lg text-danger"></i>
+                            </div>
+                            <div>
+                                <span class="f-24 d-block">1</span>
+                                <p class="opacity-75">Alpa</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 1: Pilih Jadwal -->
+            <div id="pilihJadwal">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                            <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Pilih Jadwal Mengajar Hari Ini
+                            </h5>
+                            <div>
+                                <span class="badge rounded-pill bg-light-primary text-primary fs-6">
+                                    <i class="bi bi-calendar me-1"></i>Senin, 26 Januari 2026
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>JAM</th>
+                                        <th>KELAS</th>
+                                        <th>MATA PELAJARAN</th>
+                                        <th>JUMLAH SISWA</th>
+                                        <th>STATUS</th>
+                                        <th>AKSI</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="fw-semibold">07:30 - 09:00</span></td>
+                                        <td><span class="badge rounded-pill bg-light-primary text-primary">X-A</span>
+                                        </td>
+                                        <td>Matematika</td>
+                                        <td>32 siswa</td>
+                                        <td><span class="badge rounded-pill bg-light-danger text-danger">Belum
+                                                Diisi</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary"
+                                                onclick="showFormAbsensi('X-A', 'Matematika', '07:30 - 09:00')">
+                                                <i class="bi bi-pencil-square me-1"></i>Isi Absensi
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="fw-semibold">09:15 - 10:45</span></td>
+                                        <td><span class="badge rounded-pill bg-light-info text-info">XI-IPA 1</span>
+                                        </td>
+                                        <td>Fisika</td>
+                                        <td>30 siswa</td>
+                                        <td><span
+                                                class="badge rounded-pill bg-light-success text-success">Lengkap</span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-secondary"
+                                                onclick="showFormAbsensi('XI-IPA 1', 'Fisika', '09:15 - 10:45')">
+                                                <i class="bi bi-eye me-1"></i>Lihat / Ubah
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="fw-semibold">11:00 - 12:30</span></td>
+                                        <td><span class="badge rounded-pill bg-light-warning text-warning">XII-IPS
+                                                2</span></td>
+                                        <td>Ekonomi</td>
+                                        <td>28 siswa</td>
+                                        <td><span class="badge rounded-pill bg-light-danger text-danger">Belum
+                                                Diisi</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary"
+                                                onclick="showFormAbsensi('XII-IPS 2', 'Ekonomi', '11:00 - 12:30')">
+                                                <i class="bi bi-pencil-square me-1"></i>Isi Absensi
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 2: Form Absensi (Hidden by default) -->
+            <div id="formAbsensi" class="d-none">
+                <div class="card">
+                    <div class="card-header border-bottom">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                            <div>
+                                <h5 class="mb-1"><i class="bi bi-clipboard-check me-2"></i>Form Presensi: <span
+                                        class="text-primary" id="labelKelasMapel">X-A - Matematika</span></h5>
+                                <span class="text-muted" id="labelJam">Senin, Jam 07:30 - 09:00</span>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-success btn-sm" onclick="bulkStatus('hadir')">
+                                    <i class="bi bi-check-lg me-1"></i>Semua Hadir
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="bulkStatus('reset')">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th width="5%">NO</th>
+                                        <th>NISN</th>
+                                        <th>NAMA SISWA</th>
+                                        <th width="25%">STATUS KEHADIRAN</th>
+                                        <th>KETERANGAN</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td><span class="text-muted">0098765001</span></td>
+                                        <td><strong>Achmad Fauzi</strong></td>
+                                        <td>
+                                            <div class="btn-group status-radio-group" role="group">
+                                                <input type="radio" class="btn-check" name="status1" id="h1" checked>
+                                                <label class="btn btn-outline-success" for="h1">H</label>
+                                                <input type="radio" class="btn-check" name="status1" id="i1">
+                                                <label class="btn btn-outline-info" for="i1">I</label>
+                                                <input type="radio" class="btn-check" name="status1" id="s1">
+                                                <label class="btn btn-outline-warning" for="s1">S</label>
+                                                <input type="radio" class="btn-check" name="status1" id="a1">
+                                                <label class="btn btn-outline-danger" for="a1">A</label>
+                                            </div>
+                                        </td>
+                                        <td><input type="text" class="form-control form-control-sm"
+                                                placeholder="Catatan..."></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td><span class="text-muted">0098765002</span></td>
+                                        <td><strong>Aditya Wijaya</strong></td>
+                                        <td>
+                                            <div class="btn-group status-radio-group" role="group">
+                                                <input type="radio" class="btn-check" name="status2" id="h2" checked>
+                                                <label class="btn btn-outline-success" for="h2">H</label>
+                                                <input type="radio" class="btn-check" name="status2" id="i2">
+                                                <label class="btn btn-outline-info" for="i2">I</label>
+                                                <input type="radio" class="btn-check" name="status2" id="s2">
+                                                <label class="btn btn-outline-warning" for="s2">S</label>
+                                                <input type="radio" class="btn-check" name="status2" id="a2">
+                                                <label class="btn btn-outline-danger" for="a2">A</label>
+                                            </div>
+                                        </td>
+                                        <td><input type="text" class="form-control form-control-sm"
+                                                placeholder="Catatan..."></td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td><span class="text-muted">0098765003</span></td>
+                                        <td><strong>Bella Damayanti</strong></td>
+                                        <td>
+                                            <div class="btn-group status-radio-group" role="group">
+                                                <input type="radio" class="btn-check" name="status3" id="h3">
+                                                <label class="btn btn-outline-success" for="h3">H</label>
+                                                <input type="radio" class="btn-check" name="status3" id="i3">
+                                                <label class="btn btn-outline-info" for="i3">I</label>
+                                                <input type="radio" class="btn-check" name="status3" id="s3" checked>
+                                                <label class="btn btn-outline-warning" for="s3">S</label>
+                                                <input type="radio" class="btn-check" name="status3" id="a3">
+                                                <label class="btn btn-outline-danger" for="a3">A</label>
+                                            </div>
+                                        </td>
+                                        <td><input type="text" class="form-control form-control-sm"
+                                                placeholder="Catatan..." value="Demam"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>4</td>
+                                        <td><span class="text-muted">0098765004</span></td>
+                                        <td><strong>Cahya Pratama</strong></td>
+                                        <td>
+                                            <div class="btn-group status-radio-group" role="group">
+                                                <input type="radio" class="btn-check" name="status4" id="h4" checked>
+                                                <label class="btn btn-outline-success" for="h4">H</label>
+                                                <input type="radio" class="btn-check" name="status4" id="i4">
+                                                <label class="btn btn-outline-info" for="i4">I</label>
+                                                <input type="radio" class="btn-check" name="status4" id="s4">
+                                                <label class="btn btn-outline-warning" for="s4">S</label>
+                                                <input type="radio" class="btn-check" name="status4" id="a4">
+                                                <label class="btn btn-outline-danger" for="a4">A</label>
+                                            </div>
+                                        </td>
+                                        <td><input type="text" class="form-control form-control-sm"
+                                                placeholder="Catatan..."></td>
+                                    </tr>
+                                    <tr>
+                                        <td>5</td>
+                                        <td><span class="text-muted">0098765005</span></td>
+                                        <td><strong>Dewi Sartika</strong></td>
+                                        <td>
+                                            <div class="btn-group status-radio-group" role="group">
+                                                <input type="radio" class="btn-check" name="status5" id="h5">
+                                                <label class="btn btn-outline-success" for="h5">H</label>
+                                                <input type="radio" class="btn-check" name="status5" id="i5" checked>
+                                                <label class="btn btn-outline-info" for="i5">I</label>
+                                                <input type="radio" class="btn-check" name="status5" id="s5">
+                                                <label class="btn btn-outline-warning" for="s5">S</label>
+                                                <input type="radio" class="btn-check" name="status5" id="a5">
+                                                <label class="btn btn-outline-danger" for="a5">A</label>
+                                            </div>
+                                        </td>
+                                        <td><input type="text" class="form-control form-control-sm"
+                                                placeholder="Catatan..." value="Acara keluarga"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer border-top">
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-outline-secondary" onclick="hideFormAbsensi()">
+                                <i class="bi bi-arrow-left me-1"></i>Kembali
+                            </button>
+                            <button class="btn btn-primary" onclick="simpanAbsensi()">
+                                <i class="bi bi-floppy me-1"></i>Simpan Presensi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- [ Main Content ] end -->
+
+    <footer class="pc-footer">
+        <div class="footer-wrapper container-fluid">
+            <div class="row">
+                <div class="col-sm-6 my-1">
+                    <p class="m-0">©
+                        <script>document.write(new Date().getFullYear());</script> SIMS Terpadu
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- [Required Js] -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="organisasi-template/assets/js/plugins/popper.min.js"></script>
+    <script src="organisasi-template/assets/js/plugins/simplebar.min.js"></script>
+    <script src="organisasi-template/assets/js/plugins/bootstrap.min.js"></script>
+    <script src="organisasi-template/assets/js/fonts/custom-font.js"></script>
+    <script src="organisasi-template/assets/js/script.js"></script>
+    <script src="organisasi-template/assets/js/theme.js"></script>
+
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Page Scripts -->
+    <script>
+        function showFormAbsensi(kelas, mapel, jam) {
+            document.getElementById('labelKelasMapel').textContent = kelas + ' - ' + mapel;
+            document.getElementById('labelJam').textContent = 'Senin, Jam ' + jam;
+            document.getElementById('pilihJadwal').classList.add('d-none');
+            document.getElementById('formAbsensi').classList.remove('d-none');
+        }
+
+        function hideFormAbsensi() {
+            document.getElementById('formAbsensi').classList.add('d-none');
+            document.getElementById('pilihJadwal').classList.remove('d-none');
+        }
+
+        function bulkStatus(status) {
+            if (status === 'hadir') {
+                // Set all to Hadir
+                document.querySelectorAll('[id^="h"]').forEach(function (el) {
+                    if (el.type === 'radio') el.checked = true;
+                });
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Semua siswa diatur Hadir.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } else {
+                // Reset form
+                location.reload();
+            }
+        }
+
+        function simpanAbsensi() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: 'Data presensi berhasil disimpan.',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(function () {
+                hideFormAbsensi();
+            });
+        }
+    </script>
+
+    <!-- Layout Settings -->
+    <script>layout_change('light');</script>
+    <script>layout_caption_change('true');</script>
+    <script>layout_rtl_change('false');</script>
+    <script>preset_change('preset-1');</script>
+</body>
+
+</html>

@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <title>Tambah/Edit Guru - Sistem Sekolah</title>
+    <!-- [Meta] -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="Form Tambah/Edit Data Guru - Sistem Informasi Manajemen Sekolah" />
+
+    <!-- [Favicon] icon -->
+    <link rel="icon" href="organisasi-template/assets/images/favicon.svg" type="image/x-icon" />
+    <!-- [Google Font] Family -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+        id="main-font-link" />
+    <!-- [Template Icons] -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <!-- [Template CSS Files] -->
+    <link rel="stylesheet" href="organisasi-template/assets/css/style.css" id="main-style-link" />
+    <link rel="stylesheet" href="organisasi-template/assets/css/style-preset.css" />
+    <link rel="stylesheet" href="organisasi-template/assets/css/custom-style.css" />
+
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* Mobile responsive form adjustments */
+        @media (max-width: 767.98px) {
+            .progress-step small {
+                font-size: 0.65rem;
+            }
+
+            .progress-step .avtar-s {
+                width: 28px;
+                height: 28px;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- [ Pre-loader ] start -->
+    <div class="loader-bg">
+        <div class="loader-track">
+            <div class="loader-fill"></div>
+        </div>
+    </div>
+    <!-- [ Pre-loader ] End -->
+
+    <!-- [ Sidebar Menu ] start -->
+    <nav class="pc-sidebar">
+        <div class="navbar-wrapper">
+            <div class="m-header">
+                <a href="index.html" class="b-brand text-primary">
+                    <h3 class="m-0 fw-bold text-primary">SIMS Terpadu</h3>
+                </a>
+            </div>
+            <div class="navbar-content">
+                <ul class="pc-navbar">
+                    <!-- 1. Dashboard -->
+                    <li class="pc-item pc-caption"><label>Dashboard</label><i class="bi bi-speedometer2"></i></li>
+                    <li class="pc-item">
+                        <a href="index.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-speedometer2"></i></span>
+                            <span class="pc-mtext">Akademik</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="dashboard-keuangan.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-pie-chart-fill"></i></span>
+                            <span class="pc-mtext">Keuangan</span>
+                        </a>
+                    </li>
+
+                    <!-- 2. Data Master -->
+                    <li class="pc-item pc-caption"><label>Data Master</label><i class="bi bi-database"></i></li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-building"></i></span><span
+                                class="pc-mtext">Identitas & Wilayah</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="identitas-sekolah.html">Profil Sekolah</a></li>
+                            <li class="pc-item"><a class="pc-link" href="identitas-tahun-ajaran.html">Tahun Ajaran &
+                                    Semester</a></li>
+                            <li class="pc-item"><a class="pc-link" href="identitas-kurikulum.html">Kurikulum</a></li>
+                            <li class="pc-item"><a class="pc-link" href="identitas-wilayah.html">Referensi Wilayah</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-mortarboard"></i></span><span class="pc-mtext">Org. &
+                                Akademik</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="master-jurusan.html">Jurusan / Peminatan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="master-tingkat.html">Tingkat Kelas</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-kelas.html">Rombel (Kelas)</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-mapel.html">Mata Pelajaran</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-mapping-jurusan.html">Mapping Jurusan
+                                    <-> Mapel</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-calendar3"></i></span><span
+                                class="pc-mtext">Sarana &
+                                Jadwal</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="master-gedung.html">Gedung</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-ruangan.html">Ruang Kelas / Lab</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-jam.html">Slot Jam Pelajaran</a></li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-kalender.html">Kalender Akademik</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-shield-shaded"></i></span><span class="pc-mtext">Kedisiplinan &
+                                Pres.</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="master-pelanggaran.html">Jenis Pelanggaran</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="master-prestasi.html">Jenis Prestasi</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-sanksi.html">Tindakan / Sanksi</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-wallet2"></i></span><span
+                                class="pc-mtext">Master Keuangan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="keuangan-komponen.html">Komponen Biaya</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-kategori.html">Kategori Biaya</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-metode.html">Metode Pembayaran</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-diskon.html">Diskon & Beasiswa</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- 3. Manajemen Pengguna -->
+                    <li class="pc-item pc-caption"><label>Manajemen Pengguna</label><i class="bi bi-people-fill"></i>
+                    </li>
+                    <li class="pc-item active">
+                        <a href="master-guru.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-people-fill"></i></span>
+                            <span class="pc-mtext">Data GTK</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="master-siswa.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-person-badge-fill"></i></span>
+                            <span class="pc-mtext">Data Siswa (Induk)</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="master-siswa-status.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-person-check-fill"></i></span>
+                            <span class="pc-mtext">Status Siswa</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="user-role.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-shield-lock-fill"></i></span>
+                            <span class="pc-mtext">Hak Akses & Role</span>
+                        </a>
+                    </li>
+
+                    <!-- 4. Operasional -->
+                    <li class="pc-item pc-caption"><label>Operasional</label><i class="bi bi-briefcase"></i></li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-person-plus-fill"></i></span><span class="pc-mtext">PPDB</span><span
+                                class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="ppdb-pengaturan.html">Pengaturan PPDB</a></li>
+                            <li class="pc-item"><a class="pc-link" href="ppdb-rekrutmen.html">Data Pendaftar</a></li>
+                            <li class="pc-item"><a class="pc-link" href="ppdb-verifikasi.html">Verifikasi & Seleksi</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="ppdb-daftar-ulang.html">Daftar Ulang</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-journal-text"></i></span><span class="pc-mtext">Akademik</span><span
+                                class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="akademik-jadwal.html">Penjadwalan KBM</a></li>
+                            <li class="pc-item"><a class="pc-link" href="absensi-siswa.html">Presensi Siswa</a></li>
+                            <li class="pc-item"><a class="pc-link" href="jurnal-mengajar.html">Presensi & Jurnal
+                                    Guru</a></li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-nilai.html">Nilai (F & S)</a></li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-rapor.html">E-Rapor</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-bank"></i></span><span
+                                class="pc-mtext">Keuangan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="keuangan-tagihan.html">Tagihan Siswa</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-pembayaran.html">Transaksi
+                                    Pembayaran</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-tunggakan.html">Tunggakan</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-laporan.html">Laporan & Arus Kas</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-emoji-smile-fill"></i></span><span
+                                class="pc-mtext">Kesiswaan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="siswa-profil.html">Profil & Riwayat</a></li>
+                            <li class="pc-item"><a class="pc-link" href="siswa-disiplin.html">Kedisiplinan & SIP</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="siswa-prestasi.html">Prestasi & Organisasi</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="siswa-bk.html">Bimbingan Konseling</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-box-seam-fill"></i></span><span class="pc-mtext">Sarana
+                                Prasarana</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="sarpras-aset.html">Inventaris Barang</a></li>
+                            <li class="pc-item"><a class="pc-link" href="sarpras-ruangan.html">Inventaris Ruangan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="sarpras-pinjam.html">Peminjaman Aset</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-mortarboard-fill"></i></span><span class="pc-mtext">Kelulusan &
+                                Alumni</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="akademik-kelulusan.html">Validasi Kelulusan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-lulus.html">Status Lulus</a></li>
+                            <li class="pc-item"><a class="pc-link" href="kesiswaan-alumni.html">Database Alumni</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- 5. Laporan & Pengaturan -->
+                    <li class="pc-item pc-caption"><label>Laporan & Pengaturan</label><i
+                            class="bi bi-file-earmark-bar-graph"></i></li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-file-earmark-bar-graph"></i></span><span class="pc-mtext">Laporan &
+                                Audit</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="laporan-rekap.html">Rekap Laporan</a></li>
+                            <li class="pc-item"><a class="pc-link" href="laporan-akademik.html">Laporan Akademik</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="laporan-kesiswaan.html">Laporan Kesiswaan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="laporan-ppdb.html">Laporan PPDB</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-gear-wide-connected"></i></span><span
+                                class="pc-mtext">Pengaturan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="pengaturan.html">Konfigurasi Sistem</a></li>
+                            <li class="pc-item"><a class="pc-link" href="advanced-rbac.html">Advanced RBAC</a></li>
+                            <li class="pc-item"><a class="pc-link" href="db-maintenance.html">Database Maintenance</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- [ Sidebar Menu ] end -->
+
+    <!-- [ Header Topbar ] start -->
+    <header class="pc-header">
+        <div class="header-wrapper">
+            <div class="me-auto pc-mob-drp">
+                <ul class="list-unstyled">
+                    <li class="pc-h-item header-mobile-collapse">
+                        <a href="#" class="pc-head-link head-link-secondary ms-0" id="sidebar-hide"><i
+                                class="bi bi-list"></i></a>
+                    </li>
+                    <li class="pc-h-item pc-sidebar-popup">
+                        <a href="#" class="pc-head-link head-link-secondary ms-0" id="mobile-collapse"><i
+                                class="bi bi-list"></i></a>
+                    </li>
+                    <li class="pc-h-item d-none d-md-inline-flex">
+                        <h5 class="mb-0 fw-bold"><span class="text-muted fw-light">Guru /</span> Tambah Guru Baru</h5>
+                    </li>
+                </ul>
+            </div>
+            <div class="ms-auto">
+                <ul class="list-unstyled">
+                    <li class="dropdown pc-h-item header-user-profile">
+                        <a class="pc-head-link head-link-primary dropdown-toggle arrow-none me-0"
+                            data-bs-toggle="dropdown" href="#" role="button">
+                            <img src="organisasi-template/assets/images/user/avatar-2.jpg" alt="user-image"
+                                class="user-avtar" />
+                        </a>
+                        <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
+                            <div class="dropdown-header">
+                                <h4>Halo, <span class="small text-muted">Admin Sekolah</span></h4>
+                                <p class="text-muted">Administrator</p>
+                                <hr />
+                                <a href="login.html" class="dropdown-item"><i
+                                        class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </header>
+    <!-- [ Header ] end -->
+
+    <!-- [ Main Content ] start -->
+    <div class="pc-container">
+        <div class="pc-content">
+
+            <!-- Progress Indicator (Responsive) -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body py-3">
+                            <div class="row text-center progress-step">
+                                <div class="col-3">
+                                    <div class="avtar avtar-s bg-primary text-white mb-1 mx-auto"><i
+                                            class="bi bi-person me-2"></i></div>
+                                    <small class="d-block fw-semibold text-primary">1. Identitas</small>
+                                </div>
+                                <div class="col-3">
+                                    <div class="avtar avtar-s bg-light-secondary mb-1 mx-auto"><i
+                                            class="bi bi-briefcase me-2"></i></div>
+                                    <small class="d-block text-muted">2. Kepegawaian</small>
+                                </div>
+                                <div class="col-3">
+                                    <div class="avtar avtar-s bg-light-secondary mb-1 mx-auto"><i
+                                            class="bi bi-patch-check me-2"></i></div>
+                                    <small class="d-block text-muted">3. Pendidikan</small>
+                                </div>
+                                <div class="col-3">
+                                    <div class="avtar avtar-s bg-light-secondary mb-1 mx-auto"><i
+                                            class="bi bi-key me-2"></i>
+                                    </div>
+                                    <small class="d-block text-muted">4. Akun</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Card -->
+            <div class="card">
+                <div class="card-header d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+                    <h5 class="mb-2 mb-md-0"><i class="bi bi-person-plus me-2"></i>Formulir Data Guru & Tenaga Pendidik
+                    </h5>
+                    <small class="text-muted">* Wajib diisi</small>
+                </div>
+                <div class="card-body">
+                    <form id="formGuru">
+                        <!-- Section 1: Identitas Pribadi -->
+                        <div class="mb-4">
+                            <h6 class="text-primary border-bottom pb-2 mb-3"><i class="bi bi-person me-2"></i>Identitas
+                                Pribadi</h6>
+
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">Nama Lengkap (Tanpa Gelar) *</label>
+                                    <input type="text" class="form-control" id="nama_lengkap"
+                                        placeholder="Nama Lengkap sesuai KTP" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Gelar Depan</label>
+                                    <input type="text" class="form-control" id="gelar_depan"
+                                        placeholder="Cth: Dr., Prof.">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Gelar Belakang</label>
+                                    <input type="text" class="form-control" id="gelar_belakang"
+                                        placeholder="Cth: S.Pd, M.Kom">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">NIK *</label>
+                                    <input type="text" class="form-control" id="nik"
+                                        placeholder="16 Digit Nomor Induk Kependudukan" maxlength="16" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Tempat Lahir</label>
+                                    <input type="text" class="form-control" id="tempat_lahir"
+                                        placeholder="Kota Kelahiran">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Tanggal Lahir</label>
+                                    <input type="date" class="form-control" id="tgl_lahir">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Jenis Kelamin</label>
+                                    <select class="form-select" id="jenis_kelamin">
+                                        <option value="L">Laki-laki</option>
+                                        <option value="P">Perempuan</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Agama</label>
+                                    <select class="form-select" id="agama">
+                                        <option value="Islam">Islam</option>
+                                        <option value="Kristen">Kristen</option>
+                                        <option value="Katolik">Katolik</option>
+                                        <option value="Hindu">Hindu</option>
+                                        <option value="Budha">Budha</option>
+                                        <option value="Konghucu">Konghucu</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Nama Ibu Kandung</label>
+                                    <input type="text" class="form-control" id="ibu_kandung"
+                                        placeholder="Sesuai Kartu Keluarga">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Alamat Lengkap</label>
+                                    <textarea class="form-control" id="alamat"
+                                        placeholder="Jalan, RT/RW, Kelurahan, Kecamatan, Kota" rows="2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Section 2: Kepegawaian & Penugasan -->
+                        <div class="mb-4">
+                            <h6 class="text-primary border-bottom pb-2 mb-3"><i
+                                    class="bi bi-briefcase me-2"></i>Kepegawaian & Data Sekolah</h6>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Status Kepegawaian *</label>
+                                    <select class="form-select" id="status_kepegawaian" required>
+                                        <option value="">-- Pilih Status --</option>
+                                        <option value="PNS">PNS / ASN</option>
+                                        <option value="PPPK">PPPK</option>
+                                        <option value="GTY">Guru Tetap Yayasan (GTY)</option>
+                                        <option value="GTT">Guru Tidak Tetap (GTT) / Honorer</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">TMT (Terhitung Mulai Tanggal)</label>
+                                    <input type="date" class="form-control" id="tmt">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">NIP / NIY</label>
+                                    <input type="text" class="form-control" id="nip"
+                                        placeholder="18 Digit NIP atau NIY">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">NUPTK</label>
+                                    <input type="text" class="form-control" id="nuptk"
+                                        placeholder="16 Digit Nomor Unik Pendidik">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Jenis PTK *</label>
+                                    <select class="form-select" id="jenis_ptk" required>
+                                        <option value="">-- Pilih Jenis --</option>
+                                        <option value="Guru Mapel">Guru Mata Pelajaran</option>
+                                        <option value="Guru Kelas">Guru Kelas (SD)</option>
+                                        <option value="Guru BK">Guru Bimbingan Konseling</option>
+                                        <option value="Tenaga Administrasi">Tenaga Administrasi / TU</option>
+                                        <option value="Pustakawan">Pustakawan</option>
+                                        <option value="Laboran">Laboran</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Tugas Tambahan</label>
+                                    <select class="form-select" id="tugas_tambahan">
+                                        <option value="">- Tidak Ada -</option>
+                                        <option value="Kepala Sekolah">Kepala Sekolah</option>
+                                        <option value="Waka Kurikulum">Waka Kurikulum</option>
+                                        <option value="Waka Kesiswaan">Waka Kesiswaan</option>
+                                        <option value="Waka Sarpras">Waka Sarana Prasarana</option>
+                                        <option value="Waka Humas">Waka Humas</option>
+                                        <option value="Kepala Lab">Kepala Laboratorium</option>
+                                        <option value="Kepala Perpus">Kepala Perpustakaan</option>
+                                        <option value="Bendahara">Bendahara BOS</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Mata Pelajaran Diampu</label>
+                                    <select class="form-select" id="mapel_diampu">
+                                        <option value="">-- Pilih Mapel --</option>
+                                        <option value="Matematika">Matematika</option>
+                                        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                                        <option value="Bahasa Inggris">Bahasa Inggris</option>
+                                        <option value="IPA">IPA</option>
+                                        <option value="IPS">IPS</option>
+                                        <option value="PAI">Pendidikan Agama Islam</option>
+                                        <option value="PJOK">PJOK</option>
+                                        <option value="Seni Budaya">Seni Budaya</option>
+                                        <option value="Prakarya">Prakarya</option>
+                                        <option value="Informatika">Informatika</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Golongan / Ruang</label>
+                                    <select class="form-select" id="golongan">
+                                        <option value="">-- Tidak Ada --</option>
+                                        <option value="III/a">III/a - Penata Muda</option>
+                                        <option value="III/b">III/b - Penata Muda Tk. I</option>
+                                        <option value="III/c">III/c - Penata</option>
+                                        <option value="III/d">III/d - Penata Tk. I</option>
+                                        <option value="IV/a">IV/a - Pembina</option>
+                                        <option value="IV/b">IV/b - Pembina Tk. I</option>
+                                        <option value="IV/c">IV/c - Pembina Utama Muda</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Section 3: Pendidikan -->
+                        <div class="mb-4">
+                            <h6 class="text-primary border-bottom pb-2 mb-3"><i
+                                    class="bi bi-patch-check me-2"></i>Riwayat Pendidikan</h6>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Pendidikan Terakhir</label>
+                                    <select class="form-select" id="pendidikan_terakhir">
+                                        <option value="SMA">SMA/SMK Sederajat</option>
+                                        <option value="D3">Diploma 3 (D3)</option>
+                                        <option value="S1" selected>Strata 1 (S1)</option>
+                                        <option value="S2">Strata 2 (S2)</option>
+                                        <option value="S3">Strata 3 (S3)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Jurusan / Program Studi</label>
+                                    <input type="text" class="form-control" id="jurusan"
+                                        placeholder="Cth: Pendidikan Matematika">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Nama Perguruan Tinggi</label>
+                                    <input type="text" class="form-control" id="universitas"
+                                        placeholder="Cth: Universitas Negeri Malang">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Tahun Lulus</label>
+                                    <input type="number" class="form-control" id="tahun_lulus" placeholder="Cth: 2015"
+                                        min="1970" max="2030">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">No. Sertifikat Pendidik</label>
+                                    <input type="text" class="form-control" id="sertifikat_pendidik"
+                                        placeholder="Jika sudah bersertifikasi">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Bidang Sertifikasi</label>
+                                    <input type="text" class="form-control" id="bidang_sertifikasi"
+                                        placeholder="Cth: Guru Matematika">
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Section 4: Kontak & Akun -->
+                        <div class="mb-4">
+                            <h6 class="text-primary border-bottom pb-2 mb-3"><i class="bi bi-key me-2"></i>Kontak & Akun
+                                Pengguna</h6>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">No. HP / WhatsApp *</label>
+                                    <input type="text" class="form-control" id="no_hp" placeholder="08xxxxxxxxxx"
+                                        required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Email *</label>
+                                    <input type="email" class="form-control" id="email" placeholder="alamat@email.com"
+                                        required>
+                                    <div class="form-text">Digunakan sebagai Username login.</div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Role Akses</label>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="akses_guru" checked
+                                                    disabled>
+                                                <label class="form-check-label" for="akses_guru">Akses Guru
+                                                    (Default)</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="akses_wali">
+                                                <label class="form-check-label" for="akses_wali">Wali Kelas</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="akses_admin">
+                                                <label class="form-check-label" for="akses_admin">Sistem
+                                                    Administrator</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info py-2 mt-3">
+                                <small><i class="bi bi-info-circle me-1"></i>Akun user akan dibuat otomatis menggunakan
+                                    Email sebagai username dan NIP/NIK sebagai password default.</small>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons (Responsive) -->
+                        <div class="form-actions d-flex flex-column flex-md-row justify-content-end gap-2 mt-4">
+                            <a href="master-guru.html" class="btn btn-outline-secondary order-3 order-md-1">
+                                <i class="bi bi-arrow-left me-1"></i>Batal / Kembali
+                            </a>
+                            <button type="button" class="btn btn-light-primary order-2" id="btnDraft">
+                                <i class="bi bi-floppy me-1"></i>Simpan Draft
+                            </button>
+                            <button type="submit" class="btn btn-primary order-1 order-md-3">
+                                <i class="bi bi-check-lg me-1"></i>Simpan Data Guru
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- [ Main Content ] end -->
+
+    <footer class="pc-footer">
+        <div class="footer-wrapper container-fluid">
+            <div class="row">
+                <div class="col-sm-6 my-1">
+                    <p class="m-0">©
+                        <script>document.write(new Date().getFullYear());</script> Sistem Sekolah
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- [Required Js] -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="organisasi-template/assets/js/plugins/popper.min.js"></script>
+    <script src="organisasi-template/assets/js/plugins/simplebar.min.js"></script>
+    <script src="organisasi-template/assets/js/plugins/bootstrap.min.js"></script>
+    <script src="organisasi-template/assets/js/fonts/custom-font.js"></script>
+    <script src="organisasi-template/assets/js/script.js"></script>
+    <script src="organisasi-template/assets/js/theme.js"></script>
+
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Page Scripts -->
+    <script>
+        $(document).ready(function () {
+            // Form Submit
+            $('#formGuru').on('submit', function (e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Simpan Data Guru?',
+                    text: "Pastikan semua data sudah benar. Akun pengguna akan dibuat otomatis.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Ya, Simpan!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Data guru dan akun pengguna berhasil dibuat.',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = 'master-guru.html';
+                        });
+                    }
+                });
+            });
+
+            // Draft Button
+            $('#btnDraft').on('click', function () {
+                Swal.fire({
+                    title: 'Tersimpan sebagai Draft',
+                    text: 'Data telah disimpan sementara.',
+                    icon: 'info',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            });
+        });
+    </script>
+
+    <!-- Layout Settings -->
+    <script>layout_change('light');</script>
+    <script>layout_caption_change('true');</script>
+    <script>layout_rtl_change('false');</script>
+    <script>preset_change('preset-1');</script>
+</body>
+
+</html>

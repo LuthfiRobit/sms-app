@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <title>Dashboard - Sistem Sekolah</title>
+    <!-- [Meta] -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="Sistem Informasi Manajemen Sekolah Terpadu" />
+
+    <!-- [Favicon] icon -->
+    <link rel="icon" href="organisasi-template/assets/images/favicon.svg" type="image/x-icon" />
+    <!-- [Google Font] Family -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+        id="main-font-link" />
+    <!-- [Template Icons] -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <!-- [Template CSS Files] -->
+    <link rel="stylesheet" href="organisasi-template/assets/css/style.css" id="main-style-link" />
+    <link rel="stylesheet" href="organisasi-template/assets/css/style-preset.css" />
+    <link rel="stylesheet" href="organisasi-template/assets/css/custom-style.css" />
+
+    <!-- [Legacy Libraries: DataTables CSS] -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
+</head>
+
+<body>
+    <!-- [ Pre-loader ] start -->
+    <div class="loader-bg">
+        <div class="loader-track">
+            <div class="loader-fill"></div>
+        </div>
+    </div>
+    <!-- [ Pre-loader ] End -->
+
+    <!-- [ Sidebar Menu ] start -->
+    <nav class="pc-sidebar">
+        <div class="navbar-wrapper">
+            <div class="m-header">
+                <a href="index.html" class="b-brand text-primary">
+                    <h3 class="m-0 fw-bold text-primary">SIMS Terpadu</h3>
+                </a>
+            </div>
+            <div class="navbar-content">
+                <ul class="pc-navbar">
+                    <!-- 1. Dashboard -->
+                    <li class="pc-item pc-caption"><label>Dashboard</label><i class="bi bi-speedometer2"></i></li>
+                    <li class="pc-item active">
+                        <a href="index.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-speedometer2"></i></span>
+                            <span class="pc-mtext">Akademik</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="dashboard-keuangan.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-pie-chart-fill"></i></span>
+                            <span class="pc-mtext">Keuangan</span>
+                        </a>
+                    </li>
+
+                    <!-- 2. Data Master -->
+                    <li class="pc-item pc-caption"><label>Data Master</label><i class="bi bi-database"></i></li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-building"></i></span><span
+                                class="pc-mtext">Identitas & Wilayah</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="identitas-sekolah.html">Profil Sekolah</a></li>
+                            <li class="pc-item"><a class="pc-link" href="identitas-tahun-ajaran.html">Tahun Ajaran &
+                                    Semester</a></li>
+                            <li class="pc-item"><a class="pc-link" href="identitas-kurikulum.html">Kurikulum</a></li>
+                            <li class="pc-item"><a class="pc-link" href="identitas-wilayah.html">Referensi Wilayah</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-mortarboard"></i></span><span class="pc-mtext">Org. &
+                                Akademik</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="master-jurusan.html">Jurusan / Peminatan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="master-tingkat.html">Tingkat Kelas</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-kelas.html">Rombel (Kelas)</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-mapel.html">Mata Pelajaran</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-mapping-jurusan.html">Mapping Jurusan
+                                    <-> Mapel</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-calendar3"></i></span><span
+                                class="pc-mtext">Sarana &
+                                Jadwal</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="master-gedung.html">Gedung</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-ruangan.html">Ruang Kelas / Lab</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-jam.html">Slot Jam Pelajaran</a></li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-kalender.html">Kalender Akademik</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-shield-shaded"></i></span><span class="pc-mtext">Kedisiplinan &
+                                Pres.</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="master-pelanggaran.html">Jenis Pelanggaran</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="master-prestasi.html">Jenis Prestasi</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-sanksi.html">Tindakan / Sanksi</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-wallet2"></i></span><span
+                                class="pc-mtext">Master Keuangan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="keuangan-komponen.html">Komponen Biaya</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-kategori.html">Kategori Biaya</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-metode.html">Metode Pembayaran</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-diskon.html">Diskon & Beasiswa</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- 3. Manajemen Pengguna -->
+                    <li class="pc-item pc-caption"><label>Manajemen Pengguna</label><i class="bi bi-people-fill"></i>
+                    </li>
+                    <li class="pc-item">
+                        <a href="master-guru.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-people-fill"></i></span>
+                            <span class="pc-mtext">Data GTK</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="master-siswa.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-person-badge-fill"></i></span>
+                            <span class="pc-mtext">Data Siswa (Induk)</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="master-siswa-status.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-person-check-fill"></i></span>
+                            <span class="pc-mtext">Status Siswa</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="user-role.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-shield-lock-fill"></i></span>
+                            <span class="pc-mtext">Hak Akses & Role</span>
+                        </a>
+                    </li>
+
+                    <!-- 4. Operasional -->
+                    <li class="pc-item pc-caption"><label>Operasional</label><i class="bi bi-briefcase"></i></li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-person-plus-fill"></i></span><span class="pc-mtext">PPDB</span><span
+                                class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="ppdb-pengaturan.html">Pengaturan PPDB</a></li>
+                            <li class="pc-item"><a class="pc-link" href="ppdb-rekrutmen.html">Data Pendaftar</a></li>
+                            <li class="pc-item"><a class="pc-link" href="ppdb-verifikasi.html">Verifikasi & Seleksi</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="ppdb-daftar-ulang.html">Daftar Ulang</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-journal-text"></i></span><span class="pc-mtext">Akademik</span><span
+                                class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="akademik-jadwal.html">Penjadwalan KBM</a></li>
+                            <li class="pc-item"><a class="pc-link" href="absensi-siswa.html">Presensi Siswa</a></li>
+                            <li class="pc-item"><a class="pc-link" href="jurnal-mengajar.html">Presensi & Jurnal
+                                    Guru</a></li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-nilai.html">Nilai (F & S)</a></li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-rapor.html">E-Rapor</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-bank"></i></span><span
+                                class="pc-mtext">Keuangan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="keuangan-tagihan.html">Tagihan Siswa</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-pembayaran.html">Transaksi
+                                    Pembayaran</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-tunggakan.html">Tunggakan</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-laporan.html">Laporan & Arus Kas</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-emoji-smile-fill"></i></span><span
+                                class="pc-mtext">Kesiswaan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="siswa-profil.html">Profil & Riwayat</a></li>
+                            <li class="pc-item"><a class="pc-link" href="siswa-disiplin.html">Kedisiplinan & SIP</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="siswa-prestasi.html">Prestasi & Organisasi</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="siswa-bk.html">Bimbingan Konseling</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-box-seam-fill"></i></span><span class="pc-mtext">Sarana
+                                Prasarana</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="sarpras-aset.html">Inventaris Barang</a></li>
+                            <li class="pc-item"><a class="pc-link" href="sarpras-ruangan.html">Inventaris Ruangan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="sarpras-pinjam.html">Peminjaman Aset</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-mortarboard-fill"></i></span><span class="pc-mtext">Kelulusan &
+                                Alumni</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="akademik-kelulusan.html">Validasi Kelulusan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-lulus.html">Status Lulus</a></li>
+                            <li class="pc-item"><a class="pc-link" href="kesiswaan-alumni.html">Database Alumni</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- 5. Laporan & Pengaturan -->
+                    <li class="pc-item pc-caption"><label>Laporan & Pengaturan</label><i
+                            class="bi bi-file-earmark-bar-graph"></i></li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-file-earmark-bar-graph"></i></span><span class="pc-mtext">Laporan &
+                                Audit</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="laporan-rekap.html">Rekap Laporan</a></li>
+                            <li class="pc-item"><a class="pc-link" href="laporan-akademik.html">Laporan Akademik</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="laporan-kesiswaan.html">Laporan Kesiswaan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="laporan-ppdb.html">Laporan PPDB</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-gear-wide-connected"></i></span><span
+                                class="pc-mtext">Pengaturan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="pengaturan.html">Konfigurasi Sistem</a></li>
+                            <li class="pc-item"><a class="pc-link" href="advanced-rbac.html">Advanced RBAC</a></li>
+                            <li class="pc-item"><a class="pc-link" href="db-maintenance.html">Database Maintenance</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- [ Sidebar Menu ] end -->
+
+    <!-- [ Header Topbar ] start -->
+    <header class="pc-header">
+        <div class="header-wrapper">
+            <div class="me-auto pc-mob-drp">
+                <ul class="list-unstyled">
+                    <li class="pc-h-item header-mobile-collapse">
+                        <a href="#" class="pc-head-link head-link-secondary ms-0" id="sidebar-hide"><i
+                                class="bi bi-list"></i></a>
+                    </li>
+                    <li class="pc-h-item pc-sidebar-popup">
+                        <a href="#" class="pc-head-link head-link-secondary ms-0" id="mobile-collapse"><i
+                                class="bi bi-list"></i></a>
+                    </li>
+                    <li class="pc-h-item d-none d-md-inline-flex">
+                        <h5 class="mb-0 fw-bold"><span class="text-muted fw-light">Dashboard /</span> Akademik</h5>
+                    </li>
+                </ul>
+            </div>
+            <div class="ms-auto">
+                <ul class="list-unstyled">
+                    <!-- Notification Dropdown -->
+                    <li class="dropdown pc-h-item">
+                        <a class="pc-head-link head-link-secondary dropdown-toggle arrow-none me-0"
+                            data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false"
+                            aria-expanded="false">
+                            <i class="bi bi-bell"></i>
+                            <span class="badge bg-danger pc-h-badge">5</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-notification dropdown-menu-end pc-h-dropdown">
+                            <div class="dropdown-header">
+                                <h5>Notifikasi</h5>
+                            </div>
+                            <div class="dropdown-header px-0 text-wrap header-notification-scroll position-relative"
+                                style="max-height: calc(100vh - 215px)">
+                                <div class="list-group list-group-flush w-100">
+                                    <div class="list-group-item list-group-item-action">
+                                        <div class="d-flex">
+                                            <div class="flex-shrink-0">
+                                                <div class="user-avtar bg-light-danger"><i
+                                                        class="bi bi-exclamation-circle"></i></div>
+                                            </div>
+                                            <div class="flex-grow-1 ms-1">
+                                                <span class="float-end text-muted">1 jam lalu</span>
+                                                <h5>Jurnal Belum Diisi</h5>
+                                                <p class="text-body fs-6">Mohon isi jurnal mengajar hari ini.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center py-2"><a href="#!" class="link-primary">Lihat semua notifikasi</a>
+                            </div>
+                        </div>
+                    </li>
+                    <!-- User Profile -->
+                    <li class="dropdown pc-h-item header-user-profile">
+                        <a class="pc-head-link head-link-primary dropdown-toggle arrow-none me-0"
+                            data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false"
+                            aria-expanded="false">
+                            <img src="organisasi-template/assets/images/user/avatar-2.jpg" alt="user-image"
+                                class="user-avtar" />
+                        </a>
+                        <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
+                            <div class="dropdown-header">
+                                <h4>Halo, <span class="small text-muted">Admin Sekolah</span></h4>
+                                <p class="text-muted">Administrator</p>
+                                <hr />
+                                <a href="login.html" class="dropdown-item"><i
+                                        class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </header>
+    <!-- [ Header ] end -->
+
+    <!-- [ Main Content ] start -->
+    <div class="pc-container">
+        <div class="pc-content">
+
+            <!-- Welcome Banner -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h3 class="fw-bold text-primary">Dashboard Akademik 📚</h3>
+                    <p class="text-muted">Selamat datang, Admin Sekolah! Mode Aktif: <strong>Semester Genap</strong>.
+                        Prioritas hari ini: Presensi & Jurnal.</p>
+                </div>
+            </div>
+
+            <!-- Statistic Cards (Template Style) -->
+            <div class="row">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-success text-white dashnum-card overflow-hidden">
+                        <span class="round small"></span>
+                        <span class="round big"></span>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="avtar avtar-lg bg-light-success">
+                                        <i class="bi bi-person-check text-success f-24"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-white d-block f-34 f-w-500 my-2">38/40</span>
+                            <p class="mb-0 opacity-75">Kehadiran Guru (95%)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-warning text-white dashnum-card overflow-hidden">
+                        <span class="round small"></span>
+                        <span class="round big"></span>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="avtar avtar-lg bg-light-warning">
+                                        <i class="bi bi-journal-text text-warning f-24"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-white d-block f-34 f-w-500 my-2">12/18</span>
+                            <p class="mb-0 opacity-75">Jurnal Terisi (67%)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-primary text-white dashnum-card overflow-hidden">
+                        <span class="round small"></span>
+                        <span class="round big"></span>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="avtar avtar-lg bg-light-primary">
+                                        <i class="bi bi-wallet2 text-primary f-24"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-white d-block f-34 f-w-500 my-2">Rp 2.5jt</span>
+                            <p class="mb-0 opacity-75">Pemasukan Hari Ini</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-info text-white dashnum-card overflow-hidden">
+                        <span class="round small"></span>
+                        <span class="round big"></span>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="avtar avtar-lg bg-light-info">
+                                        <i class="bi bi-person-plus text-info f-24"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-white d-block f-34 f-w-500 my-2">156</span>
+                            <p class="mb-0 opacity-75">Pendaftar PPDB</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row">
+                <!-- Main Chart: Kehadiran Mingguan -->
+                <div class="col-xl-8 col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Statistik Kehadiran Mingguan</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="attendanceChart"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pie Chart: Status Jurnal -->
+                <div class="col-xl-4 col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Status Jurnal Hari Ini</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="jurnalChart"></div>
+                            <div class="text-center mt-3">
+                                <p class="mb-1"><span
+                                        class="badge rounded-pill bg-light-success text-success me-2">●</span> Terisi:
+                                    12</p>
+                                <p class="mb-1"><span
+                                        class="badge rounded-pill bg-light-warning text-warning me-2">●</span> Pending:
+                                    4</p>
+                                <p class="mb-1"><span
+                                        class="badge rounded-pill bg-light-danger text-danger me-2">●</span> Kosong: 2
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Jadwal & Shortcuts Row -->
+            <div class="row">
+                <!-- Jadwal Pelajaran Hari Ini -->
+                <div class="col-md-8 col-lg-8 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <h5 class="card-title m-0 me-2">Jadwal Pelajaran Hari Ini (Senin)</h5>
+                            <a href="akademik-jadwal.html" class="btn btn-sm btn-primary">Lihat Semua</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="jadwalTable" class="table table-hover table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th width="5%"><input type="checkbox" class="form-check-input"></th>
+                                            <th width="8%">Aksi</th>
+                                            <th>Jam</th>
+                                            <th>Kelas</th>
+                                            <th>Mapel</th>
+                                            <th>Guru</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><input type="checkbox" class="form-check-input"></td>
+                                            <td><button class="btn btn-sm btn-icon btn-light-primary"><i
+                                                        class="bi bi-pencil"></i></button></td>
+                                            <td>07:30 - 09:00</td>
+                                            <td><span class="badge bg-light-primary">VII-A</span></td>
+                                            <td>Matematika</td>
+                                            <td>Budi Santoso</td>
+                                            <td><span
+                                                    class="badge rounded-pill bg-light-success text-success">Hadir</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><input type="checkbox" class="form-check-input"></td>
+                                            <td><button class="btn btn-sm btn-icon btn-light-primary"><i
+                                                        class="bi bi-pencil"></i></button></td>
+                                            <td>07:30 - 09:00</td>
+                                            <td><span class="badge bg-light-warning">VIII-1</span></td>
+                                            <td>Fisika</td>
+                                            <td>Siti Aminah</td>
+                                            <td><span
+                                                    class="badge rounded-pill bg-light-warning text-warning">Mengajar</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><input type="checkbox" class="form-check-input"></td>
+                                            <td><button class="btn btn-sm btn-icon btn-light-primary"><i
+                                                        class="bi bi-pencil"></i></button></td>
+                                            <td>09:15 - 10:45</td>
+                                            <td><span class="badge bg-light-info">IX-2</span></td>
+                                            <td>Sosiologi</td>
+                                            <td>Andi Pratama</td>
+                                            <td><span
+                                                    class="badge rounded-pill bg-light-secondary text-secondary">Pending</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shortcuts & Notifications -->
+                <div class="col-md-4 col-lg-4 mb-4">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title m-0">Akses Cepat</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <a href="jurnal-mengajar.html"
+                                        class="btn btn-outline-primary w-100 d-flex flex-column align-items-center py-3">
+                                        <i class="bi bi-journal-text fs-2 mb-1"></i><span class="small">Isi
+                                            Jurnal</span>
+                                    </a>
+                                </div>
+                                <div class="col-6">
+                                    <a href="absensi-siswa.html"
+                                        class="btn btn-outline-success w-100 d-flex flex-column align-items-center py-3">
+                                        <i class="bi bi-person-check fs-2 mb-1"></i><span class="small">Absensi</span>
+                                    </a>
+                                </div>
+                                <div class="col-6">
+                                    <a href="keuangan-pembayaran.html"
+                                        class="btn btn-outline-warning w-100 d-flex flex-column align-items-center py-3">
+                                        <i class="bi bi-wallet2 fs-2 mb-1"></i><span class="small">Bayar SPP</span>
+                                    </a>
+                                </div>
+                                <div class="col-6">
+                                    <a href="ppdb-rekrutmen.html"
+                                        class="btn btn-outline-info w-100 d-flex flex-column align-items-center py-3">
+                                        <i class="bi bi-person-plus fs-2 mb-1"></i><span class="small">Data PPDB</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header d-flex align-items-center justify-content-between pb-0">
+                            <h5 class="card-title m-0">Pemberitahuan</h5>
+                            <small class="text-muted">Hari Ini</small>
+                        </div>
+                        <div class="card-body mt-3">
+                            <ul class="p-0 m-0">
+                                <li class="d-flex mb-3 pb-1">
+                                    <div class="avatar flex-shrink-0 me-3"><span
+                                            class="avatar-initial rounded bg-light-primary"><i
+                                                class="bi bi-bell"></i></span></div>
+                                    <div
+                                        class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <h6 class="mb-0">Rapat Harian Guru</h6><small class="text-muted">Di Ruang
+                                                A1, Jam 13:00</small>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="d-flex mb-3 pb-1">
+                                    <div class="avatar flex-shrink-0 me-3"><span
+                                            class="avatar-initial rounded bg-light-danger"><i
+                                                class="bi bi-exclamation-circle"></i></span></div>
+                                    <div
+                                        class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <h6 class="mb-0">Jurnal Kosong</h6><small class="text-muted">3 Kelas belum
+                                                input jurnal</small>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- [ Main Content ] end -->
+
+    <footer class="pc-footer">
+        <div class="footer-wrapper container-fluid">
+            <div class="row">
+                <div class="col-sm-6 my-1">
+                    <p class="m-0">©
+                        <script>document.write(new Date().getFullYear());</script> Sistem Sekolah
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- [Required Js] -->
+    <!-- Legacy: jQuery First -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <!-- Template Plugins -->
+    <script src="organisasi-template/assets/js/plugins/popper.min.js"></script>
+    <script src="organisasi-template/assets/js/plugins/simplebar.min.js"></script>
+    <script src="organisasi-template/assets/js/plugins/bootstrap.min.js"></script>
+    <script src="organisasi-template/assets/js/fonts/custom-font.js"></script>
+    <script src="organisasi-template/assets/js/script.js"></script>
+    <script src="organisasi-template/assets/js/theme.js"></script>
+
+    <!-- ApexCharts -->
+    <script src="organisasi-template/assets/js/plugins/apexcharts.min.js"></script>
+
+    <!-- Legacy: DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+
+    <!-- Page Scripts -->
+    <script>
+        $(document).ready(function () {
+            // DataTable Init
+            $('#jadwalTable').DataTable({
+                "language": {
+                    "sEmptyTable": "Tidak ada data", "sLengthMenu": "Tampilkan _MENU_ entri",
+                    "sZeroRecords": "Tidak ditemukan data yang sesuai", "sSearch": "Cari:",
+                    "oPaginate": { "sFirst": "Pertama", "sPrevious": "Sebelumnya", "sNext": "Selanjutnya", "sLast": "Terakhir" }
+                },
+                "dom": '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f><t><"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>'
+            });
+
+            // ApexCharts: Attendance (Area Chart)
+            var attendanceOptions = {
+                series: [{ name: 'Guru Hadir', data: [38, 40, 39, 37, 40, 38, 40] }, { name: 'Siswa Hadir (%)', data: [92, 95, 90, 88, 94, 91, 93] }],
+                chart: { height: 300, type: 'area' },
+                dataLabels: { enabled: false },
+                stroke: { curve: 'smooth' },
+                xaxis: { categories: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] },
+                colors: ['#28a745', '#007bff'],
+                tooltip: { y: { formatter: function (val) { return val } } }
+            };
+            new ApexCharts(document.querySelector("#attendanceChart"), attendanceOptions).render();
+
+            // ApexCharts: Jurnal Status (Pie Chart)
+            var jurnalOptions = {
+                series: [12, 4, 2],
+                chart: { width: 280, type: 'pie' },
+                labels: ['Terisi', 'Pending', 'Kosong'],
+                colors: ['#28a745', '#ffc107', '#dc3545'],
+                responsive: [{ breakpoint: 480, options: { chart: { width: 200 }, legend: { position: 'bottom' } } }]
+            };
+            new ApexCharts(document.querySelector("#jurnalChart"), jurnalOptions).render();
+        });
+    </script>
+
+    <!-- Layout Settings -->
+    <script>layout_change('light');</script>
+    <script>layout_caption_change('true');</script>
+    <script>layout_rtl_change('false');</script>
+    <script>preset_change('preset-1');</script>
+</body>
+
+</html>

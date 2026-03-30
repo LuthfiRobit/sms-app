@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <title>Login - Sistem Sekolah</title>
+    <!-- [Meta] -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="Sistem Informasi Manajemen Sekolah" />
+
+    <!-- [Favicon] icon -->
+    <link rel="icon" href="organisasi-template/assets/images/favicon.svg" type="image/x-icon" />
+
+    <!-- [Google Font] Family -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+        id="main-font-link" />
+
+    <!-- [Template CSS Files] -->
+    <link rel="stylesheet" href="organisasi-template/assets/css/style.css" id="main-style-link" />
+    <link rel="stylesheet" href="organisasi-template/assets/css/style-preset.css" />
+    <link rel="stylesheet" href="organisasi-template/assets/css/custom-style.css" />
+
+    <!-- Legacy CSS (Preserved from old login.html) -->
+    <!-- Boxicons Removed as per workflow update. Use Tabler Icons -->
+    <!-- Core CSS -->
+    <!-- Note: Some old CSS might conflict, but we preserve critical ones if needed. 
+         For login, the new template handles most styling. -->
+
+    <!-- Helpers from old file (if strictly needed, but template usually has its own) -->
+    <!-- <script src="./assets/vendor/js/helpers.js"></script> -->
+</head>
+
+<body>
+    <!-- [ Pre-loader ] start -->
+    <div class="loader-bg">
+        <div class="loader-track">
+            <div class="loader-fill"></div>
+        </div>
+    </div>
+    <!-- [ Pre-loader ] End -->
+
+    <div class="auth-main">
+        <div class="auth-wrapper v3">
+            <div class="auth-form">
+                <div class="card my-5">
+                    <div class="card-body">
+                        <a href="index.html" class="d-flex justify-content-center text-decoration-none">
+                            <!-- Logo from old file (SVG) mapped to new structure or just Text -->
+                            <h3 class="m-0 fw-bold text-primary">Sistem Sekolah</h3>
+                        </a>
+
+                        <div class="row">
+                            <div class="d-flex justify-content-center">
+                                <div class="auth-header">
+                                    <h2 class="text-secondary mt-5"><b>Selamat Datang! 👋</b></h2>
+                                    <p class="f-16 mt-2">Silahkan masuk menggunakan akun Anda</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Login Form from old login.html wrapped in new structure -->
+                        <form id="formAuthentication" action="index.html" method="POST">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="email" name="email-username"
+                                    placeholder="Email atau NIP" autofocus />
+                                <label for="email">Email atau NIP</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input type="password" class="form-control" id="password" name="password"
+                                    placeholder="Password" />
+                                <label for="password">Password</label>
+                            </div>
+
+                            <div class="d-flex mt-1 justify-content-between">
+                                <div class="form-check">
+                                    <input class="form-check-input input-primary" type="checkbox" id="remember-me" />
+                                    <label class="form-check-label text-muted" for="remember-me">Ingat Saya</label>
+                                </div>
+                                <a href="javascript:void(0);">
+                                    <h5 class="text-secondary">Lupa Password?</h5>
+                                </a>
+                            </div>
+
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-primary">Login</button>
+                            </div>
+                        </form>
+
+                        <hr />
+                        <h5 class="d-flex justify-content-center">Belum memiliki akun?
+                            <a href="javascript:void(0);" class="ms-2">Hubungi Admin</a>
+                        </h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Required Js from Template -->
+    <script src="organisasi-template/assets/js/plugins/popper.min.js"></script>
+    <script src="organisasi-template/assets/js/plugins/simplebar.min.js"></script>
+    <script src="organisasi-template/assets/js/plugins/bootstrap.min.js"></script>
+    <script src="organisasi-template/assets/js/fonts/custom-font.js"></script>
+    <script src="organisasi-template/assets/js/script.js"></script>
+    <script src="organisasi-template/assets/js/theme.js"></script>
+
+    <!-- Legacy JS (Preserved) -->
+    <!-- jQuery first as per workflow -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <!-- Or use local if available: <script src="./assets/vendor/libs/jquery/jquery.js"></script> but path is tricky if moved -->
+
+    <!-- Other Legacy Scripts -->
+    <!-- <script src="./assets/vendor/js/helpers.js"></script> -->
+    <!-- <script src="./assets/js/config.js"></script> -->
+
+    <!-- Template Utils -->
+    <script>
+        layout_change('light');
+        layout_caption_change('true');
+        layout_rtl_change('false');
+        preset_change('preset-1');
+    </script>
+</body>
+
+</html>

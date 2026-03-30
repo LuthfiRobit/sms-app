@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <title>Referensi Wilayah - SIMS Terpadu</title>
+    <!-- [Meta] -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="Manajemen Referensi Wilayah - SIMS Terpadu" />
+
+    <!-- [Favicon] icon -->
+    <link rel="icon" href="organisasi-template/assets/images/favicon.svg" type="image/x-icon" />
+    <!-- [Google Font] Family -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+        id="main-font-link" />
+    <!-- [Template Icons] -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <!-- [Template CSS Files] -->
+    <link rel="stylesheet" href="organisasi-template/assets/css/style.css" id="main-style-link" />
+    <link rel="stylesheet" href="organisasi-template/assets/css/style-preset.css" />
+    <link rel="stylesheet" href="organisasi-template/assets/css/custom-style.css" />
+
+    <!-- [Legacy Libraries: DataTables CSS] -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
+    <!-- [Libraries: SweetAlert2] -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        .nav-tabs-custom {
+            border-bottom: 2px solid #f1f1f1;
+        }
+
+        .nav-tabs-custom .nav-link {
+            border: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            color: #6c757d;
+            font-weight: 500;
+            padding: 10px 20px;
+        }
+
+        .nav-tabs-custom .nav-link:hover {
+            color: var(--bs-primary);
+        }
+
+        .nav-tabs-custom .nav-link.active {
+            background: transparent;
+            border-bottom-color: var(--bs-primary);
+            color: var(--bs-primary);
+        }
+
+        .stat-card-sm {
+            border: none;
+            border-radius: 12px;
+            transition: transform 0.2s;
+        }
+
+        .stat-card-sm:hover {
+            transform: translateY(-5px);
+        }
+
+        .avtar-s {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- [ Pre-loader ] start -->
+    <div class="loader-bg">
+        <div class="loader-track">
+            <div class="loader-fill"></div>
+        </div>
+    </div>
+    <!-- [ Pre-loader ] End -->
+
+    <!-- [ Sidebar Menu ] start -->
+    <nav class="pc-sidebar">
+        <div class="navbar-wrapper">
+            <div class="m-header">
+                <a href="index.html" class="b-brand text-primary">
+                    <h3 class="m-0 fw-bold text-primary">SIMS Terpadu</h3>
+                </a>
+            </div>
+            <div class="navbar-content">
+                <ul class="pc-navbar">
+                    <!-- 1. Dashboard -->
+                    <li class="pc-item pc-caption"><label>Dashboard</label><i class="bi bi-speedometer2"></i></li>
+                    <li class="pc-item">
+                        <a href="index.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-speedometer2"></i></span>
+                            <span class="pc-mtext">Akademik</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="dashboard-keuangan.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-pie-chart-fill"></i></span>
+                            <span class="pc-mtext">Keuangan</span>
+                        </a>
+                    </li>
+
+                    <!-- 2. Data Master -->
+                    <li class="pc-item pc-caption"><label>Data Master</label><i class="bi bi-database"></i></li>
+                    <li class="pc-item pc-hasmenu active pc-trigger">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-building"></i></span><span
+                                class="pc-mtext">Identitas & Wilayah</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="identitas-sekolah.html">Profil Sekolah</a></li>
+                            <li class="pc-item"><a class="pc-link" href="identitas-tahun-ajaran.html">Tahun Ajaran &
+                                    Semester</a></li>
+                            <li class="pc-item"><a class="pc-link" href="identitas-kurikulum.html">Kurikulum</a></li>
+                            <li class="pc-item active"><a class="pc-link" href="identitas-wilayah.html">Referensi
+                                    Wilayah</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-mortarboard"></i></span><span class="pc-mtext">Org. &
+                                Akademik</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="master-jurusan.html">Jurusan / Peminatan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="master-tingkat.html">Tingkat Kelas</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-kelas.html">Rombel (Kelas)</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-mapel.html">Mata Pelajaran</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-mapping-jurusan.html">Mapping Jurusan
+                                    <-> Mapel</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-calendar3"></i></span><span
+                                class="pc-mtext">Sarana &
+                                Jadwal</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="master-gedung.html">Gedung</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-ruangan.html">Ruang Kelas / Lab</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-jam.html">Slot Jam Pelajaran</a></li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-kalender.html">Kalender Akademik</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-shield-shaded"></i></span><span class="pc-mtext">Kedisiplinan &
+                                Pres.</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="master-pelanggaran.html">Jenis Pelanggaran</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="master-prestasi.html">Jenis Prestasi</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-sanksi.html">Tindakan / Sanksi</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-wallet2"></i></span><span
+                                class="pc-mtext">Master Keuangan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="keuangan-komponen.html">Komponen Biaya</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-kategori.html">Kategori Biaya</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-metode.html">Metode Pembayaran</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-diskon.html">Diskon & Beasiswa</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- 3. Manajemen Pengguna -->
+                    <li class="pc-item pc-caption"><label>Manajemen Pengguna</label><i class="bi bi-people-fill"></i>
+                    </li>
+                    <li class="pc-item">
+                        <a href="master-guru.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-people-fill"></i></span>
+                            <span class="pc-mtext">Data GTK</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="master-siswa.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-person-badge-fill"></i></span>
+                            <span class="pc-mtext">Data Siswa (Induk)</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="master-siswa-status.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-person-check-fill"></i></span>
+                            <span class="pc-mtext">Status Siswa</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="user-role.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-shield-lock-fill"></i></span>
+                            <span class="pc-mtext">Hak Akses & Role</span>
+                        </a>
+                    </li>
+
+                    <!-- 4. Operasional -->
+                    <li class="pc-item pc-caption"><label>Operasional</label><i class="bi bi-briefcase"></i></li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-person-plus-fill"></i></span><span class="pc-mtext">PPDB</span><span
+                                class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="ppdb-pengaturan.html">Pengaturan PPDB</a></li>
+                            <li class="pc-item"><a class="pc-link" href="ppdb-rekrutmen.html">Data Pendaftar</a></li>
+                            <li class="pc-item"><a class="pc-link" href="ppdb-verifikasi.html">Verifikasi & Seleksi</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="ppdb-daftar-ulang.html">Daftar Ulang</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-journal-text"></i></span><span class="pc-mtext">Akademik</span><span
+                                class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="akademik-jadwal.html">Penjadwalan KBM</a></li>
+                            <li class="pc-item"><a class="pc-link" href="absensi-siswa.html">Presensi Siswa</a></li>
+                            <li class="pc-item"><a class="pc-link" href="jurnal-mengajar.html">Presensi & Jurnal
+                                    Guru</a></li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-nilai.html">Nilai (F & S)</a></li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-rapor.html">E-Rapor</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-bank"></i></span><span
+                                class="pc-mtext">Keuangan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="keuangan-tagihan.html">Tagihan Siswa</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-pembayaran.html">Transaksi
+                                    Pembayaran</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-tunggakan.html">Tunggakan</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-laporan.html">Laporan & Arus Kas</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-emoji-smile-fill"></i></span><span
+                                class="pc-mtext">Kesiswaan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="siswa-profil.html">Profil & Riwayat</a></li>
+                            <li class="pc-item"><a class="pc-link" href="siswa-disiplin.html">Kedisiplinan & SIP</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="siswa-prestasi.html">Prestasi & Organisasi</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="siswa-bk.html">Bimbingan Konseling</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-box-seam-fill"></i></span><span class="pc-mtext">Sarana
+                                Prasarana</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="sarpras-aset.html">Inventaris Barang</a></li>
+                            <li class="pc-item"><a class="pc-link" href="sarpras-ruangan.html">Inventaris Ruangan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="sarpras-pinjam.html">Peminjaman Aset</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-mortarboard-fill"></i></span><span class="pc-mtext">Kelulusan &
+                                Alumni</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="akademik-kelulusan.html">Validasi Kelulusan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-lulus.html">Status Lulus</a></li>
+                            <li class="pc-item"><a class="pc-link" href="kesiswaan-alumni.html">Database Alumni</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- 5. Laporan & Pengaturan -->
+                    <li class="pc-item pc-caption"><label>Laporan & Pengaturan</label><i
+                            class="bi bi-file-earmark-bar-graph"></i></li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-file-earmark-bar-graph"></i></span><span class="pc-mtext">Laporan &
+                                Audit</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="laporan-rekap.html">Rekap Laporan</a></li>
+                            <li class="pc-item"><a class="pc-link" href="laporan-akademik.html">Laporan Akademik</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="laporan-kesiswaan.html">Laporan Kesiswaan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="laporan-ppdb.html">Laporan PPDB</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-gear-wide-connected"></i></span><span
+                                class="pc-mtext">Pengaturan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="pengaturan.html">Konfigurasi Sistem</a></li>
+                            <li class="pc-item"><a class="pc-link" href="advanced-rbac.html">Advanced RBAC</a></li>
+                            <li class="pc-item"><a class="pc-link" href="db-maintenance.html">Database Maintenance</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- [ Sidebar Menu ] end -->
+
+    <!-- [ Header ] start -->
+    <header class="pc-header">
+        <div class="header-wrapper">
+            <div class="me-auto pc-mob-drp">
+                <ul class="list-unstyled">
+                    <li class="pc-h-item header-mobile-collapse">
+                        <a href="#" class="pc-head-link head-link-secondary ms-0" id="sidebar-hide"><i
+                                class="bi bi-list"></i></a>
+                    </li>
+                    <li class="pc-h-item pc-sidebar-popup">
+                        <a href="#" class="pc-head-link head-link-secondary ms-0" id="mobile-collapse"><i
+                                class="bi bi-list"></i></a>
+                    </li>
+                    <li class="pc-h-item d-none d-md-inline-flex">
+                        <h5 class="mb-0 fw-bold"><span class="text-muted fw-light">Identitas & Wilayah /</span>
+                            Referensi Wilayah</h5>
+                    </li>
+                </ul>
+            </div>
+            <div class="ms-auto">
+                <ul class="list-unstyled">
+                    <li class="dropdown pc-h-item header-user-profile">
+                        <a class="pc-head-link head-link-primary dropdown-toggle arrow-none me-0"
+                            data-bs-toggle="dropdown" href="#" role="button">
+                            <img src="organisasi-template/assets/images/user/avatar-2.jpg" alt="user-image"
+                                class="user-avtar" />
+                        </a>
+                        <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
+                            <div class="dropdown-header">
+                                <h4>Halo, <span class="small text-muted">Admin Sekolah</span></h4>
+                                <p class="text-muted">Administrator</p>
+                                <hr />
+                                <a href="login.html" class="dropdown-item"><i
+                                        class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </header>
+    <!-- [ Header ] end -->
+
+    <!-- [ Main Content ] start -->
+    <div class="pc-container">
+        <div class="pc-content">
+
+            <!-- Statistic Cards -->
+            <div class="row mb-2">
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card stat-card-sm bg-primary text-white mb-3">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="avtar avtar-s bg-white rounded-circle me-3"><i
+                                    class="bi bi-geo text-primary"></i></div>
+                            <div>
+                                <span class="f-20 fw-bold d-block">38</span>
+                                <p class="mb-0 small opacity-75">Provinsi</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card stat-card-sm bg-success text-white mb-3">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="avtar avtar-s bg-white rounded-circle me-3"><i
+                                    class="bi bi-buildings text-success"></i></div>
+                            <div>
+                                <span class="f-20 fw-bold d-block">514</span>
+                                <p class="mb-0 small opacity-75">Kota/Kabupaten</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card stat-card-sm bg-info text-white mb-3">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="avtar avtar-s bg-white rounded-circle me-3"><i class="bi bi-map text-info"></i>
+                            </div>
+                            <div>
+                                <span class="f-20 fw-bold d-block">7,277</span>
+                                <p class="mb-0 small opacity-75">Kecamatan</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card stat-card-sm bg-warning text-white mb-3">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="avtar avtar-s bg-white rounded-circle me-3"><i
+                                    class="bi bi-house text-warning"></i></div>
+                            <div>
+                                <span class="f-20 fw-bold d-block">83,794</span>
+                                <p class="mb-0 small opacity-75">Kelurahan/Desa</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Card with Tabs -->
+            <div class="card">
+                <div class="card-header p-0">
+                    <ul class="nav nav-tabs nav-tabs-custom" id="regionTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tab-provinsi" data-bs-toggle="tab"
+                                data-bs-target="#panel-provinsi" type="button" role="tab" aria-controls="panel-provinsi"
+                                aria-selected="true"><i class="bi bi-geo me-1"></i>Provinsi</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-kota" data-bs-toggle="tab" data-bs-target="#panel-kota"
+                                type="button" role="tab" aria-controls="panel-kota" aria-selected="false"><i
+                                    class="bi bi-buildings me-1"></i>Kota/Kabupaten</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-kecamatan" data-bs-toggle="tab"
+                                data-bs-target="#panel-kecamatan" type="button" role="tab"
+                                aria-controls="panel-kecamatan" aria-selected="false"><i
+                                    class="bi bi-map me-1"></i>Kecamatan</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-kelurahan" data-bs-toggle="tab"
+                                data-bs-target="#panel-kelurahan" type="button" role="tab"
+                                aria-controls="panel-kelurahan" aria-selected="false"><i
+                                    class="bi bi-house me-1"></i>Kelurahan/Desa</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="regionTabsContent">
+
+                        <!-- Panel Provinsi -->
+                        <div class="tab-pane fade show active" id="panel-provinsi" role="tabpanel"
+                            aria-labelledby="tab-provinsi">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <h5 class="mb-0">Daftar Provinsi</h5>
+                                <button class="btn btn-primary btn-sm" onclick="openModalWilayah('Provinsi')"><i
+                                        class="bi bi-plus-lg me-1"></i>Tambah Provinsi</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table id="tableProvinsi" class="table table-hover table-bordered table-striped w-100">
+                                    <thead>
+                                        <tr>
+                                            <th width="10%">AKSI</th>
+                                            <th width="15%">KODE</th>
+                                            <th>NAMA PROVINSI</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <button class="btn btn-sm btn-icon btn-light-primary"><i
+                                                        class="bi bi-pencil"></i></button>
+                                                <button class="btn btn-sm btn-icon btn-light-danger"
+                                                    onclick="deleteWilayah()"><i class="bi bi-trash"></i></button>
+                                            </td>
+                                            <td><span class="fw-bold">11</span></td>
+                                            <td>ACEH</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <button class="btn btn-sm btn-icon btn-light-primary"><i
+                                                        class="bi bi-pencil"></i></button>
+                                                <button class="btn btn-sm btn-icon btn-light-danger"
+                                                    onclick="deleteWilayah()"><i class="bi bi-trash"></i></button>
+                                            </td>
+                                            <td><span class="fw-bold">12</span></td>
+                                            <td>SUMATERA UTARA</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <button class="btn btn-sm btn-icon btn-light-primary"><i
+                                                        class="bi bi-pencil"></i></button>
+                                                <button class="btn btn-sm btn-icon btn-light-danger"
+                                                    onclick="deleteWilayah()"><i class="bi bi-trash"></i></button>
+                                            </td>
+                                            <td><span class="fw-bold">31</span></td>
+                                            <td>DKI JAKARTA</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Panel Kota -->
+                        <div class="tab-pane fade" id="panel-kota" role="tabpanel" aria-labelledby="tab-kota">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <h5 class="mb-0">Daftar Kota / Kabupaten</h5>
+                                <button class="btn btn-primary btn-sm" onclick="openModalWilayah('Kota/Kabupaten')"><i
+                                        class="bi bi-plus-lg me-1"></i>Tambah Kota</button>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label small">Filter Provinsi</label>
+                                    <select class="form-select form-select-sm">
+                                        <option>Pilih Provinsi</option>
+                                        <option>DKI JAKARTA</option>
+                                        <option>JAWA BARAT</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table id="tableKota" class="table table-hover table-bordered table-striped w-100">
+                                    <thead>
+                                        <tr>
+                                            <th width="10%">AKSI</th>
+                                            <th width="15%">KODE</th>
+                                            <th>NAMA KOTA / KABUPATEN</th>
+                                            <th>PROVINSI</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <button class="btn btn-sm btn-icon btn-light-primary"><i
+                                                        class="bi bi-pencil"></i></button>
+                                                <button class="btn btn-sm btn-icon btn-light-danger"
+                                                    onclick="deleteWilayah()"><i class="bi bi-trash"></i></button>
+                                            </td>
+                                            <td><span class="fw-bold">31.71</span></td>
+                                            <td>KOTA JAKARTA SELATAN</td>
+                                            <td>DKI JAKARTA</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <button class="btn btn-sm btn-icon btn-light-primary"><i
+                                                        class="bi bi-pencil"></i></button>
+                                                <button class="btn btn-sm btn-icon btn-light-danger"
+                                                    onclick="deleteWilayah()"><i class="bi bi-trash"></i></button>
+                                            </td>
+                                            <td><span class="fw-bold">32.73</span></td>
+                                            <td>KOTA BANDUNG</td>
+                                            <td>JAWA BARAT</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Panel Kecamatan -->
+                        <div class="tab-pane fade" id="panel-kecamatan" role="tabpanel" aria-labelledby="tab-kecamatan">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <h5 class="mb-0">Daftar Kecamatan</h5>
+                                <button class="btn btn-primary btn-sm" onclick="openModalWilayah('Kecamatan')"><i
+                                        class="bi bi-plus-lg me-1"></i>Tambah Kecamatan</button>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-3">
+                                    <select class="form-select form-select-sm">
+                                        <option>Pilih Provinsi</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select form-select-sm">
+                                        <option>Pilih Kota</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table id="tableKecamatan" class="table table-hover table-bordered table-striped w-100">
+                                    <thead>
+                                        <tr>
+                                            <th width="10%">AKSI</th>
+                                            <th width="15%">KODE</th>
+                                            <th>NAMA KECAMATAN</th>
+                                            <th>KOTA / KABUPATEN</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <button class="btn btn-sm btn-icon btn-light-primary"><i
+                                                        class="bi bi-pencil"></i></button>
+                                                <button class="btn btn-sm btn-icon btn-light-danger"
+                                                    onclick="deleteWilayah()"><i class="bi bi-trash"></i></button>
+                                            </td>
+                                            <td><span class="fw-bold">31.71.01</span></td>
+                                            <td>TEBET</td>
+                                            <td>KOTA JAKARTA SELATAN</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Panel Kelurahan -->
+                        <div class="tab-pane fade" id="panel-kelurahan" role="tabpanel" aria-labelledby="tab-kelurahan">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <h5 class="mb-0">Daftar Kelurahan / Desa</h5>
+                                <button class="btn btn-primary btn-sm" onclick="openModalWilayah('Kelurahan/Desa')"><i
+                                        class="bi bi-plus-lg me-1"></i>Tambah Kelurahan</button>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-3">
+                                    <select class="form-select form-select-sm">
+                                        <option>Pilih Kota</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select form-select-sm">
+                                        <option>Pilih Kecamatan</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table id="tableKelurahan" class="table table-hover table-bordered table-striped w-100">
+                                    <thead>
+                                        <tr>
+                                            <th width="10%">AKSI</th>
+                                            <th width="15%">KODE</th>
+                                            <th>NAMA KELURAHAN / DESA</th>
+                                            <th>KECAMATAN</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <button class="btn btn-sm btn-icon btn-light-primary"><i
+                                                        class="bi bi-pencil"></i></button>
+                                                <button class="btn btn-sm btn-icon btn-light-danger"
+                                                    onclick="deleteWilayah()"><i class="bi bi-trash"></i></button>
+                                            </td>
+                                            <td><span class="fw-bold">31.71.01.1001</span></td>
+                                            <td>TEBET BARAT</td>
+                                            <td>TEBET</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- [ Main Content ] end -->
+
+    <!-- Modal Form Wilayah -->
+    <div class="modal fade" id="modalWilayah" tabindex="-1" aria-labelledby="modalWilayahLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalWilayahLabel">Tambah Data Wilayah</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formWilayah">
+                        <div class="mb-3" id="groupInduk">
+                            <!-- Label & Select will be dynamic via JS -->
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Kode Wilayah <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="kodeWilayah"
+                                placeholder="Masukkan kode wilayah">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nama Wilayah <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="namaWilayah"
+                                placeholder="Masukkan nama wilayah">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" onclick="saveWilayah()">Simpan Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="pc-footer">
+        <div class="footer-wrapper container-fluid">
+            <div class="row">
+                <div class="col-sm-6 my-1">
+                    <p class="m-0">©
+                        <script>document.write(new Date().getFullYear());</script> SIMS Terpadu
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- [Required Js] -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="organisasi-template/assets/js/plugins/popper.min.js"></script>
+    <script src="organisasi-template/assets/js/plugins/simplebar.min.js"></script>
+    <script src="organisasi-template/assets/js/plugins/bootstrap.min.js"></script>
+    <script src="organisasi-template/assets/js/fonts/custom-font.js"></script>
+    <script src="organisasi-template/assets/js/script.js"></script>
+    <script src="organisasi-template/assets/js/theme.js"></script>
+
+    <!-- Legacy: DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Initialize All DataTables
+            const dtConfig = {
+                "language": {
+                    "sEmptyTable": "Tidak ada data", "sLengthMenu": "Tampilkan _MENU_",
+                    "sZeroRecords": "Tidak ditemukan data yang sesuai", "sSearch": "Cari:",
+                    "oPaginate": { "sFirst": "Pertama", "sPrevious": "Sebelumnya", "sNext": "Selanjutnya", "sLast": "Terakhir" }
+                }
+            };
+            $('#tableProvinsi').DataTable(dtConfig);
+            $('#tableKota').DataTable(dtConfig);
+            $('#tableKecamatan').DataTable(dtConfig);
+            $('#tableKelurahan').DataTable(dtConfig);
+        });
+
+        function openModalWilayah(level) {
+            $('#modalWilayahLabel').text('Tambah Data ' + level);
+            let groupInduk = '';
+
+            if (level === 'Kota/Kabupaten') {
+                groupInduk = `<label class="form-label">Provinsi Induk <span class="text-danger">*</span></label>
+                             <select class="form-select"><option>Pilih Provinsi</option><option>DKI JAKARTA</option></select>`;
+            } else if (level === 'Kecamatan') {
+                groupInduk = `<label class="form-label">Kota / Kabupaten Induk <span class="text-danger">*</span></label>
+                             <select class="form-select"><option>Pilih Kota</option><option>KOTA JAKARTA SELATAN</option></select>`;
+            } else if (level === 'Kelurahan/Desa') {
+                groupInduk = `<label class="form-label">Kecamatan Induk <span class="text-danger">*</span></label>
+                             <select class="form-select"><option>Pilih Kecamatan</option><option>TEBET</option></select>`;
+            }
+
+            $('#groupInduk').html(groupInduk);
+            $('#formWilayah')[0].reset();
+            $('#modalWilayah').modal('show');
+        }
+
+        function saveWilayah() {
+            $('#modalWilayah').modal('hide');
+            Swal.fire({
+                icon: 'success', title: 'Berhasil!',
+                text: 'Data wilayah telah disimpan.',
+                timer: 2000, showConfirmButton: false
+            });
+        }
+
+        function deleteWilayah() {
+            Swal.fire({
+                title: 'Hapus Data?',
+                text: "Data wilayah terkait akan ikut berdampak.",
+                icon: 'warning', showCancelButton: true,
+                confirmButtonColor: '#d33', cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Hapus!', cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire('Terhapus!', 'Data telah dihapus.', 'success');
+                }
+            });
+        }
+    </script>
+
+    <!-- Layout Settings -->
+    <script>layout_change('light');</script>
+    <script>layout_caption_change('true');</script>
+    <script>layout_rtl_change('false');</script>
+    <script>preset_change('preset-1');</script>
+</body>
+
+</html>

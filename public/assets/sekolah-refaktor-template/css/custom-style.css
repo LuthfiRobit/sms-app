@@ -1,0 +1,68 @@
+/**
+ * GMNI Organization Template Custom CSS
+ * Theme Color: GMNI Red (#d32f2f)
+ */
+
+:root {
+  --bs-primary: #d32f2f;
+  --bs-primary-rgb: 211, 47, 47;
+  --bs-secondary: #424242;
+  --bs-secondary-rgb: 66, 66, 66;
+}
+
+/* Override default primary buttons and elements */
+.btn-primary {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+
+.btn-primary:hover {
+  background-color: #b71c1c;
+  border-color: #b71c1c;
+}
+
+.text-primary {
+  color: var(--bs-primary) !important;
+}
+
+.bg-primary {
+  background-color: var(--bs-primary) !important;
+}
+
+/* Sidebar Active State */
+.pc-sidebar .pc-navbar > .pc-item.active > .pc-link,
+.pc-sidebar .pc-navbar > .pc-item:focus > .pc-link,
+.pc-sidebar .pc-navbar > .pc-item:hover > .pc-link {
+  color: var(--bs-primary);
+  background: rgba(211, 47, 47, 0.1);
+}
+
+.pc-sidebar .pc-navbar > .pc-item.active > .pc-link .pc-micon,
+.pc-sidebar .pc-navbar > .pc-item:focus > .pc-link .pc-micon,
+.pc-sidebar .pc-navbar > .pc-item:hover > .pc-link .pc-micon {
+  color: var(--bs-primary);
+}
+
+/* Custom Card Styling */
+.card-gmni-stat {
+    border-left: 4px solid var(--bs-primary);
+}
+
+/* Logo Adjustment */
+.b-brand .logo-lg {
+    max-height: 40px; 
+    /* Adjust as needed for the GMNI logo */
+}
+
+/* Remove Buy Now Badge if distinct class exists or generic hiding */
+.buy-now-badge {
+    display: none !important;
+}
+/* Fix SweetAlert2 overlapping with Bootstrap Modals */
+.swal2-container {
+    z-index: 99999 !important;
+}
+.swal2-backdrop {
+    z-index: 99998 !important;
+}
+

@@ -1,0 +1,473 @@
+Berikut adalah **hasil generasi Role Based Access Control (RBAC) berdasarkan Scope** dari informasi yang Anda berikan. Saya menyusunnya agar **siap digunakan sebagai blueprint sistem RBAC untuk Sistem Manajemen Sekolah**, termasuk **deskripsi tugas operasional dan hak akses sistem** dari setiap role.
+
+Struktur ini juga mempertimbangkan:
+
+* **Multi-Role User**
+* **Scope akses berbasis unit / kelas / individu**
+* **Role transisional (PPDB → Siswa)**
+* **Pemisahan jabatan struktural dan fungsional**
+
+---
+
+# 1. Konsep Scope dalam RBAC Sistem Sekolah
+
+Dalam sistem sekolah, **scope menentukan batas akses role terhadap data tertentu**.
+
+| Jenis Scope    | Contoh          | Penjelasan                                           |
+| -------------- | --------------- | ---------------------------------------------------- |
+| Global Scope   | Seluruh sekolah | Digunakan oleh role manajemen seperti Kepala Sekolah |
+| Unit Scope     | Modul tertentu  | Contoh: keuangan, perpustakaan                       |
+| Class Scope    | Kelas tertentu  | Guru dan wali kelas                                  |
+| Subject Scope  | Mata pelajaran  | Guru mapel                                           |
+| Student Scope  | Siswa tertentu  | Orang tua                                            |
+| Personal Scope | Data pribadi    | Siswa                                                |
+| Process Scope  | Tahapan sistem  | PPDB                                                 |
+
+---
+
+# 2. Role Berdasarkan Scope Sistem Sekolah
+
+## 2.1 Role Transisional (PPDB / Admissions)
+
+### 1. Calon Siswa (Applicant / Prospect)
+
+**Scope:**
+Formulir pendaftaran miliknya sendiri.
+
+**Tugas Operasional**
+
+* Mengisi formulir pendaftaran
+* Mengunggah dokumen persyaratan
+* Melihat status seleksi
+* Melakukan daftar ulang jika diterima
+
+**Hak Akses Sistem**
+
+| Modul              | Akses           |
+| ------------------ | --------------- |
+| PPDB Form          | Create / Update |
+| Dokumen            | Upload          |
+| Status Seleksi     | Read            |
+| Profil Pendaftaran | Update          |
+
+---
+
+### 2. Panitia PPDB
+
+**Scope:**
+Semua data pendaftar PPDB.
+
+**Tugas Operasional**
+
+* Memverifikasi dokumen pendaftar
+* Mengelola kuota penerimaan
+* Menginput hasil seleksi
+* Mengelola tahapan PPDB
+
+**Hak Akses Sistem**
+
+| Modul              | Akses           |
+| ------------------ | --------------- |
+| Data Pendaftar     | Read            |
+| Verifikasi Dokumen | Update          |
+| Hasil Seleksi      | Create / Update |
+| Kuota PPDB         | Update          |
+
+---
+
+# 3. Role Siswa (Student Scope)
+
+## 1. Siswa Aktif
+
+**Scope:**
+Data pribadi dan aktivitas belajar sendiri.
+
+**Tugas Operasional**
+
+* Mengakses materi pelajaran
+* Mengumpulkan tugas
+* Melihat nilai
+* Melihat jadwal pelajaran
+
+**Hak Akses Sistem**
+
+| Modul            | Akses           |
+| ---------------- | --------------- |
+| Materi Pelajaran | Read            |
+| Tugas            | Create / Upload |
+| Nilai            | Read            |
+| Jadwal           | Read            |
+| Absensi          | Read            |
+
+---
+
+## 2. Pengurus Kelas
+
+**Scope:**
+Satu kelas.
+
+**Tugas Operasional**
+
+* Membantu guru mencatat kehadiran siswa
+* Membantu administrasi kelas sederhana
+
+**Hak Akses Sistem**
+
+| Modul         | Akses           |
+| ------------- | --------------- |
+| Absensi Kelas | Create / Update |
+| Data Kelas    | Read            |
+
+---
+
+# 4. Role Tenaga Pendidik (Teacher)
+
+## 1. Guru Mata Pelajaran
+
+**Scope:**
+Kelas dan mata pelajaran yang diampu.
+
+**Tugas Operasional**
+
+* Mengajar mata pelajaran
+* Menginput materi pembelajaran
+* Memberikan tugas
+* Memberikan nilai siswa
+
+**Hak Akses Sistem**
+
+| Modul           | Akses           |
+| --------------- | --------------- |
+| Materi          | Create / Update |
+| Tugas           | Create / Update |
+| Penilaian       | Create / Update |
+| Absensi         | Create / Update |
+| Jadwal Mengajar | Read            |
+
+---
+
+## 2. Wali Kelas
+
+**Scope:**
+Satu kelas.
+
+**Tugas Operasional**
+
+* Mengelola administrasi kelas
+* Memantau perkembangan siswa
+* Mengisi rapor
+* Berkomunikasi dengan orang tua
+
+**Hak Akses Sistem**
+
+| Modul            | Akses    |
+| ---------------- | -------- |
+| Data Siswa Kelas | Read     |
+| Rapor            | Update   |
+| Absensi          | Validate |
+| Catatan Perilaku | Create   |
+
+---
+
+## 3. Guru BK (Bimbingan Konseling)
+
+**Scope:**
+Semua siswa.
+
+**Tugas Operasional**
+
+* Mencatat konseling siswa
+* Mencatat pelanggaran
+* Memberikan rekomendasi akademik
+
+**Hak Akses Sistem**
+
+| Modul             | Akses  |
+| ----------------- | ------ |
+| Catatan Konseling | Create |
+| Pelanggaran Siswa | Create |
+| Riwayat Siswa     | Read   |
+
+---
+
+# 5. Role Orang Tua
+
+## Orang Tua / Wali Murid
+
+**Scope:**
+Data anaknya saja.
+
+**Tugas Operasional**
+
+* Memantau nilai anak
+* Memantau absensi
+* Melihat tagihan sekolah
+* Membayar biaya pendidikan
+
+**Hak Akses Sistem**
+
+| Modul        | Akses  |
+| ------------ | ------ |
+| Nilai Anak   | Read   |
+| Absensi Anak | Read   |
+| Tagihan      | Read   |
+| Pembayaran   | Create |
+
+---
+
+# 6. Role Tenaga Kependidikan (Staff)
+
+## 1. Admin Tata Usaha (TU)
+
+**Scope:**
+Administrasi sekolah.
+
+**Tugas Operasional**
+
+* Mengelola data siswa
+* Mengelola data guru
+* Mengelola jadwal umum
+* Mengelola dokumen administrasi
+
+**Hak Akses Sistem**
+
+| Modul      | Akses  |
+| ---------- | ------ |
+| Data Siswa | CRUD   |
+| Data Guru  | CRUD   |
+| Jadwal     | Update |
+| Dokumen    | CRUD   |
+
+---
+
+## 2. Staff Keuangan / Bendahara
+
+**Scope:**
+Keuangan sekolah.
+
+**Tugas Operasional**
+
+* Mengelola SPP
+* Mengelola gaji guru
+* Membuat laporan keuangan
+
+**Hak Akses Sistem**
+
+| Modul            | Akses |
+| ---------------- | ----- |
+| Tagihan          | CRUD  |
+| Pembayaran       | CRUD  |
+| Laporan Keuangan | Read  |
+
+---
+
+## 3. Pustakawan
+
+**Scope:**
+Perpustakaan.
+
+**Tugas Operasional**
+
+* Mengelola katalog buku
+* Mengelola peminjaman
+* Mengelola denda keterlambatan
+
+**Hak Akses Sistem**
+
+| Modul      | Akses  |
+| ---------- | ------ |
+| Buku       | CRUD   |
+| Peminjaman | CRUD   |
+| Denda      | Update |
+
+---
+
+# 7. Role Manajemen Sekolah (Struktural)
+
+## 1. Kepala Sekolah
+
+**Scope:**
+Seluruh sekolah.
+
+**Tugas Operasional**
+
+* Monitoring kegiatan akademik
+* Monitoring keuangan
+* Menyetujui laporan sekolah
+
+**Hak Akses Sistem**
+
+| Modul             | Akses |
+| ----------------- | ----- |
+| Akademik          | Read  |
+| Keuangan          | Read  |
+| Laporan           | Read  |
+| Statistik Sekolah | Read  |
+
+---
+
+## 2. Wakasek Kurikulum
+
+**Scope:**
+Akademik dan jadwal.
+
+**Tugas Operasional**
+
+* Mengelola jadwal pelajaran
+* Mengelola kurikulum
+* Mengelola pembagian tugas guru
+
+**Hak Akses Sistem**
+
+| Modul           | Akses  |
+| --------------- | ------ |
+| Jadwal          | CRUD   |
+| Kurikulum       | CRUD   |
+| Distribusi Guru | Update |
+
+---
+
+## 3. Wakasek Kesiswaan
+
+**Scope:**
+Kesiswaan.
+
+**Tugas Operasional**
+
+* Mengelola disiplin siswa
+* Mengelola kegiatan OSIS
+* Mengelola ekstrakurikuler
+
+**Hak Akses Sistem**
+
+| Modul           | Akses |
+| --------------- | ----- |
+| Pelanggaran     | CRUD  |
+| Ekstrakurikuler | CRUD  |
+| Data Siswa      | Read  |
+
+---
+
+## 4. Wakasek Sarpras
+
+**Scope:**
+Sarana dan prasarana.
+
+**Tugas Operasional**
+
+* Mengelola inventaris
+* Mengelola pemeliharaan fasilitas
+
+**Hak Akses Sistem**
+
+| Modul        | Akses  |
+| ------------ | ------ |
+| Inventaris   | CRUD   |
+| Pemeliharaan | Update |
+
+---
+
+# 8. Role Sistem
+
+## Super Admin
+
+**Scope:**
+Seluruh sistem.
+
+**Tugas Operasional**
+
+* Mengelola role
+* Mengelola permission
+* Mengelola user
+* Konfigurasi sistem
+
+**Hak Akses Sistem**
+
+| Modul          | Akses  |
+| -------------- | ------ |
+| User           | CRUD   |
+| Role           | CRUD   |
+| Permission     | CRUD   |
+| System Setting | Update |
+
+---
+
+# 9. Contoh Multi-Role User
+
+Contoh user:
+
+**Ibu Maya**
+
+Memiliki 3 role:
+
+1️⃣ Wakasek Kurikulum
+2️⃣ Guru Kimia
+3️⃣ Orang Tua Murid
+
+Sistem akan menggunakan **Role Context Switching**.
+
+User memilih mode:
+
+```
+Login
+↓
+Pilih Role
+```
+
+Dashboard berubah sesuai role.
+
+Contoh:
+
+Mode Guru
+→ Input nilai kimia
+
+Mode Wakasek
+→ Kelola jadwal sekolah
+
+Mode Orang Tua
+→ Lihat nilai anak
+
+---
+
+# 10. Hierarki Role Sistem
+
+```
+Super Admin
+│
+├── Kepala Sekolah
+│
+├── Wakasek
+│   ├── Wakasek Kurikulum
+│   ├── Wakasek Kesiswaan
+│   └── Wakasek Sarpras
+│
+├── Guru
+│   ├── Guru Mapel
+│   ├── Wali Kelas
+│   └── Guru BK
+│
+├── Staff
+│   ├── Admin TU
+│   ├── Keuangan
+│   └── Pustakawan
+│
+├── Siswa
+│
+├── Orang Tua
+│
+└── PPDB
+    ├── Panitia
+    └── Calon Siswa
+```
+
+---
+
+💡 Jika Anda ingin, saya juga bisa lanjutkan ke bagian **yang sangat penting untuk implementasi RBAC**, yaitu:
+
+1️⃣ **Permission Matrix Lengkap (CRUD) untuk setiap modul**
+2️⃣ **Desain tabel database RBAC production-ready**
+3️⃣ **Desain Scope-based RBAC (role + scope_id)**
+4️⃣ **ERD database RBAC untuk sistem sekolah**
+5️⃣ **Blueprint Laravel RBAC (migration, model, middleware)**
+
+Itu akan membuat sistem RBAC Anda **enterprise-level seperti ERP sekolah.**

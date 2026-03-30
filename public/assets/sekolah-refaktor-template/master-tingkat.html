@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <title>Master Tingkat Kelas - Sistem Sekolah</title>
+    <!-- [Meta] -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="Data Master Tingkat Kelas - Sistem Informasi Manajemen Sekolah" />
+
+    <!-- [Favicon] icon -->
+    <link rel="icon" href="organisasi-template/assets/images/favicon.svg" type="image/x-icon" />
+    <!-- [Google Font] Family -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+        id="main-font-link" />
+    <!-- [Template Icons] -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <!-- [Template CSS Files] -->
+    <link rel="stylesheet" href="organisasi-template/assets/css/style.css" id="main-style-link" />
+    <link rel="stylesheet" href="organisasi-template/assets/css/style-preset.css" />
+    <link rel="stylesheet" href="organisasi-template/assets/css/custom-style.css" />
+
+    <!-- [Libraries: DataTables CSS + SweetAlert2] -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* Smaller stat cards */
+        .stat-card-sm .card-body {
+            padding: 0.75rem 1rem;
+        }
+
+        .stat-card-sm .f-24 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .stat-card-sm .avtar-s {
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
+        }
+
+        .stat-card-sm p {
+            font-size: 0.75rem;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- [ Pre-loader ] start -->
+    <div class="loader-bg">
+        <div class="loader-track">
+            <div class="loader-fill"></div>
+        </div>
+    </div>
+    <!-- [ Pre-loader ] End -->
+
+    <!-- [ Sidebar Menu ] start -->
+    <nav class="pc-sidebar">
+        <div class="navbar-wrapper">
+            <div class="m-header">
+                <a href="index.html" class="b-brand text-primary">
+                    <h3 class="m-0 fw-bold text-primary">SIMS Terpadu</h3>
+                </a>
+            </div>
+            <div class="navbar-content">
+                <ul class="pc-navbar">
+                    <!-- 1. Dashboard -->
+                    <li class="pc-item pc-caption"><label>Dashboard</label><i class="bi bi-speedometer2"></i></li>
+                    <li class="pc-item">
+                        <a href="index.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-speedometer2"></i></span>
+                            <span class="pc-mtext">Akademik</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="dashboard-keuangan.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-pie-chart-fill"></i></span>
+                            <span class="pc-mtext">Keuangan</span>
+                        </a>
+                    </li>
+
+                    <!-- 2. Data Master -->
+                    <li class="pc-item pc-caption"><label>Data Master</label><i class="bi bi-database"></i></li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-building"></i></span><span
+                                class="pc-mtext">Identitas & Wilayah</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="identitas-sekolah.html">Profil Sekolah</a></li>
+                            <li class="pc-item"><a class="pc-link" href="identitas-tahun-ajaran.html">Tahun Ajaran &
+                                    Semester</a></li>
+                            <li class="pc-item"><a class="pc-link" href="identitas-kurikulum.html">Kurikulum</a></li>
+                            <li class="pc-item"><a class="pc-link" href="identitas-wilayah.html">Referensi Wilayah</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu active pc-trigger">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-mortarboard"></i></span><span class="pc-mtext">Org. &
+                                Akademik</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="master-jurusan.html">Jurusan / Peminatan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="master-jenis-jurusan.html">Jenis Jurusan</a>
+                            </li>
+                            <li class="pc-item active"><a class="pc-link" href="master-tingkat.html">Tingkat Kelas</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="master-kelas.html">Rombel (Kelas)</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-mapel.html">Mata Pelajaran</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-mapping-jurusan.html">Mapping Jurusan
+                                    <-> Mapel</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-calendar3"></i></span><span
+                                class="pc-mtext">Sarana &
+                                Jadwal</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="master-gedung.html">Gedung</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-ruangan.html">Ruang Kelas / Lab</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-jam.html">Slot Jam Pelajaran</a></li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-kalender.html">Kalender Akademik</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-shield-shaded"></i></span><span class="pc-mtext">Kedisiplinan &
+                                Pres.</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="master-pelanggaran.html">Jenis Pelanggaran</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="master-prestasi.html">Jenis Prestasi</a></li>
+                            <li class="pc-item"><a class="pc-link" href="master-sanksi.html">Tindakan / Sanksi</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-wallet2"></i></span><span
+                                class="pc-mtext">Master Keuangan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="keuangan-komponen.html">Komponen Biaya</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-kategori.html">Kategori Biaya</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-metode.html">Metode Pembayaran</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-diskon.html">Diskon & Beasiswa</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- 3. Manajemen Pengguna -->
+                    <li class="pc-item pc-caption"><label>Manajemen Pengguna</label><i class="bi bi-people-fill"></i>
+                    </li>
+                    <li class="pc-item">
+                        <a href="master-guru.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-people-fill"></i></span>
+                            <span class="pc-mtext">Data GTK</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="master-siswa.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-person-badge-fill"></i></span>
+                            <span class="pc-mtext">Data Siswa (Induk)</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="master-siswa-status.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-person-check-fill"></i></span>
+                            <span class="pc-mtext">Status Siswa</span>
+                        </a>
+                    </li>
+                    <li class="pc-item">
+                        <a href="user-role.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-shield-lock-fill"></i></span>
+                            <span class="pc-mtext">Hak Akses & Role</span>
+                        </a>
+                    </li>
+
+                    <!-- 4. Operasional -->
+                    <li class="pc-item pc-caption"><label>Operasional</label><i class="bi bi-briefcase"></i></li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-person-plus-fill"></i></span><span class="pc-mtext">PPDB</span><span
+                                class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="ppdb-pengaturan.html">Pengaturan PPDB</a></li>
+                            <li class="pc-item"><a class="pc-link" href="ppdb-rekrutmen.html">Data Pendaftar</a></li>
+                            <li class="pc-item"><a class="pc-link" href="ppdb-verifikasi.html">Verifikasi & Seleksi</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="ppdb-daftar-ulang.html">Daftar Ulang</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-journal-text"></i></span><span class="pc-mtext">Akademik</span><span
+                                class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="akademik-jadwal.html">Penjadwalan KBM</a></li>
+                            <li class="pc-item"><a class="pc-link" href="absensi-siswa.html">Presensi Siswa</a></li>
+                            <li class="pc-item"><a class="pc-link" href="jurnal-mengajar.html">Presensi & Jurnal
+                                    Guru</a></li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-nilai.html">Nilai (F & S)</a></li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-rapor.html">E-Rapor</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-bank"></i></span><span
+                                class="pc-mtext">Keuangan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="keuangan-tagihan.html">Tagihan Siswa</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-pembayaran.html">Transaksi
+                                    Pembayaran</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-tunggakan.html">Tunggakan</a></li>
+                            <li class="pc-item"><a class="pc-link" href="keuangan-laporan.html">Laporan & Arus Kas</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-emoji-smile-fill"></i></span><span
+                                class="pc-mtext">Kesiswaan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="siswa-profil.html">Profil & Riwayat</a></li>
+                            <li class="pc-item"><a class="pc-link" href="siswa-disiplin.html">Kedisiplinan & SIP</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="siswa-prestasi.html">Prestasi & Organisasi</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="siswa-bk.html">Bimbingan Konseling</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-box-seam-fill"></i></span><span class="pc-mtext">Sarana
+                                Prasarana</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="sarpras-aset.html">Inventaris Barang</a></li>
+                            <li class="pc-item"><a class="pc-link" href="sarpras-ruangan.html">Inventaris Ruangan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="sarpras-pinjam.html">Peminjaman Aset</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-mortarboard-fill"></i></span><span class="pc-mtext">Kelulusan &
+                                Alumni</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="akademik-kelulusan.html">Validasi Kelulusan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="akademik-lulus.html">Status Lulus</a></li>
+                            <li class="pc-item"><a class="pc-link" href="kesiswaan-alumni.html">Database Alumni</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- 5. Laporan & Pengaturan -->
+                    <li class="pc-item pc-caption"><label>Laporan & Pengaturan</label><i
+                            class="bi bi-file-earmark-bar-graph"></i></li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-file-earmark-bar-graph"></i></span><span class="pc-mtext">Laporan &
+                                Audit</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="laporan-rekap.html">Rekap Laporan</a></li>
+                            <li class="pc-item"><a class="pc-link" href="laporan-akademik.html">Laporan Akademik</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="laporan-kesiswaan.html">Laporan Kesiswaan</a>
+                            </li>
+                            <li class="pc-item"><a class="pc-link" href="laporan-ppdb.html">Laporan PPDB</a></li>
+                        </ul>
+                    </li>
+                    <li class="pc-item pc-hasmenu">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-gear-wide-connected"></i></span><span
+                                class="pc-mtext">Pengaturan</span><span class="pc-arrow"><i
+                                    class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            <li class="pc-item"><a class="pc-link" href="pengaturan.html">Konfigurasi Sistem</a></li>
+                            <li class="pc-item"><a class="pc-link" href="advanced-rbac.html">Advanced RBAC</a></li>
+                            <li class="pc-item"><a class="pc-link" href="db-maintenance.html">Database Maintenance</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- [ Sidebar Menu ] end -->
+
+    <!-- [ Header Topbar ] start -->
+    <header class="pc-header">
+        <div class="header-wrapper">
+            <div class="me-auto pc-mob-drp">
+                <ul class="list-unstyled">
+                    <li class="pc-h-item header-mobile-collapse">
+                        <a href="#" class="pc-head-link head-link-secondary ms-0" id="sidebar-hide"><i
+                                class="bi bi-list"></i></a>
+                    </li>
+                    <li class="pc-h-item pc-sidebar-popup">
+                        <a href="#" class="pc-head-link head-link-secondary ms-0" id="mobile-collapse"><i
+                                class="bi bi-list"></i></a>
+                    </li>
+                    <li class="pc-h-item d-none d-md-inline-flex">
+                        <h5 class="mb-0 fw-bold"><span class="text-muted fw-light">Data Master /</span> Tingkat Kelas
+                        </h5>
+                    </li>
+                </ul>
+            </div>
+            <div class="ms-auto">
+                <ul class="list-unstyled">
+                    <li class="dropdown pc-h-item">
+                        <a class="pc-head-link head-link-secondary dropdown-toggle arrow-none me-0"
+                            data-bs-toggle="dropdown" href="#" role="button">
+                            <i class="bi bi-bell"></i><span class="badge bg-danger pc-h-badge">3</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-notification dropdown-menu-end pc-h-dropdown">
+                            <div class="dropdown-header">
+                                <h5>Notifikasi</h5>
+                            </div>
+                            <div class="text-center py-2"><a href="#!" class="link-primary">Lihat semua</a></div>
+                        </div>
+                    </li>
+                    <li class="dropdown pc-h-item header-user-profile">
+                        <a class="pc-head-link head-link-primary dropdown-toggle arrow-none me-0"
+                            data-bs-toggle="dropdown" href="#" role="button">
+                            <img src="organisasi-template/assets/images/user/avatar-2.jpg" alt="user-image"
+                                class="user-avtar" />
+                        </a>
+                        <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
+                            <div class="dropdown-header">
+                                <h4>Halo, <span class="small text-muted">Admin Sekolah</span></h4>
+                                <p class="text-muted">Administrator</p>
+                                <hr />
+                                <a href="login.html" class="dropdown-item"><i
+                                        class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </header>
+    <!-- [ Header ] end -->
+
+    <!-- [ Main Content ] start -->
+    <div class="pc-container">
+        <div class="pc-content">
+
+            <!-- Summary Stats Cards -->
+            <div class="row mb-3">
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card-sm bg-primary text-white">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="avtar avtar-s bg-white rounded-circle me-2"><i
+                                    class="bi bi-bar-chart-steps text-primary"></i></div>
+                            <div>
+                                <span class="f-24 d-block">7</span>
+                                <p class="opacity-75">Total Tingkat</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card-sm bg-success text-white">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="avtar avtar-s bg-white rounded-circle me-2"><i
+                                    class="bi bi-check-circle text-success"></i></div>
+                            <div>
+                                <span class="f-24 d-block">6</span>
+                                <p class="opacity-75">Tingkat Aktif</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card-sm bg-info text-white">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="avtar avtar-s bg-white rounded-circle me-2"><i
+                                    class="bi bi-door-open text-info"></i></div>
+                            <div>
+                                <span class="f-24 d-block">24</span>
+                                <p class="opacity-75">Total Rombel</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card-sm bg-warning text-white">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="avtar avtar-s bg-white rounded-circle me-2"><i
+                                    class="bi bi-people text-warning"></i></div>
+                            <div>
+                                <span class="f-24 d-block">820</span>
+                                <p class="opacity-75">Total Siswa</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                        <h5 class="mb-0"><i class="bi bi-bar-chart-steps me-2"></i>Daftar Tingkat Kelas</h5>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTingkat"
+                            onclick="openModal('add')">
+                            <i class="bi bi-plus me-1"></i>Tambah Tingkat
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="tableTingkat" class="table table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th width="3%"><input type="checkbox" class="form-check-input" id="checkAll"></th>
+                                    <th width="5%">AKSI</th>
+                                    <th>KODE</th>
+                                    <th>NAMA TINGKAT</th>
+                                    <th>JENJANG</th>
+                                    <th>URUTAN</th>
+                                    <th>JUMLAH ROMBEL</th>
+                                    <th>JUMLAH SISWA</th>
+                                    <th>STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="checkbox" class="form-check-input row-check"></td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button
+                                                class="btn btn-sm btn-icon btn-light-secondary dropdown-toggle arrow-none"
+                                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                        data-bs-target="#modalTingkat" onclick="openModal('edit')"><i
+                                                            class="bi bi-pencil me-2"></i>Edit</a></li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li><a class="dropdown-item text-danger btn-delete" href="#"><i
+                                                            class="bi bi-trash me-2"></i>Hapus</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                    <td><span class="fw-semibold text-primary">VII</span></td>
+                                    <td>Kelas VII (Tujuh)</td>
+                                    <td><span class="badge rounded-pill bg-light-info">SMP/MTs</span></td>
+                                    <td><span class="badge rounded-pill bg-light-secondary">1</span></td>
+                                    <td><span class="badge rounded-pill bg-light-primary">4 Rombel</span></td>
+                                    <td><span class="badge rounded-pill bg-light-success">128 Siswa</span></td>
+                                    <td><span class="badge rounded-pill bg-light-success">Aktif</span></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="form-check-input row-check"></td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button
+                                                class="btn btn-sm btn-icon btn-light-secondary dropdown-toggle arrow-none"
+                                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                        data-bs-target="#modalTingkat" onclick="openModal('edit')"><i
+                                                            class="bi bi-pencil me-2"></i>Edit</a></li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li><a class="dropdown-item text-danger btn-delete" href="#"><i
+                                                            class="bi bi-trash me-2"></i>Hapus</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                    <td><span class="fw-semibold text-primary">VIII</span></td>
+                                    <td>Kelas VIII (Delapan)</td>
+                                    <td><span class="badge rounded-pill bg-light-info">SMP/MTs</span></td>
+                                    <td><span class="badge rounded-pill bg-light-secondary">2</span></td>
+                                    <td><span class="badge rounded-pill bg-light-primary">4 Rombel</span></td>
+                                    <td><span class="badge rounded-pill bg-light-success">124 Siswa</span></td>
+                                    <td><span class="badge rounded-pill bg-light-success">Aktif</span></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="form-check-input row-check"></td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button
+                                                class="btn btn-sm btn-icon btn-light-secondary dropdown-toggle arrow-none"
+                                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                        data-bs-target="#modalTingkat" onclick="openModal('edit')"><i
+                                                            class="bi bi-pencil me-2"></i>Edit</a></li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li><a class="dropdown-item text-danger btn-delete" href="#"><i
+                                                            class="bi bi-trash me-2"></i>Hapus</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                    <td><span class="fw-semibold text-primary">IX</span></td>
+                                    <td>Kelas IX (Sembilan)</td>
+                                    <td><span class="badge rounded-pill bg-light-info">SMP/MTs</span></td>
+                                    <td><span class="badge rounded-pill bg-light-secondary">3</span></td>
+                                    <td><span class="badge rounded-pill bg-light-primary">4 Rombel</span></td>
+                                    <td><span class="badge rounded-pill bg-light-success">118 Siswa</span></td>
+                                    <td><span class="badge rounded-pill bg-light-success">Aktif</span></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="form-check-input row-check"></td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button
+                                                class="btn btn-sm btn-icon btn-light-secondary dropdown-toggle arrow-none"
+                                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                        data-bs-target="#modalTingkat" onclick="openModal('edit')"><i
+                                                            class="bi bi-pencil me-2"></i>Edit</a></li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li><a class="dropdown-item text-danger btn-delete" href="#"><i
+                                                            class="bi bi-trash me-2"></i>Hapus</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                    <td><span class="fw-semibold text-primary">X</span></td>
+                                    <td>Kelas X (Sepuluh)</td>
+                                    <td><span class="badge rounded-pill bg-light-warning">SMA/MA/SMK</span></td>
+                                    <td><span class="badge rounded-pill bg-light-secondary">4</span></td>
+                                    <td><span class="badge rounded-pill bg-light-primary">4 Rombel</span></td>
+                                    <td><span class="badge rounded-pill bg-light-success">156 Siswa</span></td>
+                                    <td><span class="badge rounded-pill bg-light-success">Aktif</span></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="form-check-input row-check"></td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button
+                                                class="btn btn-sm btn-icon btn-light-secondary dropdown-toggle arrow-none"
+                                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                        data-bs-target="#modalTingkat" onclick="openModal('edit')"><i
+                                                            class="bi bi-pencil me-2"></i>Edit</a></li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li><a class="dropdown-item text-danger btn-delete" href="#"><i
+                                                            class="bi bi-trash me-2"></i>Hapus</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                    <td><span class="fw-semibold text-primary">XI</span></td>
+                                    <td>Kelas XI (Sebelas)</td>
+                                    <td><span class="badge rounded-pill bg-light-warning">SMA/MA/SMK</span></td>
+                                    <td><span class="badge rounded-pill bg-light-secondary">5</span></td>
+                                    <td><span class="badge rounded-pill bg-light-primary">4 Rombel</span></td>
+                                    <td><span class="badge rounded-pill bg-light-success">148 Siswa</span></td>
+                                    <td><span class="badge rounded-pill bg-light-success">Aktif</span></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="form-check-input row-check"></td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button
+                                                class="btn btn-sm btn-icon btn-light-secondary dropdown-toggle arrow-none"
+                                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                        data-bs-target="#modalTingkat" onclick="openModal('edit')"><i
+                                                            class="bi bi-pencil me-2"></i>Edit</a></li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li><a class="dropdown-item text-danger btn-delete" href="#"><i
+                                                            class="bi bi-trash me-2"></i>Hapus</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                    <td><span class="fw-semibold text-primary">XII</span></td>
+                                    <td>Kelas XII (Dua Belas)</td>
+                                    <td><span class="badge rounded-pill bg-light-warning">SMA/MA/SMK</span></td>
+                                    <td><span class="badge rounded-pill bg-light-secondary">6</span></td>
+                                    <td><span class="badge rounded-pill bg-light-primary">4 Rombel</span></td>
+                                    <td><span class="badge rounded-pill bg-light-success">146 Siswa</span></td>
+                                    <td><span class="badge rounded-pill bg-light-success">Aktif</span></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="form-check-input row-check"></td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button
+                                                class="btn btn-sm btn-icon btn-light-secondary dropdown-toggle arrow-none"
+                                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                        data-bs-target="#modalTingkat" onclick="openModal('edit')"><i
+                                                            class="bi bi-pencil me-2"></i>Edit</a></li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li><a class="dropdown-item text-danger btn-delete" href="#"><i
+                                                            class="bi bi-trash me-2"></i>Hapus</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                    <td><span class="fw-semibold text-primary">XIII</span></td>
+                                    <td>Kelas XIII (Tiga Belas)</td>
+                                    <td><span class="badge rounded-pill bg-light-danger">SMK (4 Tahun)</span></td>
+                                    <td><span class="badge rounded-pill bg-light-secondary">7</span></td>
+                                    <td><span class="badge rounded-pill bg-light-primary">0 Rombel</span></td>
+                                    <td><span class="badge rounded-pill bg-light-secondary">0 Siswa</span></td>
+                                    <td><span class="badge rounded-pill bg-light-danger">Tidak Aktif</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- [ Main Content ] end -->
+
+    <!-- Modal Tingkat -->
+    <div class="modal fade" id="modalTingkat" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title" id="titleModalTingkat"><i class="bi bi-bar-chart-steps me-2"></i>Tambah
+                        Tingkat Baru
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formTingkat">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="kodeTingkat" class="form-label">Kode Tingkat *</label>
+                                <input type="text" id="kodeTingkat" class="form-control" placeholder="Cth: X"
+                                    maxlength="5" required>
+                                <div class="form-text">Maksimal 5 karakter</div>
+                            </div>
+                            <div class="col-md-8">
+                                <label for="namaTingkat" class="form-label">Nama Tingkat *</label>
+                                <input type="text" id="namaTingkat" class="form-control"
+                                    placeholder="Cth: Kelas X (Sepuluh)" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="jenjangTingkat" class="form-label">Jenjang *</label>
+                                <select id="jenjangTingkat" class="form-select" required>
+                                    <option value="">-- Pilih Jenjang --</option>
+                                    <option value="SD/MI">SD/MI</option>
+                                    <option value="SMP/MTs">SMP/MTs</option>
+                                    <option value="SMA/MA">SMA/MA</option>
+                                    <option value="SMK">SMK</option>
+                                    <option value="SMK (4 Tahun)">SMK (4 Tahun)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="urutanTingkat" class="form-label">Urutan *</label>
+                                <input type="number" id="urutanTingkat" class="form-control" placeholder="1" min="1"
+                                    required>
+                                <div class="form-text">Urutan tingkat dari rendah ke tinggi</div>
+                            </div>
+                            <div class="col-12">
+                                <label for="statusTingkat" class="form-label">Status</label>
+                                <select id="statusTingkat" class="form-select">
+                                    <option value="Aktif">Aktif</option>
+                                    <option value="Tidak Aktif">Tidak Aktif</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="keteranganTingkat" class="form-label">Keterangan (Opsional)</label>
+                                <textarea id="keteranganTingkat" class="form-control" rows="2"
+                                    placeholder="Keterangan tambahan..."></textarea>
+                            </div>
+                            <div class="col-12">
+                                <div class="alert alert-info mb-0">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>Catatan:</strong> Tingkat yang sudah memiliki rombel tidak dapat dihapus.
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="btnSimpanTingkat"><i
+                            class="bi bi-check-lg me-1"></i>Simpan Tingkat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="pc-footer">
+        <div class="footer-wrapper container-fluid">
+            <div class="row">
+                <div class="col-sm-6 my-1">
+                    <p class="m-0">©
+                        <script>document.write(new Date().getFullYear());</script> Sistem Sekolah
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- [Required Js] -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="organisasi-template/assets/js/plugins/popper.min.js"></script>
+    <script src="organisasi-template/assets/js/plugins/simplebar.min.js"></script>
+    <script src="organisasi-template/assets/js/plugins/bootstrap.min.js"></script>
+    <script src="organisasi-template/assets/js/fonts/custom-font.js"></script>
+    <script src="organisasi-template/assets/js/script.js"></script>
+    <script src="organisasi-template/assets/js/theme.js"></script>
+
+    <!-- DataTables JS + SweetAlert2 -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Page Scripts -->
+    <script>
+        $(document).ready(function () {
+            // DataTable Init
+            var table = $('#tableTingkat').DataTable({
+                "language": {
+                    "sEmptyTable": "Tidak ada data yang tersedia", "sProcessing": "Sedang memproses...",
+                    "sLengthMenu": "Tampilkan _MENU_ entri", "sZeroRecords": "Tidak ditemukan data yang sesuai",
+                    "sInfo": "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+                    "sInfoEmpty": "Menampilkan 0 sampai 0 dari 0 entri",
+                    "sSearch": "Cari:",
+                    "oPaginate": { "sFirst": "Pertama", "sPrevious": "Sebelumnya", "sNext": "Selanjutnya", "sLast": "Terakhir" }
+                },
+                "columnDefs": [{ "orderable": false, "targets": [0, 1] }],
+                "order": [[5, 'asc']] // Sort by urutan column
+            });
+
+            // Check All
+            $('#checkAll').on('change', function () {
+                $('.row-check').prop('checked', this.checked);
+            });
+
+            // SweetAlert for Delete
+            $(document).on('click', '.btn-delete', function (e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Apakah anda yakin?',
+                    text: "Tingkat ini akan dihapus!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire('Dihapus!', 'Tingkat berhasil dihapus.', 'success');
+                    }
+                });
+            });
+
+            // Save Button
+            $('#btnSimpanTingkat').on('click', function () {
+                $('#modalTingkat').modal('hide');
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: 'Data tingkat berhasil disimpan.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            });
+        });
+
+        function openModal(mode) {
+            if (mode === 'add') {
+                document.getElementById('titleModalTingkat').innerHTML = '<i class="bi bi-bar-chart-steps me-2"></i>Tambah Tingkat Baru';
+                document.getElementById('formTingkat').reset();
+            } else {
+                document.getElementById('titleModalTingkat').innerHTML = '<i class="bi bi-pencil me-2"></i>Edit Data Tingkat';
+            }
+        }
+    </script>
+
+    <!-- Layout Settings -->
+    <script>layout_change('light');</script>
+    <script>layout_caption_change('true');</script>
+    <script>layout_rtl_change('false');</script>
+    <script>preset_change('preset-1');</script>
+</body>
+
+</html>

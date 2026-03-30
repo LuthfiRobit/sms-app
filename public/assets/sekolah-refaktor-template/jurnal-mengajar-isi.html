@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <title>Isi Jurnal Mengajar - Sistem Sekolah</title>
+    <!-- [Meta] -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="Form Isi Jurnal Mengajar - Sistem Informasi Manajemen Sekolah" />
+
+    <!-- [Favicon] icon -->
+    <link rel="icon" href="organisasi-template/assets/images/favicon.svg" type="image/x-icon" />
+    <!-- [Google Font] Family -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+        id="main-font-link" />
+    <!-- [Template Icons] -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <!-- [Template CSS Files] -->
+    <link rel="stylesheet" href="organisasi-template/assets/css/style.css" id="main-style-link" />
+    <link rel="stylesheet" href="organisasi-template/assets/css/style-preset.css" />
+    <link rel="stylesheet" href="organisasi-template/assets/css/custom-style.css" />
+
+    <!-- [Libraries: SweetAlert2] -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <style>
+        /* Radio button status group styling */
+        .status-radio-group .btn-check:checked+.btn-outline-success {
+            background-color: #2ca87f;
+            border-color: #2ca87f;
+            color: #fff;
+        }
+
+        .status-radio-group .btn-check:checked+.btn-outline-info {
+            background-color: #3ec9d6;
+            border-color: #3ec9d6;
+            color: #fff;
+        }
+
+        .status-radio-group .btn-check:checked+.btn-outline-warning {
+            background-color: #e58a00;
+            border-color: #e58a00;
+            color: #fff;
+        }
+
+        .status-radio-group .btn-check:checked+.btn-outline-danger {
+            background-color: #dc2626;
+            border-color: #dc2626;
+            color: #fff;
+        }
+
+        .status-radio-group .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        /* Sticky footer buttons */
+        .sticky-footer {
+            position: sticky;
+            bottom: 0;
+            background: #fff;
+            padding: 1rem;
+            border-top: 1px solid #e5e5e5;
+            z-index: 100;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- [ Pre-loader ] start -->
+    <div class="loader-bg">
+        <div class="loader-track">
+            <div class="loader-fill"></div>
+        </div>
+    </div>
+    <!-- [ Pre-loader ] End -->
+
+    <!-- [ Sidebar Menu ] start -->
+    <nav class="pc-sidebar">
+        <div class="navbar-wrapper">
+            <div class="m-header">
+                <a href="index.html" class="b-brand text-primary">
+                    <h3 class="m-0 fw-bold text-primary">SIMS Terpadu</h3>
+                </a>
+            </div>
+            <div class="navbar-content">
+                <ul class="pc-navbar">
+                    <!-- Back Button -->
+                    <li class="pc-item">
+                        <a href="jurnal-mengajar.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-arrow-left"></i></span>
+                            <span class="pc-mtext text-muted">Kembali ke Jurnal</span>
+                        </a>
+                    </li>
+
+                    <li class="pc-item pc-caption"><label>Form Jurnal</label><i class="bi bi-pencil-square"></i></li>
+
+                    <li class="pc-item active">
+                        <a href="jurnal-mengajar-isi.html" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-journal-text"></i></span>
+                            <span class="pc-mtext">Isi Jurnal & Absensi</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- [ Sidebar Menu ] end -->
+
+    <!-- [ Header Topbar ] start -->
+    <header class="pc-header">
+        <div class="header-wrapper">
+            <div class="me-auto pc-mob-drp">
+                <ul class="list-unstyled">
+                    <li class="pc-h-item header-mobile-collapse">
+                        <a href="#" class="pc-head-link head-link-secondary ms-0" id="sidebar-hide"><i
+                                class="bi bi-list"></i></a>
+                    </li>
+                    <li class="pc-h-item pc-sidebar-popup">
+                        <a href="#" class="pc-head-link head-link-secondary ms-0" id="mobile-collapse"><i
+                                class="bi bi-list"></i></a>
+                    </li>
+                    <li class="pc-h-item d-none d-md-inline-flex">
+                        <h5 class="mb-0 fw-bold"><span class="text-muted fw-light">Jurnal Mengajar /</span> Form Input
+                        </h5>
+                    </li>
+                </ul>
+            </div>
+            <div class="ms-auto">
+                <ul class="list-unstyled">
+                    <li class="dropdown pc-h-item header-user-profile">
+                        <a class="pc-head-link head-link-primary dropdown-toggle arrow-none me-0"
+                            data-bs-toggle="dropdown" href="#" role="button">
+                            <img src="organisasi-template/assets/images/user/avatar-2.jpg" alt="user-image"
+                                class="user-avtar" />
+                        </a>
+                        <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
+                            <div class="dropdown-header">
+                                <h4>Halo, <span class="small text-muted">Budi Santoso</span></h4>
+                                <p class="text-muted">Guru Matematika</p>
+                                <hr />
+                                <a href="login.html" class="dropdown-item"><i
+                                        class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </header>
+    <!-- [ Header ] end -->
+
+    <!-- [ Main Content ] start -->
+    <div class="pc-container">
+        <div class="pc-content">
+
+            <!-- Info Header Alert -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert alert-primary d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-0"
+                        role="alert">
+                        <div>
+                            <h5 class="alert-heading mb-1"><i class="bi bi-book me-2"></i>Matematika - Kelas X-A</h5>
+                            <p class="mb-0"><i class="bi bi-calendar me-1"></i>Selasa, 06 Jan 2026 | <i
+                                    class="bi bi-clock me-1"></i>Jam Ke 1-2 (07:30 - 09:00)</p>
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <span class="badge rounded-pill bg-light-primary text-primary">TA 2025/2026</span>
+                            <span class="badge rounded-pill bg-light-success text-success">Semester Ganjil</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Form Jurnal -->
+                <div class="col-lg-5 col-md-12 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-journal-text me-2"></i>Rincian Kegiatan Mengajar</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Materi Pelajaran <span class="text-danger">*</span></label>
+                                <textarea class="form-control" rows="4" id="materiPelajaran"
+                                    placeholder="Contoh: Logaritma dan Eksponen - Latihan Soal Halaman 45..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Metode Pembelajaran</label>
+                                <input type="text" class="form-control" id="metodePembelajaran"
+                                    placeholder="Contoh: Diskusi Kelompok, Ceramah, Praktek...">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Kendala / Catatan Guru</label>
+                                <textarea class="form-control" rows="2" id="catatanGuru"
+                                    placeholder="Siswa kurang fokus karena jam pertama..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Link Pendukung (Optional)</label>
+                                <input type="url" class="form-control" id="linkPendukung"
+                                    placeholder="https://youtube.com/...">
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label">Lampiran / Foto (Optional)</label>
+                                <input type="file" class="form-control" id="lampiran" accept="image/*,.pdf">
+                                <small class="text-muted">Format: JPG, PNG, PDF. Maks 5MB</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Absensi Siswa -->
+                <div class="col-lg-7 col-md-12 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <div
+                                class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                                <h5 class="mb-0"><i class="bi bi-people me-2"></i>Absensi Siswa</h5>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <span
+                                        class="badge rounded-pill bg-light-secondary text-secondary d-flex align-items-center">
+                                        <i class="bi bi-people me-1"></i><span>32 Siswa</span>
+                                    </span>
+                                    <button type="button" class="btn btn-outline-success btn-sm"
+                                        onclick="setAllHadir()">
+                                        <i class="bi bi-check-all me-1"></i>Set Semua Hadir
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="5%">NO</th>
+                                            <th>NAMA SISWA</th>
+                                            <th width="25%">STATUS</th>
+                                            <th>KETERANGAN</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="fw-semibold">1</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avtar avtar-s bg-light-primary me-2"><span
+                                                            class="text-primary">AF</span></div>
+                                                    <span class="fw-semibold">Achmad Fauzi</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group status-radio-group" role="group">
+                                                    <input type="radio" class="btn-check" name="status1" id="h1"
+                                                        checked>
+                                                    <label class="btn btn-outline-success" for="h1">H</label>
+                                                    <input type="radio" class="btn-check" name="status1" id="i1">
+                                                    <label class="btn btn-outline-info" for="i1">I</label>
+                                                    <input type="radio" class="btn-check" name="status1" id="s1">
+                                                    <label class="btn btn-outline-warning" for="s1">S</label>
+                                                    <input type="radio" class="btn-check" name="status1" id="a1">
+                                                    <label class="btn btn-outline-danger" for="a1">A</label>
+                                                </div>
+                                            </td>
+                                            <td><input type="text" class="form-control form-control-sm"
+                                                    placeholder="..."></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-semibold">2</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avtar avtar-s bg-light-info me-2"><span
+                                                            class="text-info">AW</span></div>
+                                                    <span class="fw-semibold">Aditya Wijaya</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group status-radio-group" role="group">
+                                                    <input type="radio" class="btn-check" name="status2" id="h2"
+                                                        checked>
+                                                    <label class="btn btn-outline-success" for="h2">H</label>
+                                                    <input type="radio" class="btn-check" name="status2" id="i2">
+                                                    <label class="btn btn-outline-info" for="i2">I</label>
+                                                    <input type="radio" class="btn-check" name="status2" id="s2">
+                                                    <label class="btn btn-outline-warning" for="s2">S</label>
+                                                    <input type="radio" class="btn-check" name="status2" id="a2">
+                                                    <label class="btn btn-outline-danger" for="a2">A</label>
+                                                </div>
+                                            </td>
+                                            <td><input type="text" class="form-control form-control-sm"
+                                                    placeholder="..."></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-semibold">3</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avtar avtar-s bg-light-warning me-2"><span
+                                                            class="text-warning">AP</span></div>
+                                                    <span class="fw-semibold">Anisa Putri</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group status-radio-group" role="group">
+                                                    <input type="radio" class="btn-check" name="status3" id="h3"
+                                                        checked>
+                                                    <label class="btn btn-outline-success" for="h3">H</label>
+                                                    <input type="radio" class="btn-check" name="status3" id="i3">
+                                                    <label class="btn btn-outline-info" for="i3">I</label>
+                                                    <input type="radio" class="btn-check" name="status3" id="s3">
+                                                    <label class="btn btn-outline-warning" for="s3">S</label>
+                                                    <input type="radio" class="btn-check" name="status3" id="a3">
+                                                    <label class="btn btn-outline-danger" for="a3">A</label>
+                                                </div>
+                                            </td>
+                                            <td><input type="text" class="form-control form-control-sm"
+                                                    placeholder="..."></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-semibold">4</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avtar avtar-s bg-light-danger me-2"><span
+                                                            class="text-danger">BS</span></div>
+                                                    <span class="fw-semibold">Budi Setiawan</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group status-radio-group" role="group">
+                                                    <input type="radio" class="btn-check" name="status4" id="h4">
+                                                    <label class="btn btn-outline-success" for="h4">H</label>
+                                                    <input type="radio" class="btn-check" name="status4" id="i4">
+                                                    <label class="btn btn-outline-info" for="i4">I</label>
+                                                    <input type="radio" class="btn-check" name="status4" id="s4"
+                                                        checked>
+                                                    <label class="btn btn-outline-warning" for="s4">S</label>
+                                                    <input type="radio" class="btn-check" name="status4" id="a4">
+                                                    <label class="btn btn-outline-danger" for="a4">A</label>
+                                                </div>
+                                            </td>
+                                            <td><input type="text" class="form-control form-control-sm"
+                                                    value="Izin sakit"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-semibold">5</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avtar avtar-s bg-light-success me-2"><span
+                                                            class="text-success">CA</span></div>
+                                                    <span class="fw-semibold">Citra Ayu</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group status-radio-group" role="group">
+                                                    <input type="radio" class="btn-check" name="status5" id="h5"
+                                                        checked>
+                                                    <label class="btn btn-outline-success" for="h5">H</label>
+                                                    <input type="radio" class="btn-check" name="status5" id="i5">
+                                                    <label class="btn btn-outline-info" for="i5">I</label>
+                                                    <input type="radio" class="btn-check" name="status5" id="s5">
+                                                    <label class="btn btn-outline-warning" for="s5">S</label>
+                                                    <input type="radio" class="btn-check" name="status5" id="a5">
+                                                    <label class="btn btn-outline-danger" for="a5">A</label>
+                                                </div>
+                                            </td>
+                                            <td><input type="text" class="form-control form-control-sm"
+                                                    placeholder="..."></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light">
+                            <div class="row text-center">
+                                <div class="col"><span class="badge rounded-pill bg-light-success text-success">Hadir:
+                                        4</span></div>
+                                <div class="col"><span class="badge rounded-pill bg-light-info text-info">Izin: 0</span>
+                                </div>
+                                <div class="col"><span class="badge rounded-pill bg-light-warning text-warning">Sakit:
+                                        1</span></div>
+                                <div class="col"><span class="badge rounded-pill bg-light-danger text-danger">Alpha:
+                                        0</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card sticky-footer">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+                            <div class="text-muted small">
+                                <i class="bi bi-info-circle me-1"></i>Pastikan semua data terisi dengan benar sebelum
+                                menyimpan.
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="jurnal-mengajar.html" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left me-1"></i>Batal
+                                </a>
+                                <button type="button" class="btn btn-primary" id="btnSimpanJurnal">
+                                    <i class="bi bi-floppy me-1"></i>Simpan Jurnal & Absensi
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- [ Main Content ] end -->
+
+    <footer class="pc-footer">
+        <div class="footer-wrapper container-fluid">
+            <div class="row">
+                <div class="col-sm-6 my-1">
+                    <p class="m-0">©
+                        <script>document.write(new Date().getFullYear());</script> Sistem Sekolah
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- [Required Js] -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="organisasi-template/assets/js/plugins/popper.min.js"></script>
+    <script src="organisasi-template/assets/js/plugins/simplebar.min.js"></script>
+    <script src="organisasi-template/assets/js/plugins/bootstrap.min.js"></script>
+    <script src="organisasi-template/assets/js/fonts/custom-font.js"></script>
+    <script src="organisasi-template/assets/js/script.js"></script>
+    <script src="organisasi-template/assets/js/theme.js"></script>
+
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Page Scripts -->
+    <script>
+        function setAllHadir() {
+            Swal.fire({
+                title: 'Set Semua Hadir?',
+                text: "Semua siswa akan diatur sebagai Hadir (H)",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2ca87f',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Set Semua',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $('.status-radio-group').each(function () {
+                        $(this).find('input[id^="h"]').prop('checked', true);
+                    });
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Semua siswa diset Hadir.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+
+        $('#btnSimpanJurnal').on('click', function () {
+            var materi = $('#materiPelajaran').val();
+
+            if (!materi) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Mohon isi materi pelajaran terlebih dahulu!'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Simpan Jurnal?',
+                text: "Pastikan data jurnal dan absensi sudah benar",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#4680ff',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Simpan!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Jurnal dan Absensi berhasil disimpan.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = 'jurnal-mengajar.html';
+                    });
+                }
+            });
+        });
+    </script>
+
+    <!-- Layout Settings -->
+    <script>layout_change('light');</script>
+    <script>layout_caption_change('true');</script>
+    <script>layout_rtl_change('false');</script>
+    <script>preset_change('preset-1');</script>
+</body>
+
+</html>
