@@ -159,16 +159,16 @@
                                 <a class="pc-link" href="{{ route('admin.ppdb.biaya.index') }}">Biaya Registrasi</a>
                             </li>
                         @endif
-                        <!-- @if(auth()->user()->hasPermissionTo('admin.ppdb.template.index'))
-                        <li class="pc-item {{ request()->routeIs('admin.ppdb.template.*') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('admin.ppdb.template.index') }}">Template Dokumen</a>
-                        </li>
-                        @endif -->
-                        <!-- @if(auth()->user()->hasPermissionTo('admin.ppdb.kuota.index'))
-                        <li class="pc-item {{ request()->routeIs('admin.ppdb.kuota.*') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('admin.ppdb.kuota.index') }}">Kuota Jurusan</a>
-                        </li>
-                        @endif -->
+                        @if(auth()->user()->hasPermissionTo('admin.ppdb.template.index'))
+                            <li class="pc-item {{ request()->routeIs('admin.ppdb.template.*') ? 'active' : '' }}">
+                                <a class="pc-link" href="{{ route('admin.ppdb.template.index') }}">Template Dokumen</a>
+                            </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.ppdb.kuota.index'))
+                            <li class="pc-item {{ request()->is('admin/ppdb/kuota*') ? 'active' : '' }}">
+                                <a class="pc-link" href="{{ route('admin.ppdb.kuota.index') }}">Kuota Jurusan</a>
+                            </li>
+                        @endif
                         <li class="pc-item"><a class="pc-link" href="#">Data Pendaftar</a></li>
                         <li class="pc-item"><a class="pc-link" href="#">Verifikasi & Seleksi</a></li>
                         <li class="pc-item"><a class="pc-link" href="#">Daftar Ulang</a></li>

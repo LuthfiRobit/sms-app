@@ -96,14 +96,15 @@ Route::middleware(['auth', 'permission'])->group(function () {
             Route::get('biaya/list', [App\Http\Controllers\Ppdb\BiayaRegistrasiController::class, 'list'])->name('biaya.list');
             Route::resource('biaya', App\Http\Controllers\Ppdb\BiayaRegistrasiController::class)->except(['create', 'edit']);
 
-            // // Template Dokumen
-            // Route::get('template/list', [App\Http\Controllers\Ppdb\TemplateDokumenController::class, 'list'])->name('template.list');
-            // Route::post('template/{id}/toggle-status', [App\Http\Controllers\Ppdb\TemplateDokumenController::class, 'toggleStatus'])->name('template.toggle');
-            // Route::resource('template', App\Http\Controllers\Ppdb\TemplateDokumenController::class)->except(['create', 'edit']);
+            // Template Dokumen
+            Route::get('template/list', [App\Http\Controllers\Ppdb\TemplateDokumenController::class, 'list'])->name('template.list');
+            Route::post('template/{id}/set-aktif', [App\Http\Controllers\Ppdb\TemplateDokumenController::class, 'setAktif'])->name('template.set-aktif');
+            Route::resource('template', App\Http\Controllers\Ppdb\TemplateDokumenController::class)->except(['create', 'edit']);
 
-            // // Kuota Jurusan Standalone
-            // Route::get('kuota/list', [App\Http\Controllers\Ppdb\KuotaJurusanController::class, 'list'])->name('kuota.list');
-            // Route::resource('kuota', App\Http\Controllers\Ppdb\KuotaJurusanController::class)->except(['create', 'edit']);
+            // Kuota Jurusan
+            Route::get('kuota', [App\Http\Controllers\Ppdb\KuotaJurusanController::class, 'index'])->name('kuota.index');
+            Route::post('kuota/upsert', [App\Http\Controllers\Ppdb\KuotaJurusanController::class, 'upsert'])->name('kuota.upsert');
+            Route::get('kuota/status', [App\Http\Controllers\Ppdb\KuotaJurusanController::class, 'status'])->name('kuota.status');
         });
 
     });
