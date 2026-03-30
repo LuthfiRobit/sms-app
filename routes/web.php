@@ -82,6 +82,28 @@ Route::middleware(['auth', 'permission'])->group(function () {
             Route::get('jalur/list', [App\Http\Controllers\Ppdb\JalurPendaftaranController::class, 'list'])->name('jalur.list');
             Route::post('jalur/{id}/sync-kuota', [App\Http\Controllers\Ppdb\JalurPendaftaranController::class, 'syncKuotaJurusan'])->name('jalur.sync_kuota');
             Route::resource('jalur', App\Http\Controllers\Ppdb\JalurPendaftaranController::class)->except(['create', 'edit']);
+
+            // Jadwal Pendaftaran
+            Route::get('jadwal/list', [App\Http\Controllers\Ppdb\JadwalPendaftaranController::class, 'list'])->name('jadwal.list');
+            Route::resource('jadwal', App\Http\Controllers\Ppdb\JadwalPendaftaranController::class)->except(['create', 'edit']);
+
+            // Syarat Pendaftaran
+            Route::get('syarat/list', [App\Http\Controllers\Ppdb\SyaratPendaftaranController::class, 'list'])->name('syarat.list');
+            Route::post('syarat/reorder', [App\Http\Controllers\Ppdb\SyaratPendaftaranController::class, 'reorder'])->name('syarat.reorder');
+            Route::resource('syarat', App\Http\Controllers\Ppdb\SyaratPendaftaranController::class)->except(['create', 'edit']);
+
+            // Biaya Registrasi
+            Route::get('biaya/list', [App\Http\Controllers\Ppdb\BiayaRegistrasiController::class, 'list'])->name('biaya.list');
+            Route::resource('biaya', App\Http\Controllers\Ppdb\BiayaRegistrasiController::class)->except(['create', 'edit']);
+
+            // // Template Dokumen
+            // Route::get('template/list', [App\Http\Controllers\Ppdb\TemplateDokumenController::class, 'list'])->name('template.list');
+            // Route::post('template/{id}/toggle-status', [App\Http\Controllers\Ppdb\TemplateDokumenController::class, 'toggleStatus'])->name('template.toggle');
+            // Route::resource('template', App\Http\Controllers\Ppdb\TemplateDokumenController::class)->except(['create', 'edit']);
+
+            // // Kuota Jurusan Standalone
+            // Route::get('kuota/list', [App\Http\Controllers\Ppdb\KuotaJurusanController::class, 'list'])->name('kuota.list');
+            // Route::resource('kuota', App\Http\Controllers\Ppdb\KuotaJurusanController::class)->except(['create', 'edit']);
         });
 
     });

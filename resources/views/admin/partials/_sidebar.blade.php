@@ -30,17 +30,19 @@
                                 class="bi bi-chevron-right"></i></span></a>
                     <ul class="pc-submenu">
                         @if(auth()->user()->hasPermissionTo('admin.master.profil-sekolah.index'))
-                        <li class="pc-item {{ request()->routeIs('admin.master.profil-sekolah.*') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('admin.master.profil-sekolah.index') }}">Profil Sekolah</a>
-                        </li>
+                            <li class="pc-item {{ request()->routeIs('admin.master.profil-sekolah.*') ? 'active' : '' }}">
+                                <a class="pc-link" href="{{ route('admin.master.profil-sekolah.index') }}">Profil
+                                    Sekolah</a>
+                            </li>
                         @endif
                         <li class="pc-item {{ request()->routeIs('admin.master.tahun-pelajaran.*') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('admin.master.tahun-pelajaran.index') }}">Tahun Ajaran & Semester</a>
+                            <a class="pc-link" href="{{ route('admin.master.tahun-pelajaran.index') }}">Tahun Ajaran &
+                                Semester</a>
                         </li>
                         @if(auth()->user()->hasPermissionTo('admin.master.kurikulum.index'))
-                        <li class="pc-item {{ request()->routeIs('admin.master.kurikulum.*') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('admin.master.kurikulum.index') }}">Kurikulum</a>
-                        </li>
+                            <li class="pc-item {{ request()->routeIs('admin.master.kurikulum.*') ? 'active' : '' }}">
+                                <a class="pc-link" href="{{ route('admin.master.kurikulum.index') }}">Kurikulum</a>
+                            </li>
                         @endif
                         <li class="pc-item"><a class="pc-link" href="#">Referensi Wilayah</a></li>
                     </ul>
@@ -93,12 +95,12 @@
                 <!-- 3. Manajemen Pengguna -->
                 <li class="pc-item pc-caption"><label>Manajemen Pengguna</label><i class="bi bi-people-fill"></i></li>
                 @if(auth()->check() && auth()->user()->hasPermissionTo('admin.rbac.user.list'))
-                <li class="pc-item {{ request()->routeIs('admin.rbac.user.*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.rbac.user.index') }}" class="pc-link">
-                        <span class="pc-micon"><i class="bi bi-people-fill"></i></span>
-                        <span class="pc-mtext">Data Pengguna</span>
-                    </a>
-                </li>
+                    <li class="pc-item {{ request()->routeIs('admin.rbac.user.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.rbac.user.index') }}" class="pc-link">
+                            <span class="pc-micon"><i class="bi bi-people-fill"></i></span>
+                            <span class="pc-mtext">Data Pengguna</span>
+                        </a>
+                    </li>
                 @endif
                 <li class="pc-item">
                     <a href="#" class="pc-link">
@@ -107,19 +109,22 @@
                     </a>
                 </li>
                 @if(auth()->check() && auth()->user()->hasAnyPermission(['admin.rbac.role.list', 'admin.rbac.permission.list']))
-                <li class="pc-item pc-hasmenu {{ request()->routeIs('admin.rbac.*') && !request()->routeIs('admin.rbac.user.*') ? 'active pc-trigger' : '' }}">
-                    <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-shield-lock-fill"></i></span><span
-                            class="pc-mtext">Hak Akses & Role</span><span class="pc-arrow"><i
-                                class="bi bi-chevron-right"></i></span></a>
-                    <ul class="pc-submenu">
-                        @if(auth()->user()->hasPermissionTo('admin.rbac.role.list'))
-                        <li class="pc-item {{ request()->routeIs('admin.rbac.role.*') ? 'active' : '' }}"><a class="pc-link" href="{{ route('admin.rbac.role.index') }}">Role Management</a></li>
-                        @endif
-                        @if(auth()->user()->hasPermissionTo('admin.rbac.permission.list'))
-                        <li class="pc-item {{ request()->routeIs('admin.rbac.permission.*') ? 'active' : '' }}"><a class="pc-link" href="{{ route('admin.rbac.permission.index') }}">Permissions</a></li>
-                        @endif
-                    </ul>
-                </li>
+                    <li
+                        class="pc-item pc-hasmenu {{ request()->routeIs('admin.rbac.*') && !request()->routeIs('admin.rbac.user.*') ? 'active pc-trigger' : '' }}">
+                        <a href="#!" class="pc-link"><span class="pc-micon"><i
+                                    class="bi bi-shield-lock-fill"></i></span><span class="pc-mtext">Hak Akses &
+                                Role</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                        <ul class="pc-submenu">
+                            @if(auth()->user()->hasPermissionTo('admin.rbac.role.list'))
+                                <li class="pc-item {{ request()->routeIs('admin.rbac.role.*') ? 'active' : '' }}"><a
+                                        class="pc-link" href="{{ route('admin.rbac.role.index') }}">Role Management</a></li>
+                            @endif
+                            @if(auth()->user()->hasPermissionTo('admin.rbac.permission.list'))
+                                <li class="pc-item {{ request()->routeIs('admin.rbac.permission.*') ? 'active' : '' }}"><a
+                                        class="pc-link" href="{{ route('admin.rbac.permission.index') }}">Permissions</a></li>
+                            @endif
+                        </ul>
+                    </li>
                 @endif
 
                 <!-- 4. Operasional -->
@@ -130,15 +135,40 @@
                             class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
                     <ul class="pc-submenu">
                         @if(auth()->user()->hasPermissionTo('admin.ppdb.pembukaan.index'))
-                        <li class="pc-item {{ request()->routeIs('admin.ppdb.pembukaan.*') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('admin.ppdb.pembukaan.index') }}">Pembukaan PPDB</a>
-                        </li>
+                            <li class="pc-item {{ request()->routeIs('admin.ppdb.pembukaan.*') ? 'active' : '' }}">
+                                <a class="pc-link" href="{{ route('admin.ppdb.pembukaan.index') }}">Pembukaan PPDB</a>
+                            </li>
                         @endif
                         @if(auth()->user()->hasPermissionTo('admin.ppdb.jalur.index'))
-                        <li class="pc-item {{ request()->routeIs('admin.ppdb.jalur.*') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('admin.ppdb.jalur.index') }}">Jalur Pendaftaran</a>
-                        </li>
+                            <li class="pc-item {{ request()->routeIs('admin.ppdb.jalur.*') ? 'active' : '' }}">
+                                <a class="pc-link" href="{{ route('admin.ppdb.jalur.index') }}">Jalur Pendaftaran</a>
+                            </li>
                         @endif
+                        @if(auth()->user()->hasPermissionTo('admin.ppdb.jadwal.index'))
+                            <li class="pc-item {{ request()->routeIs('admin.ppdb.jadwal.*') ? 'active' : '' }}">
+                                <a class="pc-link" href="{{ route('admin.ppdb.jadwal.index') }}">Jadwal Pendaftaran</a>
+                            </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.ppdb.syarat.index'))
+                            <li class="pc-item {{ request()->routeIs('admin.ppdb.syarat.*') ? 'active' : '' }}">
+                                <a class="pc-link" href="{{ route('admin.ppdb.syarat.index') }}">Syarat Pendaftaran</a>
+                            </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.ppdb.biaya.index'))
+                            <li class="pc-item {{ request()->routeIs('admin.ppdb.biaya.*') ? 'active' : '' }}">
+                                <a class="pc-link" href="{{ route('admin.ppdb.biaya.index') }}">Biaya Registrasi</a>
+                            </li>
+                        @endif
+                        <!-- @if(auth()->user()->hasPermissionTo('admin.ppdb.template.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.ppdb.template.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.ppdb.template.index') }}">Template Dokumen</a>
+                        </li>
+                        @endif -->
+                        <!-- @if(auth()->user()->hasPermissionTo('admin.ppdb.kuota.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.ppdb.kuota.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.ppdb.kuota.index') }}">Kuota Jurusan</a>
+                        </li>
+                        @endif -->
                         <li class="pc-item"><a class="pc-link" href="#">Data Pendaftar</a></li>
                         <li class="pc-item"><a class="pc-link" href="#">Verifikasi & Seleksi</a></li>
                         <li class="pc-item"><a class="pc-link" href="#">Daftar Ulang</a></li>
@@ -188,7 +218,9 @@
                             Audit</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
                     <ul class="pc-submenu">
                         @if(auth()->check() && auth()->user()->hasPermissionTo('admin.system.log-activity.list'))
-                        <li class="pc-item {{ request()->routeIs('admin.system.log-activity.*') ? 'active' : '' }}"><a class="pc-link" href="{{ route('admin.system.log-activity.index') }}">Log Aktivitas Sistem</a></li>
+                            <li class="pc-item {{ request()->routeIs('admin.system.log-activity.*') ? 'active' : '' }}"><a
+                                    class="pc-link" href="{{ route('admin.system.log-activity.index') }}">Log Aktivitas
+                                    Sistem</a></li>
                         @endif
                         <li class="pc-item"><a class="pc-link" href="#">Rekap Laporan</a></li>
                         <li class="pc-item"><a class="pc-link" href="#">Laporan Akademik</a></li>
