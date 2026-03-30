@@ -72,5 +72,17 @@ Route::middleware(['auth', 'permission'])->group(function () {
             Route::post('semester/{semester}/toggle-status', [\App\Http\Controllers\Master\SemesterController::class, 'toggleStatus'])->name('semester.toggle');
             Route::resource('semester', \App\Http\Controllers\Master\SemesterController::class)->except(['create', 'edit']);
         });
+
+        // PPDB
+        Route::prefix('ppdb')->name('ppdb.')->group(function () {
+            Route::get('pembukaan/list', [App\Http\Controllers\Ppdb\PembukaanPpdbController::class, 'list'])->name('pembukaan.list');
+            Route::post('pembukaan/{id}/toggle-status', [App\Http\Controllers\Ppdb\PembukaanPpdbController::class, 'toggleStatus'])->name('pembukaan.toggle');
+            Route::resource('pembukaan', App\Http\Controllers\Ppdb\PembukaanPpdbController::class)->except(['create', 'edit']);
+
+            Route::get('jalur/list', [App\Http\Controllers\Ppdb\JalurPendaftaranController::class, 'list'])->name('jalur.list');
+            Route::post('jalur/{id}/sync-kuota', [App\Http\Controllers\Ppdb\JalurPendaftaranController::class, 'syncKuotaJurusan'])->name('jalur.sync_kuota');
+            Route::resource('jalur', App\Http\Controllers\Ppdb\JalurPendaftaranController::class)->except(['create', 'edit']);
+        });
+
     });
 });

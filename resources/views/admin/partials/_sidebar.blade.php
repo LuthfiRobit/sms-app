@@ -124,12 +124,21 @@
 
                 <!-- 4. Operasional -->
                 <li class="pc-item pc-caption"><label>Operasional</label><i class="bi bi-briefcase"></i></li>
-                <li class="pc-item pc-hasmenu">
+                <li class="pc-item pc-hasmenu {{ request()->routeIs('admin.ppdb.*') ? 'active pc-trigger' : '' }}">
                     <a href="#!" class="pc-link"><span class="pc-micon"><i
                                 class="bi bi-person-plus-fill"></i></span><span class="pc-mtext">PPDB</span><span
                             class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
                     <ul class="pc-submenu">
-                        <li class="pc-item"><a class="pc-link" href="#">Pengaturan PPDB</a></li>
+                        @if(auth()->user()->hasPermissionTo('admin.ppdb.pembukaan.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.ppdb.pembukaan.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.ppdb.pembukaan.index') }}">Pembukaan PPDB</a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.ppdb.jalur.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.ppdb.jalur.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.ppdb.jalur.index') }}">Jalur Pendaftaran</a>
+                        </li>
+                        @endif
                         <li class="pc-item"><a class="pc-link" href="#">Data Pendaftar</a></li>
                         <li class="pc-item"><a class="pc-link" href="#">Verifikasi & Seleksi</a></li>
                         <li class="pc-item"><a class="pc-link" href="#">Daftar Ulang</a></li>
