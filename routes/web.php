@@ -105,6 +105,19 @@ Route::middleware(['auth', 'permission'])->group(function () {
             Route::get('kuota', [App\Http\Controllers\Ppdb\KuotaJurusanController::class, 'index'])->name('kuota.index');
             Route::post('kuota/upsert', [App\Http\Controllers\Ppdb\KuotaJurusanController::class, 'upsert'])->name('kuota.upsert');
             Route::get('kuota/status', [App\Http\Controllers\Ppdb\KuotaJurusanController::class, 'status'])->name('kuota.status');
+
+            // Formulir Pendaftaran
+            Route::get('formulir/list', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'list'])->name('formulir.list');
+            Route::post('formulir/{id}/toggle-aktif', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'toggleAktif'])->name('formulir.toggle-aktif');
+            Route::get('formulir/{id}/builder', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'builder'])->name('formulir.builder');
+            Route::post('formulir/{formulirId}/fields', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'addField'])->name('formulir.field.add');
+            Route::post('formulir/{formulirId}/reorder-fields', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'reorderFields'])->name('formulir.field.reorder');
+            Route::get('formulir/{formulirId}/preview-fields', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'getFieldsForPendaftaran'])->name('formulir.field.preview');
+            Route::resource('formulir', App\Http\Controllers\Ppdb\FormulirPendaftaranController::class)->except(['create', 'edit']);
+            // Field CRUD routes (independent dari resource formulir)
+            Route::get('formulir/field/{fieldId}', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'showField'])->name('formulir.field.show');
+            Route::put('formulir/field/{fieldId}', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'updateField'])->name('formulir.field.update');
+            Route::delete('formulir/field/{fieldId}', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'deleteField'])->name('formulir.field.delete');
         });
 
     });

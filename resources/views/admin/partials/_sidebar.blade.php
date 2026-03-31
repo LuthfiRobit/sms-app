@@ -169,6 +169,11 @@
                                 <a class="pc-link" href="{{ route('admin.ppdb.kuota.index') }}">Kuota Jurusan</a>
                             </li>
                         @endif
+                        @if(auth()->user()->hasPermissionTo('admin.ppdb.formulir.index'))
+                            <li class="pc-item {{ request()->routeIs('admin.ppdb.formulir.*') ? 'active' : '' }}">
+                                <a class="pc-link" href="{{ route('admin.ppdb.formulir.index') }}">Formulir Pendaftaran</a>
+                            </li>
+                        @endif
                         <li class="pc-item"><a class="pc-link" href="#">Data Pendaftar</a></li>
                         <li class="pc-item"><a class="pc-link" href="#">Verifikasi & Seleksi</a></li>
                         <li class="pc-item"><a class="pc-link" href="#">Daftar Ulang</a></li>
