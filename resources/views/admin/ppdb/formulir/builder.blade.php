@@ -826,9 +826,11 @@ $(document).ready(function() {
             },
             error(xhr) {
                 hideLoading();
-                const msg = xhr.responseJSON?.message || xhr.responseJSON?.errors
-                    ? Object.values(xhr.responseJSON.errors || {}).flat().join(', ')
-                    : 'Terjadi kesalahan saat menambahkan field.';
+                // Prioritas: message → validation errors → fallback
+                const errJson = xhr.responseJSON || {};
+                const msg = errJson.message
+                    || (errJson.errors ? Object.values(errJson.errors).flat().join(', ') : null)
+                    || 'Terjadi kesalahan saat menambahkan field.';
                 toastError(msg);
             }
         });
