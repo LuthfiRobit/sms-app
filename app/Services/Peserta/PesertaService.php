@@ -2,6 +2,10 @@
 
 namespace App\Services\Peserta;
 
+use Exception;
+use Throwable;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Repositories\Peserta\PesertaRepositoryInterface;
 use App\Repositories\Peserta\PesertaAlamatRepositoryInterface;
 use App\Repositories\Peserta\PesertaOrangTuaRepositoryInterface;
@@ -10,613 +14,909 @@ use App\Repositories\Peserta\PesertaKontakRepositoryInterface;
 use App\Repositories\Peserta\PesertaDokumenPribadiRepositoryInterface;
 use App\Services\LogActivityService;
 use App\Services\ResponseService;
-use App\Models\Peserta\Peserta;
-use Exception;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
-use Yajra\DataTables\Facades\DataTables;
-use Carbon\Carbon;
 
+/**
+ * PesertaService
+ *
+ * Orkestrator CRUD multi-tabel untuk entitas Peserta sesuai standar Dapodik Kemdikbud.
+ * Mengelola 6 tabel secara atomik dalam satu DB::transaction():
+ *   1. peserta              — Data pribadi inti
+ *   2. peserta_alamat       — Alamat domisili
+ *   3. peserta_orang_tua    — Ayah, Ibu, Wali (3 baris per peserta)
+ *   4. peserta_periodik     — Data periodik (TB, BB, jarak, saudara)
+ *   5. peserta_kontak       — Nomor HP & email
+ *   6. peserta_dokumen_pribadi — Nomor KIP, PKH, KK, KITAS, paspor
+ */
 class PesertaService
 {
-    protected $pesertaRepo;
-    protected $alamatRepo;
-    protected $orangTuaRepo;
-    protected $periodikRepo;
-    protected $kontakRepo;
-    protected $dokumenRepo;
-    protected $logActivity;
-    protected $response;
+    /**
+     * Header CSV standar Dapodik Kemdikbud.
+     * Urutan HARUS dijaga agar kompatibel dengan tool import Kemdikbud.
+     */
+    protected const DAPODIK_CSV_HEADERS = [
+        'NISN',
+        'NIK',
+        'Nama Lengkap',
+        'Jenis Kelamin',
+        'Tempat Lahir',
+        'Tanggal Lahir',       // Format: DD/MM/YYYY
+        'Agama',
+        'Alamat',
+        'RT',
+        'RW',
+        'Desa/Kelurahan',
+        'Kecamatan',
+        'Kab/Kota',
+        'Provinsi',
+        'Kode Pos',
+        'No HP',
+        'Email',
+        'Nama Ayah',
+        'Pekerjaan Ayah',
+        'Nama Ibu',
+        'Pekerjaan Ibu',
+        'Tinggi Badan',
+        'Berat Badan',
+        'Jarak Rumah',
+        'Jumlah Saudara',
+    ];
 
     public function __construct(
-        PesertaRepositoryInterface $pesertaRepo,
-        PesertaAlamatRepositoryInterface $alamatRepo,
-        PesertaOrangTuaRepositoryInterface $orangTuaRepo,
-        PesertaPeriodikRepositoryInterface $periodikRepo,
-        PesertaKontakRepositoryInterface $kontakRepo,
-        PesertaDokumenPribadiRepositoryInterface $dokumenRepo,
-        LogActivityService $logActivity,
-        ResponseService $response
-    ) {
-        $this->pesertaRepo = $pesertaRepo;
-        $this->alamatRepo = $alamatRepo;
-        $this->orangTuaRepo = $orangTuaRepo;
-        $this->periodikRepo = $periodikRepo;
-        $this->kontakRepo = $kontakRepo;
-        $this->dokumenRepo = $dokumenRepo;
-        $this->logActivity = $logActivity;
-        $this->response = $response;
-    }
+        protected PesertaRepositoryInterface             $pesertaRepo,
+        protected PesertaAlamatRepositoryInterface       $alamatRepo,
+        protected PesertaOrangTuaRepositoryInterface     $orangTuaRepo,
+        protected PesertaPeriodikRepositoryInterface     $periodikRepo,
+        protected PesertaKontakRepositoryInterface       $kontakRepo,
+        protected PesertaDokumenPribadiRepositoryInterface $dokumenRepo,
+        protected LogActivityService                     $logActivity,
+        protected ResponseService                        $responseService,
+    ) {}
+
+    // =========================================================================
+    // INDEX — DataTable dengan filter
+    // =========================================================================
 
     /**
-     * 1. Mendapatkan daftar peserta untuk DataTable dengan filter
-     * Filter: nama, nisn, kecamatan, agama
+     * Mengambil query builder peserta untuk DataTable Yajra.
      *
-     * @param array $filters
-     * @return array
+     * Filter yang didukung:
+     *  - nama      : pencarian LIKE pada nama_lengkap (case-insensitive)
+     *  - nisn      : pencarian LIKE pada kolom nisn
+     *  - kecamatan : join ke peserta_alamat, filter WHERE kecamatan LIKE
+     *  - agama     : filter WHERE agama = value (exact match)
+     *
+     * @param  array  $filters  Associative array filter dari request
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function index(array $filters = []): array
+    public function index(array $filters = []): \Illuminate\Database\Eloquent\Builder
     {
-        try {
-            $query = Peserta::query()
-                ->leftJoin('peserta_alamat', 'peserta.id', '=', 'peserta_alamat.peserta_id')
-                ->select([
-                    'peserta.id',
-                    'peserta.user_id',
-                    'peserta.nisn',
-                    'peserta.nik',
-                    'peserta.nama_lengkap',
-                    'peserta.jenis_kelamin',
-                    'peserta.agama',
-                    'peserta_alamat.kecamatan'
-                ]);
+        // Gunakan datatable() dari repository sebagai base query
+        $query = $this->pesertaRepo->datatable()
+            ->with(['alamat', 'kontak', 'user']);
 
-            if (!empty($filters['nama'])) {
-                $query->where('peserta.nama_lengkap', 'like', '%' . $filters['nama'] . '%');
-            }
-            if (!empty($filters['nisn'])) {
-                $query->where('peserta.nisn', 'like', '%' . $filters['nisn'] . '%');
-            }
-            if (!empty($filters['kecamatan'])) {
-                $query->where('peserta_alamat.kecamatan', 'like', '%' . $filters['kecamatan'] . '%');
-            }
-            if (!empty($filters['agama'])) {
-                $query->where('peserta.agama', $filters['agama']);
-            }
-
-            $dataTable = DataTables::of($query)
-                ->addIndexColumn()
-                ->make(true);
-
-            return $this->response->success('Data berhasil dimuat', $dataTable->original);
-        } catch (Exception $e) {
-            Log::error('PesertaService@index: ' . $e->getMessage());
-            return $this->response->error('Gagal mengambil data peserta: ' . $e->getMessage());
+        // Filter: nama (LIKE case-insensitive)
+        if (!empty($filters['nama'])) {
+            $query->where('nama_lengkap', 'LIKE', '%' . $filters['nama'] . '%');
         }
+
+        // Filter: nisn
+        if (!empty($filters['nisn'])) {
+            $query->where('nisn', 'LIKE', '%' . $filters['nisn'] . '%');
+        }
+
+        // Filter: kecamatan — join ke tabel peserta_alamat
+        if (!empty($filters['kecamatan'])) {
+            $query->whereHas('alamat', function ($q) use ($filters) {
+                $q->where('kecamatan', 'LIKE', '%' . $filters['kecamatan'] . '%');
+            });
+        }
+
+        // Filter: agama (exact match, case-insensitive via LOWER)
+        if (!empty($filters['agama'])) {
+            $query->whereRaw('LOWER(agama) = ?', [strtolower($filters['agama'])]);
+        }
+
+        return $query->latest('peserta.created_at');
     }
 
+    // =========================================================================
+    // STORE — Buat peserta baru beserta seluruh sub-tabel dalam satu transaksi
+    // =========================================================================
+
     /**
-     * 2. Store Peserta: Create peserta harus membuat semua tabel terkait dalam satu transaksi
+     * Membuat peserta baru beserta seluruh record relasi dalam satu transaksi DB.
      *
-     * @param array $data Structure: {peserta:{}, alamat:{}, orang_tua:[], periodik:{}, kontak:{}, dokumen_pribadi:{}}
-     * @param int $userId ID User yang melakukan aksi (admin)
-     * @return array
+     * Struktur $data yang diharapkan:
+     * [
+     *   'peserta'         => [ nisn, nik, nama_lengkap, jenis_kelamin, ... ],
+     *   'alamat'          => [ alamat, rt, rw, desa_kelurahan, kecamatan, ... ],
+     *   'orang_tua'       => [
+     *                          [ tipe => 'ayah', nama => '...', ... ],
+     *                          [ tipe => 'ibu',  nama => '...', ... ],
+     *                          [ tipe => 'wali', nama => '...', ... ],
+     *                        ],
+     *   'periodik'        => [ tinggi_badan, berat_badan, jarak_rumah, ... ],
+     *   'kontak'          => [ no_hp, email ],
+     *   'dokumen_pribadi' => [ no_kip, no_pkh, no_kitas, no_paspor ],
+     * ]
+     *
+     * @param  array  $data    Payload lengkap dari controller
+     * @param  int    $userId  ID user yang melakukan action (untuk log)
+     * @return array           Peserta beserta semua relasi
+     *
+     * @throws \Exception  Jika NISN/NIK duplikat atau terjadi error database
      */
     public function store(array $data, int $userId): array
     {
-        try {
-            $pesertaData = $data['peserta'] ?? [];
+        // --- Validasi NISN & NIK unik sebelum transaksi ---
+        $this->assertNisnUnique($data['peserta']['nisn'] ?? null);
+        $this->assertNikUnique($data['peserta']['nik'] ?? null);
 
-            // Validasi NISN & NIK Unik secara global, case-insensitive
-            if (!empty($pesertaData['nisn'])) {
-                $isNisnExist = Peserta::where(DB::raw('LOWER(nisn)'), strtolower($pesertaData['nisn']))->exists();
-                if ($isNisnExist) return $this->response->error('NISN sudah terdaftar.', 400);
-            }
+        return DB::transaction(function () use ($data, $userId) {
+            // 1. Buat record peserta utama
+            $peserta = $this->pesertaRepo->create($data['peserta']);
 
-            if (!empty($pesertaData['nik'])) {
-                $isNikExist = Peserta::where(DB::raw('LOWER(nik)'), strtolower($pesertaData['nik']))->exists();
-                if ($isNikExist) return $this->response->error('NIK sudah terdaftar.', 400);
-            }
-
-            DB::beginTransaction();
-
-            $peserta = $this->pesertaRepo->create($pesertaData);
-
+            // 2. Buat peserta_alamat
             if (!empty($data['alamat'])) {
-                $alamatData = $data['alamat'];
-                $alamatData['peserta_id'] = $peserta->id;
-                $this->alamatRepo->create($alamatData);
+                $this->alamatRepo->create(
+                    array_merge(['peserta_id' => $peserta->id], $data['alamat'])
+                );
             }
 
-            if (!empty($data['orang_tua']) && is_array($data['orang_tua'])) {
-                foreach ($data['orang_tua'] as $ortu) {
-                    $ortu['peserta_id'] = $peserta->id;
-                    $this->orangTuaRepo->create($ortu);
+            // 3. Buat peserta_orang_tua (ayah, ibu, wali)
+            if (!empty($data['orang_tua'])) {
+                foreach ($data['orang_tua'] as $orangTua) {
+                    $this->orangTuaRepo->create(
+                        array_merge(['peserta_id' => $peserta->id], $orangTua)
+                    );
                 }
             }
 
+            // 4. Buat peserta_periodik
             if (!empty($data['periodik'])) {
-                $periodikData = $data['periodik'];
-                $periodikData['peserta_id'] = $peserta->id;
-                $this->periodikRepo->create($periodikData);
+                $this->periodikRepo->create(
+                    array_merge(['peserta_id' => $peserta->id], $data['periodik'])
+                );
             }
 
+            // 5. Buat peserta_kontak
             if (!empty($data['kontak'])) {
-                $kontakData = $data['kontak'];
-                $kontakData['peserta_id'] = $peserta->id;
-                $this->kontakRepo->create($kontakData);
+                $this->kontakRepo->create(
+                    array_merge(['peserta_id' => $peserta->id], $data['kontak'])
+                );
             }
 
+            // 6. Buat peserta_dokumen_pribadi
             if (!empty($data['dokumen_pribadi'])) {
-                $dokumenData = $data['dokumen_pribadi'];
-                $dokumenData['peserta_id'] = $peserta->id;
-                $this->dokumenRepo->create($dokumenData);
+                $this->dokumenRepo->create(
+                    array_merge(['peserta_id' => $peserta->id], $data['dokumen_pribadi'])
+                );
             }
 
-            DB::commit();
+            // Catat aktivitas
+            $this->logActivity->log(
+                'Create Peserta',
+                "Menambah peserta: {$peserta->nama_lengkap} (NISN: {$peserta->nisn})"
+            );
 
-            $peserta->load(['alamat', 'orangTua', 'periodik', 'kontak', 'dokumenPribadi']);
-            $this->logActivity->record("Menambah peserta: {$peserta->nama_lengkap}", $userId);
-
-            return $this->response->success('Data peserta berhasil disimpan.', $peserta->toArray());
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::error('PesertaService@store: ' . $e->getMessage());
-            return $this->response->error('Gagal menyimpan data peserta: ' . $e->getMessage());
-        }
+            // Return peserta dengan semua relasi eager-loaded
+            return $this->loadFullRelations($peserta->id);
+        });
     }
 
+    // =========================================================================
+    // SHOW — Detail peserta dengan semua relasi
+    // =========================================================================
+
     /**
-     * 3. Menampilkan detail peserta dengan SEMUA relasi eager loaded
+     * Mengambil detail peserta beserta seluruh relasi (eager loaded).
      *
-     * @param int $id
-     * @return array
+     * @param  int  $id  Primary key peserta
+     * @return array     Peserta dengan relasi: user, alamat, orangTua, periodik, kontak, dokumenPribadi
+     *
+     * @throws \Exception  Jika peserta tidak ditemukan
      */
     public function show(int $id): array
     {
-        try {
-            $peserta = Peserta::with([
-                'alamat', 'orangTua', 'periodik', 'kontak', 'dokumenPribadi'
-            ])->find($id);
-
-            if (!$peserta) {
-                return $this->response->error('Peserta tidak ditemukan.', 404);
-            }
-
-            return $this->response->success('Detail peserta berhasil dimuat.', $peserta->toArray());
-        } catch (Exception $e) {
-            Log::error('PesertaService@show: ' . $e->getMessage());
-            return $this->response->error('Gagal memuat detail peserta: ' . $e->getMessage());
-        }
+        return $this->loadFullRelations($id);
     }
 
+    // =========================================================================
+    // UPDATE — Update semua sub-tabel dalam satu transaksi
+    // =========================================================================
+
     /**
-     * 4. Update data peserta dan semua sub-tabel dalam transaksi
+     * Memperbarui peserta beserta semua record relasi dalam satu transaksi DB.
      *
-     * @param int $id
-     * @param array $data
-     * @param int $userId
-     * @return array
+     * Aturan bisnis:
+     * - Jika peserta sudah memiliki user_id (akun terhubung), update HANYA boleh
+     *   dilakukan oleh admin/superadmin. Pengecekan permission dilakukan di Controller,
+     *   namun method ini menerima flag $isAdmin untuk safety layer kedua.
+     * - NISN & NIK harus tetap unik (tidak clash dengan peserta lain).
+     *
+     * Struktur $data sama dengan store(), semua key bersifat opsional (partial update).
+     *
+     * @param  int    $id           Primary key peserta
+     * @param  array  $data         Payload update dari controller
+     * @param  int    $userId       ID user yang melakukan action
+     * @param  bool   $isAdmin      Apakah user adalah admin/superadmin
+     * @return array                Peserta terupdate dengan semua relasi
+     *
+     * @throws \Exception  Jika data tidak boleh diedit atau terjadi konflik unik
      */
-    public function update(int $id, array $data, int $userId): array
+    public function update(int $id, array $data, int $userId, bool $isAdmin = false): array
     {
-        try {
-            $peserta = Peserta::find($id);
-            if (!$peserta) {
-                return $this->response->error('Peserta tidak ditemukan.', 404);
+        $peserta = $this->pesertaRepo->findById($id);
+        if (!$peserta) {
+            throw new Exception("Peserta dengan ID {$id} tidak ditemukan.");
+        }
+
+        // Guard: peserta yang sudah punya akun user hanya boleh diedit admin
+        if ($peserta->user_id && !$isAdmin) {
+            throw new Exception(
+                "Peserta ini sudah memiliki akun. Hanya admin yang dapat mengedit data."
+            );
+        }
+
+        // Validasi NISN unik jika ada perubahan
+        if (!empty($data['peserta']['nisn']) && $data['peserta']['nisn'] !== $peserta->nisn) {
+            $this->assertNisnUnique($data['peserta']['nisn'], $id);
+        }
+
+        // Validasi NIK unik jika ada perubahan
+        if (!empty($data['peserta']['nik']) && $data['peserta']['nik'] !== $peserta->nik) {
+            $this->assertNikUnique($data['peserta']['nik'], $id);
+        }
+
+        return DB::transaction(function () use ($id, $data, $peserta) {
+            // 1. Update record peserta utama
+            if (!empty($data['peserta'])) {
+                $this->pesertaRepo->update($id, $data['peserta']);
             }
 
-            // Validasi: Jika peserta sudah memiliki akun user, hanya superadmin yang bisa edit.
-            if (!empty($peserta->user_id)) {
-                $currentUser = auth()->user();
-                if (!$currentUser || !$currentUser->hasRole('superadmin')) {
-                    return $this->response->error('Data peserta yang telah memiliki akun, tidak boleh diedit kecuali oleh Admin Superadmin.', 403);
-                }
+            // 2. Upsert peserta_alamat (create jika belum ada, update jika sudah ada)
+            if (!empty($data['alamat'])) {
+                $this->alamatRepo->upsert($id, $data['alamat']);
             }
 
-            $pesertaData = $data['peserta'] ?? [];
-
-            // Validasi Unique NIK/NISN (exclude current id)
-            if (!empty($pesertaData['nisn'])) {
-                $isNisnExist = Peserta::where(DB::raw('LOWER(nisn)'), strtolower($pesertaData['nisn']))
-                    ->where('id', '!=', $id)->exists();
-                if ($isNisnExist) return $this->response->error('NISN sudah digunakan oleh peserta lain.', 400);
-            }
-
-            if (!empty($pesertaData['nik'])) {
-                $isNikExist = Peserta::where(DB::raw('LOWER(nik)'), strtolower($pesertaData['nik']))
-                    ->where('id', '!=', $id)->exists();
-                if ($isNikExist) return $this->response->error('NIK sudah digunakan oleh peserta lain.', 400);
-            }
-
-            DB::beginTransaction();
-
-            if (!empty($pesertaData)) {
-                $this->pesertaRepo->update($id, $pesertaData);
-            }
-
-            if (isset($data['alamat'])) {
-                // Update or create based on participants ID
-                $this->alamatRepo->updateOrCreate(['peserta_id' => $id], $data['alamat']);
-            }
-
-            if (isset($data['orang_tua']) && is_array($data['orang_tua'])) {
-                foreach ($data['orang_tua'] as $ortu) {
-                    if (!empty($ortu['tipe'])) {
-                        $this->orangTuaRepo->updateOrCreate(
-                            ['peserta_id' => $id, 'tipe' => $ortu['tipe']],
-                            $ortu
-                        );
+            // 3. Upsert orang tua per tipe (ayah / ibu / wali)
+            if (!empty($data['orang_tua'])) {
+                foreach ($data['orang_tua'] as $orangTua) {
+                    $tipe = $orangTua['tipe'] ?? null;
+                    if ($tipe) {
+                        $this->orangTuaRepo->upsertByTipe($id, $tipe, $orangTua);
                     }
                 }
             }
 
-            if (isset($data['periodik'])) {
-                $this->periodikRepo->updateOrCreate(['peserta_id' => $id], $data['periodik']);
+            // 4. Upsert peserta_periodik
+            if (!empty($data['periodik'])) {
+                $existing = $this->periodikRepo->all(['peserta_id' => $id])->first();
+                if ($existing) {
+                    $this->periodikRepo->update($existing->id, $data['periodik']);
+                } else {
+                    $this->periodikRepo->create(array_merge(['peserta_id' => $id], $data['periodik']));
+                }
             }
 
-            if (isset($data['kontak'])) {
-                $this->kontakRepo->updateOrCreate(['peserta_id' => $id], $data['kontak']);
+            // 5. Upsert peserta_kontak
+            if (!empty($data['kontak'])) {
+                $existing = $this->kontakRepo->all(['peserta_id' => $id])->first();
+                if ($existing) {
+                    $this->kontakRepo->update($existing->id, $data['kontak']);
+                } else {
+                    $this->kontakRepo->create(array_merge(['peserta_id' => $id], $data['kontak']));
+                }
             }
 
-            if (isset($data['dokumen_pribadi'])) {
-                $this->dokumenRepo->updateOrCreate(['peserta_id' => $id], $data['dokumen_pribadi']);
+            // 6. Upsert peserta_dokumen_pribadi
+            if (!empty($data['dokumen_pribadi'])) {
+                $existing = $this->dokumenRepo->all(['peserta_id' => $id])->first();
+                if ($existing) {
+                    $this->dokumenRepo->update($existing->id, $data['dokumen_pribadi']);
+                } else {
+                    $this->dokumenRepo->create(array_merge(['peserta_id' => $id], $data['dokumen_pribadi']));
+                }
             }
 
-            DB::commit();
+            // Refresh peserta untuk mendapatkan nama terbaru di log
+            $updated = $this->pesertaRepo->findById($id);
 
-            $peserta->refresh();
-            $peserta->load(['alamat', 'orangTua', 'periodik', 'kontak', 'dokumenPribadi']);
+            $this->logActivity->log(
+                'Update Peserta',
+                "Mengupdate peserta: {$updated->nama_lengkap} (ID: {$id})"
+            );
 
-            $this->logActivity->record("Mengupdate peserta: {$peserta->nama_lengkap}", $userId);
-
-            return $this->response->success('Data peserta berhasil diperbarui.', $peserta->toArray());
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::error('PesertaService@update: ' . $e->getMessage());
-            return $this->response->error('Gagal memperbarui peserta: ' . $e->getMessage());
-        }
+            return $this->loadFullRelations($id);
+        });
     }
 
+    // =========================================================================
+    // DESTROY — Soft delete peserta (cek tidak ada pendaftaran aktif)
+    // =========================================================================
+
     /**
-     * 5. Hapus peserta dan cek pendaftaran aktif. Soft delete tabel peserta.
+     * Menghapus peserta dengan soft delete (hanya tabel peserta).
      *
-     * @param int $id
-     * @param int $userId
-     * @return array
+     * Child records (peserta_alamat, dll) mengikuti via ON DELETE CASCADE pada
+     * level database, sesuai desain migrasi. Soft delete di tabel peserta
+     * membuat seluruh data tetap tersimpan untuk keperluan audit.
+     *
+     * Pengecekan sebelum hapus:
+     * - Tidak boleh ada pendaftaran yang masih aktif (status != 'ditolak' && != 'tidak_lulus')
+     *
+     * @param  int  $id      Primary key peserta
+     * @param  int  $userId  ID user yang melakukan action
+     * @return array         Pesan sukses
+     *
+     * @throws \Exception  Jika ada pendaftaran aktif atau peserta tidak ditemukan
      */
     public function destroy(int $id, int $userId): array
     {
-        try {
-            $peserta = Peserta::find($id);
-            if (!$peserta) {
-                return $this->response->error('Peserta tidak ditemukan.', 404);
-            }
+        $peserta = $this->pesertaRepo->findById($id, ['pendaftaran']);
+        if (!$peserta) {
+            throw new Exception("Peserta dengan ID {$id} tidak ditemukan.");
+        }
 
-            // Cek tidak ada pendaftaran aktif sebelum hapus
-            // Asumsi tabel 'pendaftaran' memiliki 'peserta_id' dan status bukan ['batal', 'gagal'] menandakan aktif.
-            $hasActiveRegistration = DB::table('pendaftaran')
-                ->where('peserta_id', $id)
-                ->whereNotIn('status', ['batal', 'gagal'])
-                ->exists();
+        // Cek pendaftaran aktif: status selain 'ditolak' dan 'tidak_lulus'
+        $statusAkhir = ['ditolak', 'tidak_lulus', 'batal'];
+        $pendaftaranAktif = $peserta->pendaftaran
+            ->whereNotIn('status', $statusAkhir)
+            ->count();
 
-            if ($hasActiveRegistration) {
-                return $this->response->error('Peserta tidak dapat dihapus karena memiliki riwayat pendaftaran aktif.', 400);
-            }
+        if ($pendaftaranAktif > 0) {
+            throw new Exception(
+                "Peserta masih memiliki {$pendaftaranAktif} pendaftaran aktif. " .
+                "Selesaikan atau batalkan pendaftaran terlebih dahulu."
+            );
+        }
 
+        return DB::transaction(function () use ($id, $peserta) {
             $nama = $peserta->nama_lengkap;
 
-            // Soft delete hanya di tabel peserta
+            // Soft delete hanya pada tabel peserta
+            // Child tables mengikuti via database CASCADE (hard delete child)
             $this->pesertaRepo->delete($id);
 
-            $this->logActivity->record("Menghapus peserta: {$nama}", $userId);
+            $this->logActivity->log(
+                'Delete Peserta',
+                "Menghapus peserta: {$nama} (ID: {$id})"
+            );
 
-            return $this->response->success('Peserta berhasil dihapus.');
-        } catch (Exception $e) {
-            Log::error('PesertaService@destroy: ' . $e->getMessage());
-            return $this->response->error('Gagal menghapus peserta: ' . $e->getMessage());
-        }
+            return ['message' => "Peserta {$nama} berhasil dihapus."];
+        });
     }
 
+    // =========================================================================
+    // GET DETAIL FOR ADMIN — Format multi-tab untuk tampilan admin
+    // =========================================================================
+
     /**
-     * 6. Return formatted data untuk tampilan multi-tab admin
+     * Mengambil dan memformat data peserta untuk tampilan admin multi-tab.
      *
-     * @param int $id
-     * @return array
+     * Return array dengan key per tab:
+     *   - tab_pribadi    : Data identitas inti peserta
+     *   - tab_alamat     : Data alamat domisili
+     *   - tab_orang_tua  : Data ayah, ibu, wali masing-masing terpisah
+     *   - tab_periodik   : Data kesehatan & kondisi fisik
+     *   - tab_kontak     : Nomor HP & email
+     *   - tab_dokumen    : Nomor dokumen (KIP, PKH, dll)
+     *
+     * @param  int  $id  Primary key peserta
+     * @return array     Data terformat per tab
+     *
+     * @throws \Exception  Jika peserta tidak ditemukan
      */
     public function getDetailForAdmin(int $id): array
     {
-        $result = $this->show($id);
-        if (!$result['status']) {
-            return $result;
+        $peserta = $this->pesertaRepo->findById($id, [
+            'user',
+            'alamat',
+            'orangTua',
+            'periodik',
+            'kontak',
+            'dokumenPribadi',
+            'pendaftaran',
+        ]);
+
+        if (!$peserta) {
+            throw new Exception("Peserta dengan ID {$id} tidak ditemukan.");
         }
 
-        $p = $result['data'];
-        $ortuList = collect($p['orang_tua'] ?? []);
+        // Helper: format orang tua berdasarkan tipe
+        $getOrangTua = fn (string $tipe) => $peserta->orangTua
+            ->firstWhere('tipe', $tipe);
 
-        $formatted = [
+        return [
+            // --- Tab Pribadi ---
             'tab_pribadi' => [
-                'nisn' => $p['nisn'] ?? '-',
-                'nik' => $p['nik'] ?? '-',
-                'nama' => $p['nama_lengkap'] ?? '-',
-                'jenis_kelamin' => $p['jenis_kelamin'] ?? '-',
-                'tempat_tanggal_lahir' => ($p['tempat_lahir'] ?? '-') . ', ' . ($p['tanggal_lahir'] ?? '-'),
-                'agama' => $p['agama'] ?? '-',
-                'kebutuhan_khusus' => $p['kebutuhan_khusus'] ?? '-',
-                'no_kk' => $p['no_kk'] ?? '-',
+                'id'               => $peserta->id,
+                'user_id'          => $peserta->user_id,
+                'akun_terhubung'   => $peserta->user_id
+                    ? ($peserta->user->name ?? 'Akun Aktif')
+                    : null,
+                'nisn'             => $peserta->nisn,
+                'nik'              => $peserta->nik,
+                'nama_lengkap'     => $peserta->nama_lengkap,
+                'jenis_kelamin'    => $peserta->jenis_kelamin,
+                'tempat_lahir'     => $peserta->tempat_lahir,
+                'tanggal_lahir'    => $peserta->tanggal_lahir?->format('d/m/Y'),
+                'agama'            => $peserta->agama,
+                'kebutuhan_khusus' => $peserta->kebutuhan_khusus,
+                'no_kk'            => $peserta->no_kk,
+                'foto'             => $peserta->foto,
+                'created_at'       => $peserta->created_at?->format('d/m/Y H:i'),
             ],
-            'tab_alamat' => [
-                'alamat' => $p['alamat']['alamat'] ?? '-',
-                'rt_rw' => ($p['alamat']['rt'] ?? '-') . '/' . ($p['alamat']['rw'] ?? '-'),
-                'dusun' => $p['alamat']['dusun'] ?? '-',
-                'desa_kelurahan' => $p['alamat']['desa_kelurahan'] ?? '-',
-                'kecamatan' => $p['alamat']['kecamatan'] ?? '-',
-                'kabupaten_kota' => $p['alamat']['kabupaten_kota'] ?? '-',
-                'provinsi' => $p['alamat']['provinsi'] ?? '-',
-                'kode_pos' => $p['alamat']['kode_pos'] ?? '-',
-                'koordinat' => ($p['alamat']['lintang'] ?? '-') . ', ' . ($p['alamat']['bujur'] ?? '-')
-            ],
-            'tab_orang_tua' => [
-                'ayah' => $ortuList->firstWhere('tipe', 'ayah') ?? null,
-                'ibu' => $ortuList->firstWhere('tipe', 'ibu') ?? null,
-                'wali' => $ortuList->firstWhere('tipe', 'wali') ?? null,
-            ],
-            'tab_periodik' => [
-                'tinggi_badan' => $p['periodik']['tinggi_badan'] ?? '-',
-                'berat_badan' => $p['periodik']['berat_badan'] ?? '-',
-                'jarak_rumah' => $p['periodik']['jarak_rumah'] ?? '-',
-                'waktu_tempuh' => $p['periodik']['waktu_tempuh'] ?? '-',
-                'jumlah_saudara' => $p['periodik']['jumlah_saudara'] ?? '-',
-            ],
-            'tab_kontak' => [
-                'no_hp' => $p['kontak']['no_hp'] ?? '-',
-                'email' => $p['kontak']['email'] ?? '-',
-            ],
-            'tab_dokumen' => [
-                'no_kip' => $p['dokumen_pribadi']['no_kip'] ?? '-',
-                'no_pkh' => $p['dokumen_pribadi']['no_pkh'] ?? '-',
-                'no_kitas' => $p['dokumen_pribadi']['no_kitas'] ?? '-',
-                'no_paspor' => $p['dokumen_pribadi']['no_paspor'] ?? '-',
-                'foto' => $p['foto'] ?? null,
-            ]
-        ];
 
-        return $this->response->success('Detail peserta terformat berhasil dimuat.', $formatted);
+            // --- Tab Alamat ---
+            'tab_alamat' => $peserta->alamat ? [
+                'id'               => $peserta->alamat->id,
+                'alamat'           => $peserta->alamat->alamat,
+                'rt'               => $peserta->alamat->rt,
+                'rw'               => $peserta->alamat->rw,
+                'dusun'            => $peserta->alamat->dusun,
+                'desa_kelurahan'   => $peserta->alamat->desa_kelurahan,
+                'kecamatan'        => $peserta->alamat->kecamatan,
+                'kabupaten_kota'   => $peserta->alamat->kabupaten_kota,
+                'provinsi'         => $peserta->alamat->provinsi,
+                'kode_pos'         => $peserta->alamat->kode_pos,
+                'lintang'          => $peserta->alamat->lintang,
+                'bujur'            => $peserta->alamat->bujur,
+            ] : null,
+
+            // --- Tab Orang Tua ---
+            'tab_orang_tua' => [
+                'ayah' => $this->formatOrangTua($getOrangTua('ayah')),
+                'ibu'  => $this->formatOrangTua($getOrangTua('ibu')),
+                'wali' => $this->formatOrangTua($getOrangTua('wali')),
+            ],
+
+            // --- Tab Periodik ---
+            'tab_periodik' => $peserta->periodik ? [
+                'id'             => $peserta->periodik->id,
+                'tinggi_badan'   => $peserta->periodik->tinggi_badan,
+                'berat_badan'    => $peserta->periodik->berat_badan,
+                'lingkar_kepala' => $peserta->periodik->lingkar_kepala,
+                'jarak_rumah'    => $peserta->periodik->jarak_rumah,    // dalam km
+                'waktu_tempuh'   => $peserta->periodik->waktu_tempuh,   // dalam menit
+                'jumlah_saudara' => $peserta->periodik->jumlah_saudara,
+                'tahun_pelajaran_id' => $peserta->periodik->tahun_pelajaran_id,
+            ] : null,
+
+            // --- Tab Kontak ---
+            'tab_kontak' => $peserta->kontak ? [
+                'id'     => $peserta->kontak->id,
+                'no_hp'  => $peserta->kontak->no_hp,
+                'email'  => $peserta->kontak->email,
+            ] : null,
+
+            // --- Tab Dokumen ---
+            'tab_dokumen' => $peserta->dokumenPribadi ? [
+                'id'        => $peserta->dokumenPribadi->id,
+                'no_kip'    => $peserta->dokumenPribadi->no_kip,
+                'no_pkh'    => $peserta->dokumenPribadi->no_pkh,
+                'no_kitas'  => $peserta->dokumenPribadi->no_kitas,
+                'no_paspor' => $peserta->dokumenPribadi->no_paspor,
+            ] : null,
+
+            // --- Metadata tambahan ---
+            'meta' => [
+                'total_pendaftaran'  => $peserta->pendaftaran->count(),
+                'pendaftaran_aktif'  => $peserta->pendaftaran
+                    ->whereNotIn('status', ['ditolak', 'tidak_lulus', 'batal'])
+                    ->count(),
+            ],
+        ];
     }
 
+    // =========================================================================
+    // IMPORT FROM CSV — Import data peserta dari file CSV format Dapodik
+    // =========================================================================
+
     /**
-     * 7. Proses import CSV Dapodik
+     * Mengimpor data peserta dari file CSV berformat Dapodik Kemdikbud.
      *
-     * @param string $filePath
-     * @param int $userId
-     * @return array {success_count, error_count, errors: [{row, message}]}
+     * Fitur:
+     * - Idempotent: aman dijalankan berkali-kali. Baris yang NISN/NIK-nya sudah
+     *   ada di database akan di-skip (tidak update, tidak error fatal).
+     * - Setiap baris diproses dalam transaksi terpisah agar baris lain tetap
+     *   tersimpan meski ada yang gagal.
+     * - Error per baris dicatat dan dikembalikan dalam response.
+     *
+     * Format CSV yang diharapkan (lihat DAPODIK_CSV_HEADERS):
+     * NISN, NIK, Nama Lengkap, Jenis Kelamin, Tempat Lahir, Tanggal Lahir (DD/MM/YYYY),
+     * Agama, Alamat, RT, RW, Desa/Kelurahan, Kecamatan, Kab/Kota, Provinsi, Kode Pos,
+     * No HP, Email, Nama Ayah, Pekerjaan Ayah, Nama Ibu, Pekerjaan Ibu,
+     * Tinggi Badan, Berat Badan, Jarak Rumah, Jumlah Saudara
+     *
+     * @param  string  $filePath  Path absolut ke file CSV
+     * @param  int     $userId    ID user yang melakukan import
+     * @return array  [
+     *                  'success_count' => int,
+     *                  'error_count'   => int,
+     *                  'skip_count'    => int,
+     *                  'errors'        => [ [ 'row' => int, 'message' => string ], ... ]
+     *                ]
+     *
+     * @throws \Exception  Jika file tidak ditemukan atau tidak bisa dibuka
      */
     public function importFromCsv(string $filePath, int $userId): array
     {
+        if (!file_exists($filePath) || !is_readable($filePath)) {
+            throw new Exception("File CSV tidak ditemukan atau tidak dapat dibaca: {$filePath}");
+        }
+
+        $handle = fopen($filePath, 'r');
+        if (!$handle) {
+            throw new Exception("Gagal membuka file CSV: {$filePath}");
+        }
+
+        $result = [
+            'success_count' => 0,
+            'error_count'   => 0,
+            'skip_count'    => 0,
+            'errors'        => [],
+        ];
+
+        $rowNumber  = 0;
+        $headerRead = false;
+
         try {
-            if (!file_exists($filePath) || !is_readable($filePath)) {
-                return $this->response->error('File CSV tidak dapat dialokasikan.');
-            }
+            while (($row = fgetcsv($handle, 0, ',')) !== false) {
+                $rowNumber++;
 
-            $successCount = 0;
-            $errorCount = 0;
-            $errors = [];
-
-            $handle = fopen($filePath, 'r');
-            // Skip Header
-            fgetcsv($handle, 1000, ',');
-
-            $rowIndex = 2; // Default line index if skipping header
-            
-            while (($row = fgetcsv($handle, 1000, ',')) !== false) {
-                if (count($row) < 25) {
-                    $errorCount++;
-                    $errors[] = ['row' => $rowIndex, 'message' => 'Format kolom tidak lengkap (membutuhkan 25 kolom)'];
-                    $rowIndex++;
+                // Skip baris header
+                if (!$headerRead) {
+                    $headerRead = true;
                     continue;
                 }
 
-                $nisn = trim($row[0]);
-                $nik = trim($row[1]);
-                $nama = trim($row[2]);
-
-                // Idempotent: skip baris yang NISN/NIK sudah ada
-                $exist = Peserta::where(DB::raw('LOWER(nisn)'), strtolower($nisn))
-                    ->orWhere(DB::raw('LOWER(nik)'), strtolower($nik))
-                    ->exists();
-
-                if ($exist) {
-                    $errorCount++;
-                    $errors[] = ['row' => $rowIndex, 'message' => "NISN {$nisn} atau NIK {$nik} sudah terdaftar, baris dilewati."];
-                    Log::warning("Import CSV: Skipped row {$rowIndex} (NISN/NIK exists).");
-                    $rowIndex++;
+                // Skip baris kosong
+                if (empty(array_filter($row))) {
                     continue;
                 }
 
-                DB::beginTransaction();
+                // Pastikan jumlah kolom sesuai
+                if (count($row) < count(self::DAPODIK_CSV_HEADERS)) {
+                    $result['error_count']++;
+                    $result['errors'][] = [
+                        'row'     => $rowNumber,
+                        'message' => 'Jumlah kolom tidak sesuai format Dapodik. '
+                            . 'Diharapkan ' . count(self::DAPODIK_CSV_HEADERS)
+                            . ' kolom, ditemukan ' . count($row) . ' kolom.',
+                    ];
+                    continue;
+                }
+
+                // Map kolom CSV ke variabel (sesuai urutan DAPODIK_CSV_HEADERS)
+                [
+                    $nisn, $nik, $namaLengkap, $jenisKelamin, $tempatLahir,
+                    $tanggalLahir, $agama, $alamat, $rt, $rw,
+                    $desaKelurahan, $kecamatan, $kabupatenKota, $provinsi, $kodePos,
+                    $noHp, $email, $namaAyah, $pekerjaanAyah, $namaIbu,
+                    $pekerjaanIbu, $tinggiBadan, $beratBadan, $jarakRumah, $jumlahSaudara,
+                ] = array_map('trim', $row);
+
+                // Idempotency: skip jika NISN atau NIK sudah ada
+                if ($nisn && $this->pesertaRepo->findByNisn($nisn)) {
+                    $result['skip_count']++;
+                    $result['errors'][] = [
+                        'row'     => $rowNumber,
+                        'message' => "NISN '{$nisn}' sudah terdaftar, baris di-skip.",
+                    ];
+                    continue;
+                }
+
+                if ($nik && $this->pesertaRepo->findByNik($nik)) {
+                    $result['skip_count']++;
+                    $result['errors'][] = [
+                        'row'     => $rowNumber,
+                        'message' => "NIK '{$nik}' sudah terdaftar, baris di-skip.",
+                    ];
+                    continue;
+                }
+
+                // Parse tanggal lahir dari format DD/MM/YYYY ke Y-m-d
+                $tanggalLahirParsed = null;
+                if ($tanggalLahir) {
+                    $parts = explode('/', $tanggalLahir);
+                    if (count($parts) === 3) {
+                        $tanggalLahirParsed = sprintf('%04d-%02d-%02d', $parts[2], $parts[1], $parts[0]);
+                    }
+                }
+
+                // Proses import satu baris dalam transaksi terpisah
                 try {
-                    // Try parsing date safely
-                    $dob = null;
-                    if (!empty(trim($row[5]))) {
-                        try {
-                            $dob = Carbon::createFromFormat('d/m/Y', trim($row[5]))->format('Y-m-d');
-                        } catch (Exception $exDate) {
-                            $dob = null; // fallback or report error
+                    DB::transaction(function () use (
+                        $nisn, $nik, $namaLengkap, $jenisKelamin, $tempatLahir,
+                        $tanggalLahirParsed, $agama, $alamat, $rt, $rw,
+                        $desaKelurahan, $kecamatan, $kabupatenKota, $provinsi, $kodePos,
+                        $noHp, $email, $namaAyah, $pekerjaanAyah, $namaIbu,
+                        $pekerjaanIbu, $tinggiBadan, $beratBadan, $jarakRumah, $jumlahSaudara
+                    ) {
+                        // 1. Peserta utama
+                        $peserta = $this->pesertaRepo->create([
+                            'nisn'          => $nisn ?: null,
+                            'nik'           => $nik ?: null,
+                            'nama_lengkap'  => $namaLengkap,
+                            'jenis_kelamin' => strtolower($jenisKelamin) === 'l'
+                                ? 'L'
+                                : (strtolower($jenisKelamin) === 'p' ? 'P' : $jenisKelamin),
+                            'tempat_lahir'  => $tempatLahir,
+                            'tanggal_lahir' => $tanggalLahirParsed,
+                            'agama'         => ucfirst(strtolower($agama)),
+                        ]);
+
+                        // 2. Alamat
+                        $this->alamatRepo->create([
+                            'peserta_id'     => $peserta->id,
+                            'alamat'         => $alamat,
+                            'rt'             => $rt,
+                            'rw'             => $rw,
+                            'desa_kelurahan' => $desaKelurahan,
+                            'kecamatan'      => $kecamatan,
+                            'kabupaten_kota' => $kabupatenKota,
+                            'provinsi'       => $provinsi,
+                            'kode_pos'       => $kodePos,
+                        ]);
+
+                        // 3. Orang tua — ayah
+                        if ($namaAyah) {
+                            $this->orangTuaRepo->create([
+                                'peserta_id' => $peserta->id,
+                                'tipe'       => 'ayah',
+                                'nama'       => $namaAyah,
+                                'pekerjaan'  => $pekerjaanAyah,
+                            ]);
                         }
-                    }
 
-                    $peserta = $this->pesertaRepo->create([
-                        'nisn' => $nisn,
-                        'nik' => $nik,
-                        'nama_lengkap' => $nama,
-                        'jenis_kelamin' => trim($row[3]),
-                        'tempat_lahir' => trim($row[4]),
-                        'tanggal_lahir' => $dob,
-                        'agama' => trim($row[6]),
-                    ]);
+                        // 4. Orang tua — ibu
+                        if ($namaIbu) {
+                            $this->orangTuaRepo->create([
+                                'peserta_id' => $peserta->id,
+                                'tipe'       => 'ibu',
+                                'nama'       => $namaIbu,
+                                'pekerjaan'  => $pekerjaanIbu,
+                            ]);
+                        }
 
-                    $this->alamatRepo->create([
-                        'peserta_id' => $peserta->id,
-                        'alamat' => trim($row[7]),
-                        'rt' => trim($row[8]),
-                        'rw' => trim($row[9]),
-                        'desa_kelurahan' => trim($row[10]),
-                        'kecamatan' => trim($row[11]),
-                        'kabupaten_kota' => trim($row[12]),
-                        'provinsi' => trim($row[13]),
-                        'kode_pos' => trim($row[14]),
-                    ]);
-
-                    $this->kontakRepo->create([
-                        'peserta_id' => $peserta->id,
-                        'no_hp' => trim($row[15]),
-                        'email' => trim($row[16]),
-                    ]);
-
-                    if (!empty(trim($row[17]))) {
-                        $this->orangTuaRepo->create([
-                            'peserta_id' => $peserta->id,
-                            'tipe' => 'ayah',
-                            'nama' => trim($row[17]),
-                            'pekerjaan' => trim($row[18]),
+                        // 5. Periodik
+                        $this->periodikRepo->create([
+                            'peserta_id'     => $peserta->id,
+                            'tinggi_badan'   => is_numeric($tinggiBadan) ? (float) $tinggiBadan : null,
+                            'berat_badan'    => is_numeric($beratBadan)  ? (float) $beratBadan  : null,
+                            'jarak_rumah'    => is_numeric($jarakRumah)  ? (float) $jarakRumah  : null,
+                            'jumlah_saudara' => is_numeric($jumlahSaudara) ? (int) $jumlahSaudara : null,
                         ]);
-                    }
 
-                    if (!empty(trim($row[19]))) {
-                        $this->orangTuaRepo->create([
-                            'peserta_id' => $peserta->id,
-                            'tipe' => 'ibu',
-                            'nama' => trim($row[19]),
-                            'pekerjaan' => trim($row[20]),
-                        ]);
-                    }
+                        // 6. Kontak
+                        if ($noHp || $email) {
+                            $this->kontakRepo->create([
+                                'peserta_id' => $peserta->id,
+                                'no_hp'      => $noHp,
+                                'email'      => $email,
+                            ]);
+                        }
+                    });
 
-                    $this->periodikRepo->create([
-                        'peserta_id' => $peserta->id,
-                        'tinggi_badan' => trim($row[21]),
-                        'berat_badan' => trim($row[22]),
-                        'jarak_rumah' => trim($row[23]),
-                        'jumlah_saudara' => trim($row[24]),
-                    ]);
+                    $result['success_count']++;
+                } catch (Throwable $e) {
+                    // Satu baris gagal → catat, lanjutkan ke baris berikutnya
+                    $result['error_count']++;
+                    $result['errors'][] = [
+                        'row'     => $rowNumber,
+                        'message' => $e->getMessage(),
+                    ];
 
-                    $this->dokumenRepo->create(['peserta_id' => $peserta->id]);
-
-                    DB::commit();
-                    $successCount++;
-                } catch (Exception $ex) {
-                    DB::rollBack();
-                    $errorCount++;
-                    $errors[] = ['row' => $rowIndex, 'message' => $ex->getMessage()];
-                    Log::error("Import CSV Error row {$rowIndex}: " . $ex->getMessage());
+                    Log::warning("PesertaService::importFromCsv — Baris {$rowNumber} gagal: " . $e->getMessage());
                 }
-
-                $rowIndex++;
             }
-
+        } finally {
             fclose($handle);
+        }
 
-            if ($successCount > 0) {
-                $this->logActivity->record("Mengimport {$successCount} data peserta dari CSV", $userId);
-            }
+        // Log ringkasan import
+        $this->logActivity->log(
+            'Import CSV Peserta',
+            "Import CSV selesai: {$result['success_count']} berhasil, "
+            . "{$result['skip_count']} di-skip, {$result['error_count']} error."
+        );
 
-            return $this->response->success('Proses import CSV berhasil.', [
-                'success_count' => $successCount,
-                'error_count' => $errorCount,
-                'errors' => $errors
-            ]);
-        } catch (Exception $e) {
-            Log::error('PesertaService@importFromCsv: ' . $e->getMessage());
-            return $this->response->error('Sistem gagal memproses import CSV: ' . $e->getMessage());
+        return $result;
+    }
+
+    // =========================================================================
+    // EXPORT TO CSV — Generate file CSV format Dapodik
+    // =========================================================================
+
+    /**
+     * Mengekspor data peserta ke file CSV berformat Dapodik Kemdikbud.
+     *
+     * File CSV disimpan di storage/app/exports/peserta/ dengan nama unik berbasis timestamp.
+     * Gunakan PHP native fputcsv untuk kompatibilitas maksimal tanpa dependency tambahan.
+     *
+     * Filter yang didukung sama dengan method index().
+     *
+     * @param  array   $filters  Filter yang sama dengan method index()
+     * @return string            Path absolut ke file CSV yang dihasilkan
+     *
+     * @throws \Exception  Jika direktori export tidak dapat dibuat atau file tidak dapat ditulis
+     */
+    public function exportToCsv(array $filters = []): string
+    {
+        // Tentukan direktori & nama file
+        $exportDir  = storage_path('app/exports/peserta');
+        $filename   = 'peserta_dapodik_' . now()->format('Ymd_His') . '.csv';
+        $filePath   = $exportDir . DIRECTORY_SEPARATOR . $filename;
+
+        // Buat direktori jika belum ada
+        if (!is_dir($exportDir) && !mkdir($exportDir, 0755, true)) {
+            throw new Exception("Gagal membuat direktori export: {$exportDir}");
+        }
+
+        $handle = fopen($filePath, 'w');
+        if (!$handle) {
+            throw new Exception("Gagal membuat file CSV: {$filePath}");
+        }
+
+        try {
+            // Tulis BOM UTF-8 agar Excel membaca encoding dengan benar
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            // Tulis baris header
+            fputcsv($handle, self::DAPODIK_CSV_HEADERS);
+
+            // Ambil data dengan eager loading semua relasi yang dibutuhkan
+            $query = $this->index($filters);
+            $query->with(['alamat', 'orangTua', 'periodik', 'kontak'])
+                ->chunk(500, function ($pesertaChunk) use ($handle) {
+                    foreach ($pesertaChunk as $peserta) {
+                        $alamat  = $peserta->alamat;
+                        $periodik = $peserta->periodik;
+                        $kontak  = $peserta->kontak;
+
+                        $ayah = $peserta->orangTua->firstWhere('tipe', 'ayah');
+                        $ibu  = $peserta->orangTua->firstWhere('tipe', 'ibu');
+
+                        fputcsv($handle, [
+                            $peserta->nisn                                   ?? '',
+                            $peserta->nik                                    ?? '',
+                            $peserta->nama_lengkap                           ?? '',
+                            $peserta->jenis_kelamin                          ?? '',
+                            $peserta->tempat_lahir                           ?? '',
+                            $peserta->tanggal_lahir?->format('d/m/Y')       ?? '', // DD/MM/YYYY
+                            $peserta->agama                                  ?? '',
+                            $alamat?->alamat                                 ?? '',
+                            $alamat?->rt                                     ?? '',
+                            $alamat?->rw                                     ?? '',
+                            $alamat?->desa_kelurahan                         ?? '',
+                            $alamat?->kecamatan                              ?? '',
+                            $alamat?->kabupaten_kota                         ?? '',
+                            $alamat?->provinsi                               ?? '',
+                            $alamat?->kode_pos                               ?? '',
+                            $kontak?->no_hp                                  ?? '',
+                            $kontak?->email                                  ?? '',
+                            $ayah?->nama                                     ?? '',
+                            $ayah?->pekerjaan                                ?? '',
+                            $ibu?->nama                                      ?? '',
+                            $ibu?->pekerjaan                                 ?? '',
+                            $periodik?->tinggi_badan                         ?? '',
+                            $periodik?->berat_badan                          ?? '',
+                            $periodik?->jarak_rumah                          ?? '',
+                            $periodik?->jumlah_saudara                       ?? '',
+                        ]);
+                    }
+                });
+        } finally {
+            fclose($handle);
+        }
+
+        $this->logActivity->log(
+            'Export CSV Peserta',
+            "Export CSV peserta berhasil: {$filename}"
+        );
+
+        return $filePath;
+    }
+
+    // =========================================================================
+    // PRIVATE HELPERS
+    // =========================================================================
+
+    /**
+     * Muat semua relasi peserta dan kembalikan sebagai array.
+     *
+     * @param  int  $pesertaId
+     * @return array
+     *
+     * @throws \Exception  Jika peserta tidak ditemukan
+     */
+    private function loadFullRelations(int $pesertaId): array
+    {
+        $peserta = $this->pesertaRepo->findById($pesertaId, [
+            'user',
+            'alamat',
+            'orangTua',
+            'periodik',
+            'kontak',
+            'dokumenPribadi',
+        ]);
+
+        if (!$peserta) {
+            throw new Exception("Peserta dengan ID {$pesertaId} tidak ditemukan.");
+        }
+
+        return $peserta->toArray();
+    }
+
+    /**
+     * Validasi bahwa NISN belum digunakan oleh peserta lain.
+     *
+     * @param  string|null  $nisn       NISN yang akan dicek
+     * @param  int|null     $exceptId   Kecualikan ID ini (untuk use case update)
+     *
+     * @throws \Exception  Jika NISN sudah terpakai
+     */
+    private function assertNisnUnique(?string $nisn, ?int $exceptId = null): void
+    {
+        if (empty($nisn)) {
+            return; // NISN opsional, skip validasi jika kosong
+        }
+
+        $existing = $this->pesertaRepo->findByNisn($nisn);
+
+        if ($existing && $existing->id !== $exceptId) {
+            throw new Exception(
+                "NISN '{$nisn}' sudah terdaftar atas nama: {$existing->nama_lengkap}."
+            );
         }
     }
 
     /**
-     * 8. Export format CSV kompatibel dengan format Dapodik Kemdikbud
+     * Validasi bahwa NIK belum digunakan oleh peserta lain.
      *
-     * @param array $filters
-     * @return string Path absolut file CSV yang dihasilkan
+     * @param  string|null  $nik        NIK yang akan dicek
+     * @param  int|null     $exceptId   Kecualikan ID ini (untuk use case update)
+     *
+     * @throws \Exception  Jika NIK sudah terpakai
      */
-    public function exportToCsv(array $filters = []): string
+    private function assertNikUnique(?string $nik, ?int $exceptId = null): void
     {
-        try {
-            $pesertaQuery = Peserta::with(['alamat', 'orangTua', 'periodik', 'kontak']);
-            
-            if (!empty($filters['nama'])) {
-                $pesertaQuery->where('nama_lengkap', 'like', '%' . $filters['nama'] . '%');
-            }
-            if (!empty($filters['nisn'])) {
-                $pesertaQuery->where('nisn', 'like', '%' . $filters['nisn'] . '%');
-            }
-            if (!empty($filters['agama'])) {
-                $pesertaQuery->where('agama', $filters['agama']);
-            }
-            if (!empty($filters['kecamatan'])) {
-                $pesertaQuery->whereHas('alamat', function($q) use ($filters) {
-                    $q->where('kecamatan', 'like', '%' . $filters['kecamatan'] . '%');
-                });
-            }
-
-            $pesertaList = $pesertaQuery->get();
-
-            $fileName = 'dapodik_export_peserta_' . date('Ymd_His') . '.csv';
-            // Simpan pada isolated storage framework
-            $filePath = storage_path('app/public/' . $fileName);
-
-            $handle = fopen($filePath, 'w');
-            
-            // Header standar Dapodik
-            fputcsv($handle, [
-                'NISN', 'NIK', 'Nama Lengkap', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir (DD/MM/YYYY)',
-                'Agama', 'Alamat', 'RT', 'RW', 'Desa/Kelurahan', 'Kecamatan', 'Kab/Kota', 'Provinsi', 'Kode Pos',
-                'No HP', 'Email', 'Nama Ayah', 'Pekerjaan Ayah', 'Nama Ibu', 'Pekerjaan Ibu',
-                'Tinggi Badan', 'Berat Badan', 'Jarak Rumah', 'Jumlah Saudara'
-            ]);
-
-            foreach ($pesertaList as $p) {
-                $ortu = collect($p->orangTua);
-                $ayah = $ortu->firstWhere('tipe', 'ayah');
-                $ibu = $ortu->firstWhere('tipe', 'ibu');
-                
-                fputcsv($handle, [
-                    $p->nisn,
-                    $p->nik,
-                    $p->nama_lengkap,
-                    $p->jenis_kelamin,
-                    $p->tempat_lahir,
-                    $p->tanggal_lahir ? Carbon::parse($p->tanggal_lahir)->format('d/m/Y') : '',
-                    $p->agama,
-                    $p->alamat->alamat ?? '',
-                    $p->alamat->rt ?? '',
-                    $p->alamat->rw ?? '',
-                    $p->alamat->desa_kelurahan ?? '',
-                    $p->alamat->kecamatan ?? '',
-                    $p->alamat->kabupaten_kota ?? '',
-                    $p->alamat->provinsi ?? '',
-                    $p->alamat->kode_pos ?? '',
-                    $p->kontak->no_hp ?? '',
-                    $p->kontak->email ?? '',
-                    $ayah->nama ?? '',
-                    $ayah->pekerjaan ?? '',
-                    $ibu->nama ?? '',
-                    $ibu->pekerjaan ?? '',
-                    $p->periodik->tinggi_badan ?? '',
-                    $p->periodik->berat_badan ?? '',
-                    $p->periodik->jarak_rumah ?? '',
-                    $p->periodik->jumlah_saudara ?? ''
-                ]);
-            }
-
-            fclose($handle);
-            
-            if (auth()->check()) {
-                $this->logActivity->record("Mengexport data ke CSV Dapodik", auth()->id());
-            }
-
-            return $filePath;
-        } catch (Exception $e) {
-            Log::error('PesertaService@exportToCsv: ' . $e->getMessage());
-            return '';
+        if (empty($nik)) {
+            return; // NIK opsional, skip validasi jika kosong
         }
+
+        $existing = $this->pesertaRepo->findByNik($nik);
+
+        if ($existing && $existing->id !== $exceptId) {
+            throw new Exception(
+                "NIK '{$nik}' sudah terdaftar atas nama: {$existing->nama_lengkap}."
+            );
+        }
+    }
+
+    /**
+     * Format satu record orang tua menjadi array (null-safe).
+     *
+     * @param  \App\Models\Peserta\PesertaOrangTua|null  $orangTua
+     * @return array|null
+     */
+    private function formatOrangTua($orangTua): ?array
+    {
+        if (!$orangTua) {
+            return null;
+        }
+
+        return [
+            'id'               => $orangTua->id,
+            'tipe'             => $orangTua->tipe,
+            'nama'             => $orangTua->nama,
+            'nik'              => $orangTua->nik,
+            'pekerjaan'        => $orangTua->pekerjaan,
+            'penghasilan'      => $orangTua->penghasilan,
+            'pendidikan'       => $orangTua->pendidikan,
+            'kebutuhan_khusus' => $orangTua->kebutuhan_khusus,
+            'no_hp'            => $orangTua->no_hp,
+        ];
     }
 }
