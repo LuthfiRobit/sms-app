@@ -120,5 +120,19 @@ Route::middleware(['auth', 'permission'])->group(function () {
             Route::delete('formulir/field/{fieldId}', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'deleteField'])->name('formulir.field.delete');
         });
 
+        // Peserta (Data Calon Peserta Didik — Dapodik)
+        Route::prefix('peserta')->name('peserta.')->group(function () {
+            // Endpoint non-resource harus SEBELUM route berparameter agar tidak konfllik
+            Route::get('list',        [App\Http\Controllers\Peserta\PesertaController::class, 'list'])->name('list');
+            Route::post('import-csv', [App\Http\Controllers\Peserta\PesertaController::class, 'importCsv'])->name('import-csv');
+            Route::get('export-csv',  [App\Http\Controllers\Peserta\PesertaController::class, 'exportCsv'])->name('export-csv');
+            // CRUD — explicit routes dengan parameter {id} yang jelas
+            Route::get('/',           [App\Http\Controllers\Peserta\PesertaController::class, 'index'])->name('index');
+            Route::post('/',          [App\Http\Controllers\Peserta\PesertaController::class, 'store'])->name('store');
+            Route::get('/{id}',       [App\Http\Controllers\Peserta\PesertaController::class, 'show'])->name('show');
+            Route::put('/{id}',       [App\Http\Controllers\Peserta\PesertaController::class, 'update'])->name('update');
+            Route::delete('/{id}',    [App\Http\Controllers\Peserta\PesertaController::class, 'destroy'])->name('destroy');
+        });
+
     });
 });

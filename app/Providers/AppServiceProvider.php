@@ -27,11 +27,11 @@ use App\Repositories\Peserta\PesertaAlamatRepository;
 use App\Repositories\Peserta\PesertaOrangTuaRepositoryInterface;
 use App\Repositories\Peserta\PesertaOrangTuaRepository;
 use App\Repositories\Peserta\PesertaPeriodikRepositoryInterface;
-use App\Repositories\Peserta\PesertaRepository as PesertaPeriodikRepository;
+use App\Repositories\Peserta\PesertaPeriodikRepository;
 use App\Repositories\Peserta\PesertaKontakRepositoryInterface;
-use App\Repositories\Peserta\PesertaRepository as PesertaKontakRepository;
+use App\Repositories\Peserta\PesertaKontakRepository;
 use App\Repositories\Peserta\PesertaDokumenPribadiRepositoryInterface;
-use App\Repositories\Peserta\PesertaRepository as PesertaDokumenPribadiRepository;
+use App\Repositories\Peserta\PesertaDokumenPribadiRepository;
 
 // Cluster Ppdb
 use App\Repositories\Ppdb\PembukaanPpdbRepositoryInterface;

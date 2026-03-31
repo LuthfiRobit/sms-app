@@ -102,12 +102,14 @@
                         </a>
                     </li>
                 @endif
-                <li class="pc-item">
-                    <a href="#" class="pc-link">
+                @if(auth()->check() && auth()->user()->hasPermissionTo('admin.peserta.index'))
+                <li class="pc-item {{ request()->routeIs('admin.peserta.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.peserta.index') }}" class="pc-link">
                         <span class="pc-micon"><i class="bi bi-person-badge-fill"></i></span>
-                        <span class="pc-mtext">Data Siswa (Induk)</span>
+                        <span class="pc-mtext">Data Peserta</span>
                     </a>
                 </li>
+                @endif
                 @if(auth()->check() && auth()->user()->hasAnyPermission(['admin.rbac.role.list', 'admin.rbac.permission.list']))
                     <li
                         class="pc-item pc-hasmenu {{ request()->routeIs('admin.rbac.*') && !request()->routeIs('admin.rbac.user.*') ? 'active pc-trigger' : '' }}">

@@ -62,15 +62,16 @@ class PesertaService
     ];
 
     public function __construct(
-        protected PesertaRepositoryInterface             $pesertaRepo,
-        protected PesertaAlamatRepositoryInterface       $alamatRepo,
-        protected PesertaOrangTuaRepositoryInterface     $orangTuaRepo,
-        protected PesertaPeriodikRepositoryInterface     $periodikRepo,
-        protected PesertaKontakRepositoryInterface       $kontakRepo,
+        protected PesertaRepositoryInterface $pesertaRepo,
+        protected PesertaAlamatRepositoryInterface $alamatRepo,
+        protected PesertaOrangTuaRepositoryInterface $orangTuaRepo,
+        protected PesertaPeriodikRepositoryInterface $periodikRepo,
+        protected PesertaKontakRepositoryInterface $kontakRepo,
         protected PesertaDokumenPribadiRepositoryInterface $dokumenRepo,
-        protected LogActivityService                     $logActivity,
-        protected ResponseService                        $responseService,
-    ) {}
+        protected LogActivityService $logActivity,
+        protected ResponseService $responseService,
+    ) {
+    }
 
     // =========================================================================
     // INDEX — DataTable dengan filter
@@ -424,85 +425,85 @@ class PesertaService
         }
 
         // Helper: format orang tua berdasarkan tipe
-        $getOrangTua = fn (string $tipe) => $peserta->orangTua
+        $getOrangTua = fn(string $tipe) => $peserta->orangTua
             ->firstWhere('tipe', $tipe);
 
         return [
             // --- Tab Pribadi ---
             'tab_pribadi' => [
-                'id'               => $peserta->id,
-                'user_id'          => $peserta->user_id,
-                'akun_terhubung'   => $peserta->user_id
+                'id' => $peserta->id,
+                'user_id' => $peserta->user_id,
+                'akun_terhubung' => $peserta->user_id
                     ? ($peserta->user->name ?? 'Akun Aktif')
                     : null,
-                'nisn'             => $peserta->nisn,
-                'nik'              => $peserta->nik,
-                'nama_lengkap'     => $peserta->nama_lengkap,
-                'jenis_kelamin'    => $peserta->jenis_kelamin,
-                'tempat_lahir'     => $peserta->tempat_lahir,
-                'tanggal_lahir'    => $peserta->tanggal_lahir?->format('d/m/Y'),
-                'agama'            => $peserta->agama,
+                'nisn' => $peserta->nisn,
+                'nik' => $peserta->nik,
+                'nama_lengkap' => $peserta->nama_lengkap,
+                'jenis_kelamin' => $peserta->jenis_kelamin,
+                'tempat_lahir' => $peserta->tempat_lahir,
+                'tanggal_lahir' => $peserta->tanggal_lahir?->format('d/m/Y'),
+                'agama' => $peserta->agama,
                 'kebutuhan_khusus' => $peserta->kebutuhan_khusus,
-                'no_kk'            => $peserta->no_kk,
-                'foto'             => $peserta->foto,
-                'created_at'       => $peserta->created_at?->format('d/m/Y H:i'),
+                'no_kk' => $peserta->no_kk,
+                'foto' => $peserta->foto,
+                'created_at' => $peserta->created_at?->format('d/m/Y H:i'),
             ],
 
             // --- Tab Alamat ---
             'tab_alamat' => $peserta->alamat ? [
-                'id'               => $peserta->alamat->id,
-                'alamat'           => $peserta->alamat->alamat,
-                'rt'               => $peserta->alamat->rt,
-                'rw'               => $peserta->alamat->rw,
-                'dusun'            => $peserta->alamat->dusun,
-                'desa_kelurahan'   => $peserta->alamat->desa_kelurahan,
-                'kecamatan'        => $peserta->alamat->kecamatan,
-                'kabupaten_kota'   => $peserta->alamat->kabupaten_kota,
-                'provinsi'         => $peserta->alamat->provinsi,
-                'kode_pos'         => $peserta->alamat->kode_pos,
-                'lintang'          => $peserta->alamat->lintang,
-                'bujur'            => $peserta->alamat->bujur,
+                'id' => $peserta->alamat->id,
+                'alamat' => $peserta->alamat->alamat,
+                'rt' => $peserta->alamat->rt,
+                'rw' => $peserta->alamat->rw,
+                'dusun' => $peserta->alamat->dusun,
+                'desa_kelurahan' => $peserta->alamat->desa_kelurahan,
+                'kecamatan' => $peserta->alamat->kecamatan,
+                'kabupaten_kota' => $peserta->alamat->kabupaten_kota,
+                'provinsi' => $peserta->alamat->provinsi,
+                'kode_pos' => $peserta->alamat->kode_pos,
+                'lintang' => $peserta->alamat->lintang,
+                'bujur' => $peserta->alamat->bujur,
             ] : null,
 
             // --- Tab Orang Tua ---
             'tab_orang_tua' => [
                 'ayah' => $this->formatOrangTua($getOrangTua('ayah')),
-                'ibu'  => $this->formatOrangTua($getOrangTua('ibu')),
+                'ibu' => $this->formatOrangTua($getOrangTua('ibu')),
                 'wali' => $this->formatOrangTua($getOrangTua('wali')),
             ],
 
             // --- Tab Periodik ---
             'tab_periodik' => $peserta->periodik ? [
-                'id'             => $peserta->periodik->id,
-                'tinggi_badan'   => $peserta->periodik->tinggi_badan,
-                'berat_badan'    => $peserta->periodik->berat_badan,
+                'id' => $peserta->periodik->id,
+                'tinggi_badan' => $peserta->periodik->tinggi_badan,
+                'berat_badan' => $peserta->periodik->berat_badan,
                 'lingkar_kepala' => $peserta->periodik->lingkar_kepala,
-                'jarak_rumah'    => $peserta->periodik->jarak_rumah,    // dalam km
-                'waktu_tempuh'   => $peserta->periodik->waktu_tempuh,   // dalam menit
+                'jarak_rumah' => $peserta->periodik->jarak_rumah,    // dalam km
+                'waktu_tempuh' => $peserta->periodik->waktu_tempuh,   // dalam menit
                 'jumlah_saudara' => $peserta->periodik->jumlah_saudara,
                 'tahun_pelajaran_id' => $peserta->periodik->tahun_pelajaran_id,
             ] : null,
 
             // --- Tab Kontak ---
             'tab_kontak' => $peserta->kontak ? [
-                'id'     => $peserta->kontak->id,
-                'no_hp'  => $peserta->kontak->no_hp,
-                'email'  => $peserta->kontak->email,
+                'id' => $peserta->kontak->id,
+                'no_hp' => $peserta->kontak->no_hp,
+                'email' => $peserta->kontak->email,
             ] : null,
 
             // --- Tab Dokumen ---
             'tab_dokumen' => $peserta->dokumenPribadi ? [
-                'id'        => $peserta->dokumenPribadi->id,
-                'no_kip'    => $peserta->dokumenPribadi->no_kip,
-                'no_pkh'    => $peserta->dokumenPribadi->no_pkh,
-                'no_kitas'  => $peserta->dokumenPribadi->no_kitas,
+                'id' => $peserta->dokumenPribadi->id,
+                'no_kip' => $peserta->dokumenPribadi->no_kip,
+                'no_pkh' => $peserta->dokumenPribadi->no_pkh,
+                'no_kitas' => $peserta->dokumenPribadi->no_kitas,
                 'no_paspor' => $peserta->dokumenPribadi->no_paspor,
             ] : null,
 
             // --- Metadata tambahan ---
             'meta' => [
-                'total_pendaftaran'  => $peserta->pendaftaran->count(),
-                'pendaftaran_aktif'  => $peserta->pendaftaran
+                'total_pendaftaran' => $peserta->pendaftaran->count(),
+                'pendaftaran_aktif' => $peserta->pendaftaran
                     ->whereNotIn('status', ['ditolak', 'tidak_lulus', 'batal'])
                     ->count(),
             ],
@@ -553,12 +554,12 @@ class PesertaService
 
         $result = [
             'success_count' => 0,
-            'error_count'   => 0,
-            'skip_count'    => 0,
-            'errors'        => [],
+            'error_count' => 0,
+            'skip_count' => 0,
+            'errors' => [],
         ];
 
-        $rowNumber  = 0;
+        $rowNumber = 0;
         $headerRead = false;
 
         try {
@@ -580,7 +581,7 @@ class PesertaService
                 if (count($row) < count(self::DAPODIK_CSV_HEADERS)) {
                     $result['error_count']++;
                     $result['errors'][] = [
-                        'row'     => $rowNumber,
+                        'row' => $rowNumber,
                         'message' => 'Jumlah kolom tidak sesuai format Dapodik. '
                             . 'Diharapkan ' . count(self::DAPODIK_CSV_HEADERS)
                             . ' kolom, ditemukan ' . count($row) . ' kolom.',
@@ -590,18 +591,38 @@ class PesertaService
 
                 // Map kolom CSV ke variabel (sesuai urutan DAPODIK_CSV_HEADERS)
                 [
-                    $nisn, $nik, $namaLengkap, $jenisKelamin, $tempatLahir,
-                    $tanggalLahir, $agama, $alamat, $rt, $rw,
-                    $desaKelurahan, $kecamatan, $kabupatenKota, $provinsi, $kodePos,
-                    $noHp, $email, $namaAyah, $pekerjaanAyah, $namaIbu,
-                    $pekerjaanIbu, $tinggiBadan, $beratBadan, $jarakRumah, $jumlahSaudara,
+                    $nisn,
+                    $nik,
+                    $namaLengkap,
+                    $jenisKelamin,
+                    $tempatLahir,
+                    $tanggalLahir,
+                    $agama,
+                    $alamat,
+                    $rt,
+                    $rw,
+                    $desaKelurahan,
+                    $kecamatan,
+                    $kabupatenKota,
+                    $provinsi,
+                    $kodePos,
+                    $noHp,
+                    $email,
+                    $namaAyah,
+                    $pekerjaanAyah,
+                    $namaIbu,
+                    $pekerjaanIbu,
+                    $tinggiBadan,
+                    $beratBadan,
+                    $jarakRumah,
+                    $jumlahSaudara,
                 ] = array_map('trim', $row);
 
                 // Idempotency: skip jika NISN atau NIK sudah ada
                 if ($nisn && $this->pesertaRepo->findByNisn($nisn)) {
                     $result['skip_count']++;
                     $result['errors'][] = [
-                        'row'     => $rowNumber,
+                        'row' => $rowNumber,
                         'message' => "NISN '{$nisn}' sudah terdaftar, baris di-skip.",
                     ];
                     continue;
@@ -610,7 +631,7 @@ class PesertaService
                 if ($nik && $this->pesertaRepo->findByNik($nik)) {
                     $result['skip_count']++;
                     $result['errors'][] = [
-                        'row'     => $rowNumber,
+                        'row' => $rowNumber,
                         'message' => "NIK '{$nik}' sudah terdaftar, baris di-skip.",
                     ];
                     continue;
@@ -627,46 +648,40 @@ class PesertaService
 
                 // Proses import satu baris dalam transaksi terpisah
                 try {
-                    DB::transaction(function () use (
-                        $nisn, $nik, $namaLengkap, $jenisKelamin, $tempatLahir,
-                        $tanggalLahirParsed, $agama, $alamat, $rt, $rw,
-                        $desaKelurahan, $kecamatan, $kabupatenKota, $provinsi, $kodePos,
-                        $noHp, $email, $namaAyah, $pekerjaanAyah, $namaIbu,
-                        $pekerjaanIbu, $tinggiBadan, $beratBadan, $jarakRumah, $jumlahSaudara
-                    ) {
+                    DB::transaction(function () use ($nisn, $nik, $namaLengkap, $jenisKelamin, $tempatLahir, $tanggalLahirParsed, $agama, $alamat, $rt, $rw, $desaKelurahan, $kecamatan, $kabupatenKota, $provinsi, $kodePos, $noHp, $email, $namaAyah, $pekerjaanAyah, $namaIbu, $pekerjaanIbu, $tinggiBadan, $beratBadan, $jarakRumah, $jumlahSaudara) {
                         // 1. Peserta utama
                         $peserta = $this->pesertaRepo->create([
-                            'nisn'          => $nisn ?: null,
-                            'nik'           => $nik ?: null,
-                            'nama_lengkap'  => $namaLengkap,
+                            'nisn' => $nisn ?: null,
+                            'nik' => $nik ?: null,
+                            'nama_lengkap' => $namaLengkap,
                             'jenis_kelamin' => strtolower($jenisKelamin) === 'l'
                                 ? 'L'
                                 : (strtolower($jenisKelamin) === 'p' ? 'P' : $jenisKelamin),
-                            'tempat_lahir'  => $tempatLahir,
+                            'tempat_lahir' => $tempatLahir,
                             'tanggal_lahir' => $tanggalLahirParsed,
-                            'agama'         => ucfirst(strtolower($agama)),
+                            'agama' => ucfirst(strtolower($agama)),
                         ]);
 
                         // 2. Alamat
                         $this->alamatRepo->create([
-                            'peserta_id'     => $peserta->id,
-                            'alamat'         => $alamat,
-                            'rt'             => $rt,
-                            'rw'             => $rw,
+                            'peserta_id' => $peserta->id,
+                            'alamat' => $alamat,
+                            'rt' => $rt,
+                            'rw' => $rw,
                             'desa_kelurahan' => $desaKelurahan,
-                            'kecamatan'      => $kecamatan,
+                            'kecamatan' => $kecamatan,
                             'kabupaten_kota' => $kabupatenKota,
-                            'provinsi'       => $provinsi,
-                            'kode_pos'       => $kodePos,
+                            'provinsi' => $provinsi,
+                            'kode_pos' => $kodePos,
                         ]);
 
                         // 3. Orang tua — ayah
                         if ($namaAyah) {
                             $this->orangTuaRepo->create([
                                 'peserta_id' => $peserta->id,
-                                'tipe'       => 'ayah',
-                                'nama'       => $namaAyah,
-                                'pekerjaan'  => $pekerjaanAyah,
+                                'tipe' => 'ayah',
+                                'nama' => $namaAyah,
+                                'pekerjaan' => $pekerjaanAyah,
                             ]);
                         }
 
@@ -674,18 +689,18 @@ class PesertaService
                         if ($namaIbu) {
                             $this->orangTuaRepo->create([
                                 'peserta_id' => $peserta->id,
-                                'tipe'       => 'ibu',
-                                'nama'       => $namaIbu,
-                                'pekerjaan'  => $pekerjaanIbu,
+                                'tipe' => 'ibu',
+                                'nama' => $namaIbu,
+                                'pekerjaan' => $pekerjaanIbu,
                             ]);
                         }
 
                         // 5. Periodik
                         $this->periodikRepo->create([
-                            'peserta_id'     => $peserta->id,
-                            'tinggi_badan'   => is_numeric($tinggiBadan) ? (float) $tinggiBadan : null,
-                            'berat_badan'    => is_numeric($beratBadan)  ? (float) $beratBadan  : null,
-                            'jarak_rumah'    => is_numeric($jarakRumah)  ? (float) $jarakRumah  : null,
+                            'peserta_id' => $peserta->id,
+                            'tinggi_badan' => is_numeric($tinggiBadan) ? (float) $tinggiBadan : null,
+                            'berat_badan' => is_numeric($beratBadan) ? (float) $beratBadan : null,
+                            'jarak_rumah' => is_numeric($jarakRumah) ? (float) $jarakRumah : null,
                             'jumlah_saudara' => is_numeric($jumlahSaudara) ? (int) $jumlahSaudara : null,
                         ]);
 
@@ -693,8 +708,8 @@ class PesertaService
                         if ($noHp || $email) {
                             $this->kontakRepo->create([
                                 'peserta_id' => $peserta->id,
-                                'no_hp'      => $noHp,
-                                'email'      => $email,
+                                'no_hp' => $noHp,
+                                'email' => $email,
                             ]);
                         }
                     });
@@ -704,7 +719,7 @@ class PesertaService
                     // Satu baris gagal → catat, lanjutkan ke baris berikutnya
                     $result['error_count']++;
                     $result['errors'][] = [
-                        'row'     => $rowNumber,
+                        'row' => $rowNumber,
                         'message' => $e->getMessage(),
                     ];
 
@@ -745,9 +760,9 @@ class PesertaService
     public function exportToCsv(array $filters = []): string
     {
         // Tentukan direktori & nama file
-        $exportDir  = storage_path('app/exports/peserta');
-        $filename   = 'peserta_dapodik_' . now()->format('Ymd_His') . '.csv';
-        $filePath   = $exportDir . DIRECTORY_SEPARATOR . $filename;
+        $exportDir = storage_path('app/exports/peserta');
+        $filename = 'peserta_dapodik_' . now()->format('Ymd_His') . '.csv';
+        $filePath = $exportDir . DIRECTORY_SEPARATOR . $filename;
 
         // Buat direktori jika belum ada
         if (!is_dir($exportDir) && !mkdir($exportDir, 0755, true)) {
@@ -771,39 +786,39 @@ class PesertaService
             $query->with(['alamat', 'orangTua', 'periodik', 'kontak'])
                 ->chunk(500, function ($pesertaChunk) use ($handle) {
                     foreach ($pesertaChunk as $peserta) {
-                        $alamat  = $peserta->alamat;
+                        $alamat = $peserta->alamat;
                         $periodik = $peserta->periodik;
-                        $kontak  = $peserta->kontak;
+                        $kontak = $peserta->kontak;
 
                         $ayah = $peserta->orangTua->firstWhere('tipe', 'ayah');
-                        $ibu  = $peserta->orangTua->firstWhere('tipe', 'ibu');
+                        $ibu = $peserta->orangTua->firstWhere('tipe', 'ibu');
 
                         fputcsv($handle, [
-                            $peserta->nisn                                   ?? '',
-                            $peserta->nik                                    ?? '',
-                            $peserta->nama_lengkap                           ?? '',
-                            $peserta->jenis_kelamin                          ?? '',
-                            $peserta->tempat_lahir                           ?? '',
-                            $peserta->tanggal_lahir?->format('d/m/Y')       ?? '', // DD/MM/YYYY
-                            $peserta->agama                                  ?? '',
-                            $alamat?->alamat                                 ?? '',
-                            $alamat?->rt                                     ?? '',
-                            $alamat?->rw                                     ?? '',
-                            $alamat?->desa_kelurahan                         ?? '',
-                            $alamat?->kecamatan                              ?? '',
-                            $alamat?->kabupaten_kota                         ?? '',
-                            $alamat?->provinsi                               ?? '',
-                            $alamat?->kode_pos                               ?? '',
-                            $kontak?->no_hp                                  ?? '',
-                            $kontak?->email                                  ?? '',
-                            $ayah?->nama                                     ?? '',
-                            $ayah?->pekerjaan                                ?? '',
-                            $ibu?->nama                                      ?? '',
-                            $ibu?->pekerjaan                                 ?? '',
-                            $periodik?->tinggi_badan                         ?? '',
-                            $periodik?->berat_badan                          ?? '',
-                            $periodik?->jarak_rumah                          ?? '',
-                            $periodik?->jumlah_saudara                       ?? '',
+                            $peserta->nisn ?? '',
+                            $peserta->nik ?? '',
+                            $peserta->nama_lengkap ?? '',
+                            $peserta->jenis_kelamin ?? '',
+                            $peserta->tempat_lahir ?? '',
+                            $peserta->tanggal_lahir?->format('d/m/Y') ?? '', // DD/MM/YYYY
+                            $peserta->agama ?? '',
+                            $alamat?->alamat ?? '',
+                            $alamat?->rt ?? '',
+                            $alamat?->rw ?? '',
+                            $alamat?->desa_kelurahan ?? '',
+                            $alamat?->kecamatan ?? '',
+                            $alamat?->kabupaten_kota ?? '',
+                            $alamat?->provinsi ?? '',
+                            $alamat?->kode_pos ?? '',
+                            $kontak?->no_hp ?? '',
+                            $kontak?->email ?? '',
+                            $ayah?->nama ?? '',
+                            $ayah?->pekerjaan ?? '',
+                            $ibu?->nama ?? '',
+                            $ibu?->pekerjaan ?? '',
+                            $periodik?->tinggi_badan ?? '',
+                            $periodik?->berat_badan ?? '',
+                            $periodik?->jarak_rumah ?? '',
+                            $periodik?->jumlah_saudara ?? '',
                         ]);
                     }
                 });
@@ -908,15 +923,15 @@ class PesertaService
         }
 
         return [
-            'id'               => $orangTua->id,
-            'tipe'             => $orangTua->tipe,
-            'nama'             => $orangTua->nama,
-            'nik'              => $orangTua->nik,
-            'pekerjaan'        => $orangTua->pekerjaan,
-            'penghasilan'      => $orangTua->penghasilan,
-            'pendidikan'       => $orangTua->pendidikan,
+            'id' => $orangTua->id,
+            'tipe' => $orangTua->tipe,
+            'nama' => $orangTua->nama,
+            'nik' => $orangTua->nik,
+            'pekerjaan' => $orangTua->pekerjaan,
+            'penghasilan' => $orangTua->penghasilan,
+            'pendidikan' => $orangTua->pendidikan,
             'kebutuhan_khusus' => $orangTua->kebutuhan_khusus,
-            'no_hp'            => $orangTua->no_hp,
+            'no_hp' => $orangTua->no_hp,
         ];
     }
 }
