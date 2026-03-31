@@ -784,17 +784,35 @@ $(document).ready(function() {
     // ===================================================================
     function addStatisField(key, meta) {
         showLoading();
+
+        // Ambil opsi dari dapodikFlat untuk field bertipe select/radio.
+        // Field Dapodik jenis ini memiliki opsi bawaan (misal jenis_kelamin, agama).
+        // Dikirim ke server agar tidak gagal validasi "minimal 2 opsi".
+        const dapodikMeta  = dapodikFlat[key] || {};
+        const opsiTersedia = (dapodikMeta.opsi && Array.isArray(dapodikMeta.opsi))
+            ? dapodikMeta.opsi
+            : null;
+
+        const payload = {
+            label       : meta.label,
+            tipe_field  : meta.tipe,
+            is_required : 0,
+            is_statis   : 1,
+            dapodik_key : key,
+        };
+
+        // Sertakan opsi jika tipe memerlukan (select / radio)
+        if (['select', 'radio'].includes(meta.tipe) && opsiTersedia) {
+            opsiTersedia.forEach((opt, i) => {
+                payload[`opsi[${i}]`] = opt;
+            });
+        }
+
         $.ajax({
             url: `${BASE_URL}/${FORMULIR_ID}/fields`,
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': CSRF_TOKEN },
-            data: {
-                label       : meta.label,
-                tipe_field  : meta.tipe,
-                is_required : 0,
-                is_statis   : 1,
-                dapodik_key : key,
-            },
+            data: payload,
             success(res) {
                 hideLoading();
                 if (res.status === 200 && res.data) {
@@ -808,10 +826,14 @@ $(document).ready(function() {
             },
             error(xhr) {
                 hideLoading();
-                toastError(xhr.responseJSON?.message || 'Terjadi kesalahan.');
+                const msg = xhr.responseJSON?.message || xhr.responseJSON?.errors
+                    ? Object.values(xhr.responseJSON.errors || {}).flat().join(', ')
+                    : 'Terjadi kesalahan saat menambahkan field.';
+                toastError(msg);
             }
         });
     }
+
 
     // ===================================================================
     // TOAST HELPERS (gunakan SweetAlert2 toast)

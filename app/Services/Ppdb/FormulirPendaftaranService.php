@@ -549,6 +549,13 @@ class FormulirPendaftaranService
             $opsi      = null;
 
             if (in_array($tipeField, ['select', 'radio'])) {
+                // Untuk field STATIS: auto-inject opsi dari DAPODIK_FIELDS jika tidak dikirim frontend.
+                // Ini menangani kasus drag field Dapodik bertipe select/radio dari palette
+                // yang tidak memiliki UI input opsi.
+                if ($isStatis && $dapodikKey && isset(self::DAPODIK_FIELDS[$dapodikKey]['opsi'])) {
+                    $fieldData['opsi'] = $fieldData['opsi'] ?? self::DAPODIK_FIELDS[$dapodikKey]['opsi'];
+                }
+
                 if (empty($fieldData['opsi']) || ! is_array($fieldData['opsi']) || count($fieldData['opsi']) < 2) {
                     DB::rollBack();
                     return [
@@ -559,6 +566,7 @@ class FormulirPendaftaranService
                 }
                 $opsi = array_values($fieldData['opsi']);
             }
+
 
             // Tentukan urutan: append ke akhir daftar
             $maxUrutan = FormulirField::where('formulir_pendaftaran_id', $formulirId)
