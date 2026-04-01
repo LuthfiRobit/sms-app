@@ -46,6 +46,8 @@ use App\Repositories\Ppdb\BiayaRegistrasiRepositoryInterface;
 use App\Repositories\Ppdb\BiayaRegistrasiRepository;
 use App\Repositories\Ppdb\KuotaJurusanRepositoryInterface;
 use App\Repositories\Ppdb\KuotaJurusanRepository;
+use App\Repositories\Ppdb\JadwalPendaftaranRepositoryInterface;
+use App\Repositories\Ppdb\JadwalPendaftaranRepository;
 
 // Cluster Transaksi
 use App\Repositories\Transaksi\PendaftaranRepositoryInterface;
@@ -56,6 +58,8 @@ use App\Repositories\Transaksi\PembayaranPpdbRepositoryInterface;
 use App\Repositories\Transaksi\PembayaranPpdbRepository;
 use App\Repositories\Transaksi\HasilSeleksiRepositoryInterface;
 use App\Repositories\Transaksi\HasilSeleksiRepository;
+use App\Repositories\Transaksi\PendaftaranFieldValueRepositoryInterface;
+use App\Repositories\Transaksi\PendaftaranFieldValueRepository;
 
 // Cluster Master
 use App\Repositories\Master\JurusanRepositoryInterface;
@@ -92,12 +96,14 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(FormulirPendaftaranRepositoryInterface::class, FormulirPendaftaranRepository::class);
         $this->app->bind(BiayaRegistrasiRepositoryInterface::class, BiayaRegistrasiRepository::class);
         $this->app->bind(KuotaJurusanRepositoryInterface::class, KuotaJurusanRepository::class);
+        $this->app->bind(JadwalPendaftaranRepositoryInterface::class, JadwalPendaftaranRepository::class);
 
         // Cluster Transaksi
         $this->app->bind(PendaftaranRepositoryInterface::class, PendaftaranRepository::class);
         $this->app->bind(DokumenPesertaRepositoryInterface::class, DokumenPesertaRepository::class);
         $this->app->bind(PembayaranPpdbRepositoryInterface::class, PembayaranPpdbRepository::class);
         $this->app->bind(HasilSeleksiRepositoryInterface::class, HasilSeleksiRepository::class);
+        $this->app->bind(PendaftaranFieldValueRepositoryInterface::class, PendaftaranFieldValueRepository::class);
 
         // Cluster Master
         $this->app->bind(JurusanRepositoryInterface::class, JurusanRepository::class);
