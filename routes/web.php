@@ -134,5 +134,14 @@ Route::middleware(['auth', 'permission'])->group(function () {
             Route::delete('/{id}',    [App\Http\Controllers\Peserta\PesertaController::class, 'destroy'])->name('destroy');
         });
 
+        // Pendaftaran & Transaksi
+        Route::prefix('pendaftaran')->name('pendaftaran.')->group(function () {
+            Route::get('list', [App\Http\Controllers\Transaksi\PendaftaranController::class, 'list'])->name('list');
+            Route::post('{id}/verifikasi', [App\Http\Controllers\Transaksi\PendaftaranController::class, 'verifikasi'])->name('verifikasi');
+            Route::post('{id}/dokumen/{dokumenId}/verifikasi', [App\Http\Controllers\Transaksi\PendaftaranController::class, 'verifikasiDokumen'])->name('dokumen.verifikasi');
+            Route::get('/',           [App\Http\Controllers\Transaksi\PendaftaranController::class, 'index'])->name('index');
+            Route::get('/{id}',       [App\Http\Controllers\Transaksi\PendaftaranController::class, 'show'])->name('show');
+        });
+
     });
 });
