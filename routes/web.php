@@ -148,32 +148,83 @@ Route::middleware(['auth', 'permission'])->group(function () {
 });
 
 // =============================================================================
-// PORTAL PESERTA PPDB — Route terpisah dari admin panel
-// Menggunakan guard 'web' yang sama, middleware khusus peserta.auth & peserta.aktif
-// Tidak menggunakan middleware 'permission' (hanya untuk admin)
+// PORTAL PESERTA PPDB — Route Terpisah dari Admin Panel
+// Guard: web (sama), Middleware: peserta.auth & peserta.aktif (BUKAN permission)
 // =============================================================================
+use App\Http\Controllers\Portal\PortalController;
+use App\Http\Controllers\Portal\AuthPesertaController;
+use App\Http\Controllers\Portal\DashboardPesertaController;
+use App\Http\Controllers\Portal\ProfilPesertaController;
+use App\Http\Controllers\Portal\PendaftaranPesertaController;
+use App\Http\Controllers\Portal\PembayaranPesertaController;
+use App\Http\Controllers\Portal\PengumumanPesertaController;
+use App\Http\Controllers\Portal\DaftarUlangPesertaController;
+
 Route::prefix('ppdb')->name('ppdb.')->group(function () {
 
-    // -- Guest-only routes (redirect ke dashboard jika sudah login & aktif) --
-    Route::get('login',    [\App\Http\Controllers\Portal\AuthPesertaController::class, 'showLogin'])->name('login');
-    Route::post('login',   [\App\Http\Controllers\Portal\AuthPesertaController::class, 'login'])->name('login.post');
-    Route::get('daftar',   [\App\Http\Controllers\Portal\AuthPesertaController::class, 'showRegister'])->name('register');
-    Route::post('daftar',  [\App\Http\Controllers\Portal\AuthPesertaController::class, 'register'])->name('register.post');
+    // === PUBLIK (tidak perlu login) ===
+    Route::get('/',     [PortalController::class, 'beranda'])->name('beranda');
+    Route::get('/info', [PortalController::class, 'info'])->name('info');
 
-    // -- Authenticated routes (hanya butuh login + role peserta, belum perlu aktif) --
-    Route::middleware(['peserta.auth'])->group(function () {
-        Route::get('verify-email',  [\App\Http\Controllers\Portal\AuthPesertaController::class, 'showVerifyEmail'])->name('verify-email');
-        Route::post('verify-email', [\App\Http\Controllers\Portal\AuthPesertaController::class, 'verifyEmail'])->name('verify-email.post');
-        Route::post('resend-otp',   [\App\Http\Controllers\Portal\AuthPesertaController::class, 'resendOtp'])->name('resend-otp');
-        Route::post('logout',       [\App\Http\Controllers\Portal\AuthPesertaController::class, 'logout'])->name('logout');
+    // === AUTH ROUTES — guest only ===
+    Route::middleware('guest')->group(function () {
+        Route::get('/register',  [AuthPesertaController::class, 'showRegister'])->name('register');
+        Route::post('/register', [AuthPesertaController::class, 'register'])->name('register.post');
+        Route::get('/login',     [AuthPesertaController::class, 'showLogin'])->name('login');
+        Route::post('/login',    [AuthPesertaController::class, 'login'])->name('login.post');
     });
 
-    // -- Protected routes (login + role peserta + status active) --
+    // === VERIFIKASI EMAIL (perlu login peserta, belum perlu aktif) ===
+    Route::middleware('peserta.auth')->group(function () {
+        Route::get('/verify-email',  [AuthPesertaController::class, 'showVerifyEmail'])->name('verify-email');
+        Route::post('/verify-email', [AuthPesertaController::class, 'verifyEmail'])->name('verify-email.post');
+        Route::post('/resend-otp',   [AuthPesertaController::class, 'resendOtp'])->name('resend-otp');
+        Route::post('/logout',       [AuthPesertaController::class, 'logout'])->name('logout');
+    });
+
+    // === AREA TERAUTENTIKASI + AKTIF ===
     Route::middleware(['peserta.auth', 'peserta.aktif'])->group(function () {
-        // Placeholder dashboard — akan diganti dengan controller sesungguhnya
-        Route::get('dashboard', function () {
-            return view('portal.dashboard');
-        })->name('dashboard');
+
+        // Dashboard
+        Route::get('/dashboard', [DashboardPesertaController::class, 'index'])->name('dashboard');
+
+        // Profil & Data Dapodik
+        Route::prefix('/profil')->name('profil.')->group(function () {
+            Route::get('/',         [ProfilPesertaController::class, 'index'])->name('index');
+            Route::put('/akun',     [ProfilPesertaController::class, 'updateAkun'])->name('akun');
+            Route::put('/dapodik',  [ProfilPesertaController::class, 'updateDapodik'])->name('dapodik');
+            Route::put('/password', [ProfilPesertaController::class, 'updatePassword'])->name('password');
+        });
+
+        // Pendaftaran
+        Route::prefix('/pendaftaran')->name('pendaftaran.')->group(function () {
+            Route::get('/',                                [PendaftaranPesertaController::class, 'index'])->name('index');
+            Route::get('/pilih-jalur',                    [PendaftaranPesertaController::class, 'pilihJalur'])->name('pilih');
+            Route::post('/pilih-jalur',                   [PendaftaranPesertaController::class, 'store'])->name('store');
+            Route::get('/{id}',                           [PendaftaranPesertaController::class, 'show'])->name('show');
+            Route::post('/{id}/formulir',                 [PendaftaranPesertaController::class, 'saveFormulir'])->name('formulir');
+            Route::post('/{id}/dokumen/{syaratId}',       [PendaftaranPesertaController::class, 'uploadDokumen'])->name('dokumen.upload');
+            Route::delete('/{id}/dokumen/{dokumenId}',    [PendaftaranPesertaController::class, 'hapusDokumen'])->name('dokumen.hapus');
+            Route::post('/{id}/submit',                   [PendaftaranPesertaController::class, 'submit'])->name('submit');
+        });
+
+        // Pembayaran (placeholder — aktif setelah Milestone 7)
+        Route::prefix('/pembayaran')->name('pembayaran.')->group(function () {
+            Route::get('/{id}',        [PembayaranPesertaController::class, 'index'])->name('index');
+            Route::post('/{id}/token', [PembayaranPesertaController::class, 'getToken'])->name('token');
+        });
+
+        // Pengumuman
+        Route::prefix('/pengumuman')->name('pengumuman.')->group(function () {
+            Route::get('/',                              [PengumumanPesertaController::class, 'index'])->name('index');
+            Route::get('/{pendaftaranId}/kartu',         [PengumumanPesertaController::class, 'downloadKartu'])->name('kartu');
+        });
+
+        // Daftar Ulang
+        Route::prefix('/daftar-ulang')->name('daftar-ulang.')->group(function () {
+            Route::get('/{pendaftaranId}',   [DaftarUlangPesertaController::class, 'index'])->name('index');
+            Route::post('/{pendaftaranId}',  [DaftarUlangPesertaController::class, 'store'])->name('store');
+        });
     });
 });
 
