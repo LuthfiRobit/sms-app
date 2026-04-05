@@ -12,7 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'permission' => \App\Http\Middleware\CheckPermission::class,
+            // Admin panel — route-based permission check
+            'permission'    => \App\Http\Middleware\CheckPermission::class,
+            // Portal peserta PPDB — role & status check
+            'peserta.auth'  => \App\Http\Middleware\PesertaAuth::class,
+            'peserta.aktif' => \App\Http\Middleware\PesertaAktif::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
