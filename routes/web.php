@@ -134,6 +134,7 @@ Route::middleware(['auth', 'permission'])->group(function () {
             Route::delete('/{id}',    [App\Http\Controllers\Peserta\PesertaController::class, 'destroy'])->name('destroy');
         });
 
+
         // Pendaftaran & Transaksi
         Route::prefix('pendaftaran')->name('pendaftaran.')->group(function () {
             Route::get('list', [App\Http\Controllers\Transaksi\PendaftaranController::class, 'list'])->name('list');
@@ -145,3 +146,34 @@ Route::middleware(['auth', 'permission'])->group(function () {
 
     });
 });
+
+// =============================================================================
+// PORTAL PESERTA PPDB — Route terpisah dari admin panel
+// Menggunakan guard 'web' yang sama, middleware khusus peserta.auth & peserta.aktif
+// Tidak menggunakan middleware 'permission' (hanya untuk admin)
+// =============================================================================
+Route::prefix('ppdb')->name('ppdb.')->group(function () {
+
+    // -- Guest-only routes (redirect ke dashboard jika sudah login & aktif) --
+    Route::get('login',    [\App\Http\Controllers\Portal\AuthPesertaController::class, 'showLogin'])->name('login');
+    Route::post('login',   [\App\Http\Controllers\Portal\AuthPesertaController::class, 'login'])->name('login.post');
+    Route::get('daftar',   [\App\Http\Controllers\Portal\AuthPesertaController::class, 'showRegister'])->name('register');
+    Route::post('daftar',  [\App\Http\Controllers\Portal\AuthPesertaController::class, 'register'])->name('register.post');
+
+    // -- Authenticated routes (hanya butuh login + role peserta, belum perlu aktif) --
+    Route::middleware(['peserta.auth'])->group(function () {
+        Route::get('verify-email',  [\App\Http\Controllers\Portal\AuthPesertaController::class, 'showVerifyEmail'])->name('verify-email');
+        Route::post('verify-email', [\App\Http\Controllers\Portal\AuthPesertaController::class, 'verifyEmail'])->name('verify-email.post');
+        Route::post('resend-otp',   [\App\Http\Controllers\Portal\AuthPesertaController::class, 'resendOtp'])->name('resend-otp');
+        Route::post('logout',       [\App\Http\Controllers\Portal\AuthPesertaController::class, 'logout'])->name('logout');
+    });
+
+    // -- Protected routes (login + role peserta + status active) --
+    Route::middleware(['peserta.auth', 'peserta.aktif'])->group(function () {
+        // Placeholder dashboard — akan diganti dengan controller sesungguhnya
+        Route::get('dashboard', function () {
+            return view('portal.dashboard');
+        })->name('dashboard');
+    });
+});
+
