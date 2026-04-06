@@ -2,6 +2,7 @@
 
 namespace App\Services\Peserta;
 
+use App\Models\User;
 use Exception;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -66,13 +67,13 @@ class PesertaProfileService
     // =========================================================================
 
     public function __construct(
-        protected PesertaRepositoryInterface              $pesertaRepo,
-        protected PesertaAlamatRepositoryInterface        $alamatRepo,
-        protected PesertaOrangTuaRepositoryInterface      $orangTuaRepo,
-        protected PesertaPeriodikRepositoryInterface      $periodikRepo,
-        protected PesertaKontakRepositoryInterface        $kontakRepo,
+        protected PesertaRepositoryInterface $pesertaRepo,
+        protected PesertaAlamatRepositoryInterface $alamatRepo,
+        protected PesertaOrangTuaRepositoryInterface $orangTuaRepo,
+        protected PesertaPeriodikRepositoryInterface $periodikRepo,
+        protected PesertaKontakRepositoryInterface $kontakRepo,
         protected PesertaDokumenPribadiRepositoryInterface $dokumenRepo,
-        protected LogActivityService                      $logActivity,
+        protected LogActivityService $logActivity,
     ) {
     }
 
@@ -98,10 +99,12 @@ class PesertaProfileService
             // 1. Cek apakah sudah ada record peserta untuk user ini
             $peserta = $this->pesertaRepo->findByUserId($userId);
 
-            // 2. Jika belum ada, buat record peserta kosong
             if (!$peserta) {
+                // Pre-fill nama_lengkap dari data user jika ada
+                $user = User::find($userId);
                 $peserta = $this->pesertaRepo->create([
                     'user_id' => $userId,
+                    'nama_lengkap' => $user ? $user->name : 'Peserta Baru',
                 ]);
 
                 Log::info("PesertaProfileService: Membuat record Peserta baru untuk user_id={$userId}");
@@ -155,17 +158,17 @@ class PesertaProfileService
         $getOrangTua = fn(string $tipe) => $peserta->orangTua->firstWhere('tipe', $tipe);
 
         return [
-            'peserta'        => $peserta,
-            'alamat'         => $peserta->alamat,
-            'orang_tua'      => [
+            'peserta' => $peserta,
+            'alamat' => $peserta->alamat,
+            'orang_tua' => [
                 'ayah' => $getOrangTua('ayah'),
-                'ibu'  => $getOrangTua('ibu'),
+                'ibu' => $getOrangTua('ibu'),
                 'wali' => $getOrangTua('wali'),
             ],
-            'periodik'       => $peserta->periodik,
-            'kontak'         => $peserta->kontak,
+            'periodik' => $peserta->periodik,
+            'kontak' => $peserta->kontak,
             'dokumen_pribadi' => $peserta->dokumenPribadi,
-            'kelengkapan'    => $this->hitungKelengkapan($peserta),
+            'kelengkapan' => $this->hitungKelengkapan($peserta),
         ];
     }
 
@@ -212,7 +215,7 @@ class PesertaProfileService
                 }
 
                 // Simpan foto baru dengan nama {userId}.{ext}
-                $ext      = $foto->getClientOriginalExtension();
+                $ext = $foto->getClientOriginalExtension();
                 $fotoPath = $foto->storeAs(
                     'peserta/foto',
                     "{$userId}.{$ext}",
@@ -235,7 +238,7 @@ class PesertaProfileService
             return [
                 'success' => true,
                 'message' => 'Data pribadi berhasil diperbarui.',
-                'data'    => $this->loadFullRelations($userId),
+                'data' => $this->loadFullRelations($userId),
             ];
         });
     }
@@ -271,7 +274,7 @@ class PesertaProfileService
             return [
                 'success' => true,
                 'message' => 'Data alamat berhasil diperbarui.',
-                'data'    => $alamat,
+                'data' => $alamat,
             ];
         });
     }
@@ -315,7 +318,7 @@ class PesertaProfileService
             return [
                 'success' => true,
                 'message' => "Data {$tipe} berhasil diperbarui.",
-                'data'    => $orangTua,
+                'data' => $orangTua,
             ];
         });
     }
@@ -369,7 +372,7 @@ class PesertaProfileService
             return [
                 'success' => true,
                 'message' => 'Data periodik berhasil diperbarui.',
-                'data'    => $periodik,
+                'data' => $periodik,
             ];
         });
     }
@@ -412,7 +415,7 @@ class PesertaProfileService
             return [
                 'success' => true,
                 'message' => 'Data kontak berhasil diperbarui.',
-                'data'    => $kontak,
+                'data' => $kontak,
             ];
         });
     }
@@ -455,7 +458,7 @@ class PesertaProfileService
             return [
                 'success' => true,
                 'message' => 'Data dokumen pribadi berhasil diperbarui.',
-                'data'    => $dokumen,
+                'data' => $dokumen,
             ];
         });
     }
@@ -479,13 +482,13 @@ class PesertaProfileService
      */
     public function hitungKelengkapan(Peserta $peserta): array
     {
-        $itemKurang  = [];
+        $itemKurang = [];
         $persenTotal = 0;
 
         // ── Pribadi (30%) ──────────────────────────────────────────────────
         $fieldPribadi = [
-            'nama_lengkap'  => 'Nama Lengkap',
-            'nik'           => 'NIK',
+            'nama_lengkap' => 'Nama Lengkap',
+            'nik' => 'NIK',
             'tanggal_lahir' => 'Tanggal Lahir',
             'jenis_kelamin' => 'Jenis Kelamin',
         ];
@@ -501,7 +504,7 @@ class PesertaProfileService
 
         // ── Alamat (20%) ───────────────────────────────────────────────────
         $fieldAlamat = [
-            'alamat'         => 'Alamat Lengkap',
+            'alamat' => 'Alamat Lengkap',
             'kabupaten_kota' => 'Kabupaten/Kota',
         ];
 
@@ -518,7 +521,7 @@ class PesertaProfileService
         // ── Orang Tua (20%) ────────────────────────────────────────────────
         // Cukup min 1 dari ayah atau ibu dengan nama terisi
         $ayah = $peserta->orangTua?->firstWhere('tipe', 'ayah');
-        $ibu  = $peserta->orangTua?->firstWhere('tipe', 'ibu');
+        $ibu = $peserta->orangTua?->firstWhere('tipe', 'ibu');
 
         $adaOrangTua = ($ayah && !empty($ayah->nama)) || ($ibu && !empty($ibu->nama));
         if ($adaOrangTua) {
@@ -538,7 +541,7 @@ class PesertaProfileService
         // ── Periodik (15%) ─────────────────────────────────────────────────
         $fieldPeriodik = [
             'tinggi_badan' => 'Tinggi Badan',
-            'berat_badan'  => 'Berat Badan',
+            'berat_badan' => 'Berat Badan',
         ];
 
         $bobotPeriodikPerField = 15 / count($fieldPeriodik); // 7.5% per field
@@ -552,7 +555,7 @@ class PesertaProfileService
         }
 
         return [
-            'persen'      => (int) round($persenTotal),
+            'persen' => (int) round($persenTotal),
             'item_kurang' => $itemKurang,
         ];
     }
@@ -579,7 +582,7 @@ class PesertaProfileService
      */
     public function isProfilCukupUntukDaftar(int $userId): array
     {
-        $peserta   = $this->loadFullRelations($userId);
+        $peserta = $this->loadFullRelations($userId);
         $kekurangan = [];
 
         // Cek data pribadi minimum
@@ -605,7 +608,7 @@ class PesertaProfileService
 
         // Cek minimal 1 orang tua dengan nama terisi
         $ayah = $peserta->orangTua?->firstWhere('tipe', 'ayah');
-        $ibu  = $peserta->orangTua?->firstWhere('tipe', 'ibu');
+        $ibu = $peserta->orangTua?->firstWhere('tipe', 'ibu');
 
         $adaOrangTua = ($ayah && !empty($ayah->nama)) || ($ibu && !empty($ibu->nama));
         if (!$adaOrangTua) {
@@ -613,7 +616,7 @@ class PesertaProfileService
         }
 
         return [
-            'cukup'      => empty($kekurangan),
+            'cukup' => empty($kekurangan),
             'kekurangan' => $kekurangan,
         ];
     }
