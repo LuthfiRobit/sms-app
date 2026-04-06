@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Portal;
 
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -18,14 +20,14 @@ use App\Services\Peserta\PesertaProfileService;
  * BUKAN auth()->id() karena PK bisa berbeda.
  *
  * Routes (prefix: ppdb.pendaftaran.*):
- *   GET  /pendaftaran            → index()
- *   GET  /pendaftaran/pilih      → pilihJalur()
- *   POST /pendaftaran            → store()
- *   GET  /pendaftaran/{id}       → show()          [placeholder]
- *   PUT  /pendaftaran/{id}/formulir → saveFormulir() [placeholder]
- *   POST /pendaftaran/{id}/dokumen/{syaratId} → uploadDokumen() [placeholder]
- *   DELETE /pendaftaran/{id}/dokumen/{dokumenId} → hapusDokumen() [placeholder]
- *   POST /pendaftaran/{id}/submit → submit()       [placeholder]
+ *   GET    /pendaftaran                              → index()
+ *   GET    /pendaftaran/pilih                        → pilihJalur()
+ *   POST   /pendaftaran                              → store()
+ *   GET    /pendaftaran/{id}                         → show()
+ *   PUT    /pendaftaran/{id}/formulir                → saveFormulir()   [JSON]
+ *   POST   /pendaftaran/{id}/dokumen/{syaratId}      → uploadDokumen()  [JSON]
+ *   DELETE /pendaftaran/{id}/dokumen/{dokumenId}     → hapusDokumen()   [JSON]
+ *   POST   /pendaftaran/{id}/submit                  → submit()         [JSON]
  */
 class PendaftaranPesertaController extends Controller
 {
@@ -119,31 +121,199 @@ class PendaftaranPesertaController extends Controller
     }
 
     // =========================================================================
-    // PLACEHOLDER — Methods yang akan diimplementasi berikutnya
+    // 4. SHOW — Halaman detail & pengisian pendaftaran
     // =========================================================================
 
-    public function show($id): View
+    /**
+     * Menampilkan halaman detail pendaftaran beserta formulir dan dokumen.
+     *
+     * Data yang dikirim ke view:
+     *  - $detail['data']['pendaftaran'] : model Pendaftaran
+     *  - $detail['data']['peserta']     : model Peserta
+     *  - $detail['data']['jalur']       : model JalurPendaftaran
+     *  - $detail['data']['field_values']: Collection PendaftaranFieldValue
+     *  - $detail['data']['dokumen']     : array formatted dokumen
+     *  - $detail['data']['verifier']    : array|null verifier
+     *  - $progress['data']              : {formulir, dokumen, siap_submit}
+     *
+     * AuthorizationException di-catch dan di-abort(403) agar HTTP response konsisten.
+     */
+    public function show(int $id): View
     {
-        return view('portal.coming_soon', ['fitur' => 'Detail Pendaftaran']);
+        try {
+            $userId = auth()->user()->id_user;
+
+            $detail   = $this->portalPendaftaranSvc->getDetailPendaftaran($id, $userId);
+            $progress = $this->portalPendaftaranSvc->getProgressDetail($id, $userId);
+
+            // Ambil daftar syarat dari jalur untuk section dokumen
+            // (syarat dibutuhkan untuk render card per syarat, termasuk yang belum diupload)
+            $jalur  = $detail['data']['jalur'] ?? null;
+            $syarat = $jalur
+                ? ($jalur->syaratPendaftaran ?? collect())
+                : collect();
+
+            // Load relasi syaratPendaftaran jika belum ter-load
+            if ($jalur && !$jalur->relationLoaded('syaratPendaftaran')) {
+                $jalur->load('syaratPendaftaran');
+                $syarat = $jalur->syaratPendaftaran;
+            }
+
+            // Ambil formulir fields dari jalur (for rendering)
+            $formulirFields = collect();
+            if ($jalur) {
+                $jalur->loadMissing(['formulirPendaftaran.formulirField']);
+                $formulirFields = $jalur->formulirPendaftaran->first()
+                    ?->formulirField ?? collect();
+            }
+
+            return view('portal.pendaftaran.show', compact(
+                'detail',
+                'progress',
+                'syarat',
+                'formulirFields',
+            ));
+        } catch (AuthorizationException $e) {
+            abort(403, 'Anda tidak memiliki akses ke pendaftaran ini.');
+        }
     }
 
-    public function saveFormulir(Request $request, $id): RedirectResponse
+    // =========================================================================
+    // 5. SAVE FORMULIR — Auto-save field values via AJAX (JSON)
+    // =========================================================================
+
+    /**
+     * Menyimpan field values formulir dari auto-save AJAX.
+     *
+     * Request body (JSON atau form-data):
+     * { "fields": [{"formulir_field_id": int, "value": mixed}, ...] }
+     *
+     * @return JsonResponse {success, message, progress: {formulir: {persen, terisi, total}}}
+     */
+    public function saveFormulir(Request $request, int $id): JsonResponse
     {
-        return back()->with('info', 'Fitur dalam pengembangan.');
+        try {
+            $userId      = auth()->user()->id_user;
+            $fieldValues = $request->input('fields', []);
+
+            $result = $this->portalPendaftaranSvc->saveFieldValues($id, $userId, $fieldValues);
+
+            // Ambil progress terbaru setelah save
+            $progressResult = $this->portalPendaftaranSvc->getProgressDetail($id, $userId);
+            $progressData   = $progressResult['data'] ?? null;
+
+            return response()->json([
+                'success'  => $result['success'],
+                'message'  => $result['message'],
+                'progress' => $progressData ? [
+                    'formulir' => [
+                        'persen' => $progressData['formulir']['persen'],
+                        'terisi' => $progressData['formulir']['terisi'],
+                        'total'  => $progressData['formulir']['total'],
+                    ],
+                    'siap_submit' => $progressData['siap_submit'],
+                ] : null,
+            ], $result['success'] ? 200 : 422);
+        } catch (AuthorizationException $e) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
+        }
     }
 
-    public function uploadDokumen(Request $request, $id, $syaratId): RedirectResponse
+    // =========================================================================
+    // 6. UPLOAD DOKUMEN — Upload file lewat AJAX (JSON)
+    // =========================================================================
+
+    /**
+     * Mengunggah dokumen persyaratan via AJAX multipart/form-data.
+     *
+     * @return JsonResponse {success, message, dokumen: {id, nama_file, status_verifikasi, url, ukuran}}
+     */
+    public function uploadDokumen(Request $request, int $id, int $syaratId): JsonResponse
     {
-        return back()->with('info', 'Fitur dalam pengembangan.');
+        $request->validate([
+            'dokumen' => 'required|file|max:5120|mimes:pdf,jpg,jpeg,png',
+        ], [
+            'dokumen.required' => 'File dokumen wajib dipilih.',
+            'dokumen.file'     => 'Upload harus berupa file.',
+            'dokumen.max'      => 'Ukuran file maksimal 5MB.',
+            'dokumen.mimes'    => 'Format file harus PDF, JPG, atau PNG.',
+        ]);
+
+        try {
+            $userId = auth()->user()->id_user;
+            $file   = $request->file('dokumen');
+
+            $result = $this->portalPendaftaranSvc->uploadDokumen($id, $userId, $syaratId, $file);
+
+            $dokumenFormatted = null;
+            if ($result['success'] && $result['data']) {
+                $d = $result['data'];
+                $dokumenFormatted = [
+                    'id'                => $d->id,
+                    'nama_file'         => $d->nama_file,
+                    'ukuran_file'       => $d->ukuran_file,
+                    'status_verifikasi' => $d->status_verifikasi,
+                    'url'               => $d->url_file ?? null,
+                    'mime_type'         => $d->mime_type,
+                ];
+            }
+
+            return response()->json([
+                'success' => $result['success'],
+                'message' => $result['message'],
+                'dokumen' => $dokumenFormatted,
+            ], $result['success'] ? 200 : 422);
+        } catch (AuthorizationException $e) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
+        }
     }
 
-    public function hapusDokumen($id, $dokumenId): RedirectResponse
+    // =========================================================================
+    // 7. HAPUS DOKUMEN — Hapus file via AJAX (JSON)
+    // =========================================================================
+
+    /**
+     * Menghapus dokumen yang sudah diupload via AJAX.
+     *
+     * @return JsonResponse {success, message}
+     */
+    public function hapusDokumen(Request $request, int $id, int $dokumenId): JsonResponse
     {
-        return back()->with('info', 'Fitur dalam pengembangan.');
+        try {
+            $userId = auth()->user()->id_user;
+            $result = $this->portalPendaftaranSvc->hapusDokumen($id, $userId, $dokumenId);
+
+            return response()->json([
+                'success' => $result['success'],
+                'message' => $result['message'],
+            ], $result['success'] ? 200 : 422);
+        } catch (AuthorizationException $e) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
+        }
     }
 
-    public function submit($id): RedirectResponse
+    // =========================================================================
+    // 8. SUBMIT — Ajukan pendaftaran via AJAX (JSON)
+    // =========================================================================
+
+    /**
+     * Mengajukan pendaftaran dari status draft ke submit via AJAX.
+     *
+     * @return JsonResponse {success, message, errors_detail: array|null}
+     */
+    public function submit(Request $request, int $id): JsonResponse
     {
-        return back()->with('info', 'Fitur dalam pengembangan.');
+        try {
+            $userId = auth()->user()->id_user;
+            $result = $this->portalPendaftaranSvc->submitPendaftaran($id, $userId);
+
+            return response()->json([
+                'success'       => $result['success'],
+                'message'       => $result['message'],
+                'errors_detail' => $result['errors_detail'] ?? null,
+            ], $result['success'] ? 200 : 422);
+        } catch (AuthorizationException $e) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
+        }
     }
 }
