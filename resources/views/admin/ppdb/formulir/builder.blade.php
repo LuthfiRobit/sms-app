@@ -382,7 +382,7 @@
                                 @if($field->opsi && count($field->opsi) > 0)
                                 <div class="mt-1">
                                     <span class="text-muted small"><i class="bi bi-list-ul me-1"></i>
-                                    {{ implode(', ', array_slice($field->opsi, 0, 3)) }}{{ count($field->opsi) > 3 ? '...' : '' }}
+                                    {{ implode(', ', array_slice(array_column($field->opsi, 'nama'), 0, 3)) }}{{ count($field->opsi) > 3 ? '...' : '' }}
                                     ({{ count($field->opsi) }} opsi)</span>
                                 </div>
                                 @endif

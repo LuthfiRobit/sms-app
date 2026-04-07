@@ -258,10 +258,13 @@ class PendaftaranPesertaController extends Controller
                 ];
             }
 
+            $progress = $this->portalPendaftaranSvc->getProgressDetail($id, $userId);
+
             return response()->json([
                 'success' => $result['success'],
                 'message' => $result['message'],
                 'dokumen' => $dokumenFormatted,
+                'progress' => $progress['data'] ?? null,
             ], $result['success'] ? 200 : 422);
         } catch (AuthorizationException $e) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
@@ -283,9 +286,12 @@ class PendaftaranPesertaController extends Controller
             $userId = auth()->user()->id_user;
             $result = $this->portalPendaftaranSvc->hapusDokumen($id, $userId, $dokumenId);
 
+            $progress = $this->portalPendaftaranSvc->getProgressDetail($id, $userId);
+
             return response()->json([
                 'success' => $result['success'],
                 'message' => $result['message'],
+                'progress' => $progress['data'] ?? null,
             ], $result['success'] ? 200 : 422);
         } catch (AuthorizationException $e) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
