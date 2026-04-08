@@ -261,3 +261,42 @@ Route::prefix('ppdb')->name('ppdb.')->group(function () {
     });
 });
 
+// =============================================================================
+// TEST NOTIFIKASI ROUTE
+// =============================================================================
+Route::get('/test-notif', function () {
+    try {
+        // Default target user ID 1
+        $userId = 13;
+
+        app(\App\Services\NotifikasiService::class)->kirim($userId, 'pendaftaran_submit', [
+            'no_pendaftaran' => 'PPDB202600001',
+            'nama_peserta' => 'Ahmad'
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Notifikasi pendaftaran_submit berhasil di-dispatch ke queue.',
+            'info' => 'Silakan cek tabel `jobs` (karena queue driver database) atau jalankan `php artisan queue:work`.',
+            'payload' => [
+                'user_id' => $userId,
+                'event' => 'pendaftaran_submit',
+                'no_pendaftaran' => 'PPDB202600001',
+                'nama_peserta' => 'Ahmad'
+            ]
+        ]);
+
+        Log::info('Notifikasi pendaftaran_submit berhasil di-dispatch ke queue.', [
+            'user_id' => $userId,
+            'event' => 'pendaftaran_submit',
+            'no_pendaftaran' => 'PPDB202600001',
+            'nama_peserta' => 'Ahmad'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Gagal mengirim notifikasi: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
