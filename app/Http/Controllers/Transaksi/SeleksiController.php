@@ -114,7 +114,8 @@ class SeleksiController extends Controller
     {
         try {
             $path = $this->seleksiService->generatePdfPengumuman($jalurId);
-            return response()->download(storage_path("app/public/{$path}"));
+            $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path($path);
+            return response()->download($fullPath);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal mendownload pengumuman: ' . $e->getMessage());
         }
@@ -124,7 +125,8 @@ class SeleksiController extends Controller
     {
         try {
             $path = $this->seleksiService->generateKartuPeserta($pendaftaranId);
-            return response()->download(storage_path("app/public/{$path}"));
+            $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path($path);
+            return response()->download($fullPath);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal mendownload kartu peserta: ' . $e->getMessage());
         }

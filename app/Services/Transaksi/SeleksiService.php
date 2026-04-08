@@ -851,10 +851,11 @@ class SeleksiService
             'tanggal_cetak'=> now()->translatedFormat('d F Y'),
         ];
 
-        // Generate PDF kartu (ukuran A5 landscape atau A4 portrait)
+        // Generate PDF kartu (ukuran A5 portrait)
         $pdf = Pdf::loadView('pdf.seleksi.kartu_peserta', $data)
-            ->setPaper([0, 0, 419.53, 595.28], 'portrait') // A5
-            ->setOption('defaultFont', 'sans-serif')
+            ->setPaper('a5', 'portrait')
+            ->setOption('defaultFont', 'Helvetica')
+            ->setOption('isRemoteEnabled', true)
             ->setOption('isHtml5ParserEnabled', true);
 
         // Path output
@@ -1057,34 +1058,24 @@ class SeleksiService
             || class_exists(\SimpleSoftwareIO\QrCode\QrCode::class)
         ) {
             try {
-                $qrSvg = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
+                // DOMPDF sangat sensitif terhadap SVG base64, jadi kita force ke format PNG.
+                $qrPng = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
                     ->size(200)
+                    ->margin(0)
                     ->errorCorrection('M')
                     ->generate($content);
 
-                return 'data:image/svg+xml;base64,' . base64_encode($qrSvg);
+                return 'data:image/png;base64,' . base64_encode($qrPng);
             } catch (Exception $e) {
                 Log::warning('[SeleksiService::generateQrCodeBase64] SimpleSoftwareIO QR gagal: ' . $e->getMessage());
             }
         }
 
-        // Fallback: BaconQrCode (composer require bacon/bacon-qr-code)
-        if (class_exists(\BaconQrCode\Renderer\ImageRenderer::class)) {
-            try {
-                $renderer = new \BaconQrCode\Renderer\ImageRenderer(
-                    new \BaconQrCode\Renderer\RendererStyle\RendererStyle(200),
-                    new \BaconQrCode\Renderer\Image\SvgImageBackEnd()
-                );
-                $writer = new \BaconQrCode\Writer($renderer);
-                $svg    = $writer->writeString($content);
-
-                return 'data:image/svg+xml;base64,' . base64_encode($svg);
-            } catch (Exception $e) {
-                Log::warning('[SeleksiService::generateQrCodeBase64] BaconQR gagal: ' . $e->getMessage());
-            }
-        }
-
-        Log::warning('[SeleksiService::generateQrCodeBase64] Tidak ada library QR code yang tersedia.', [
+        // Fallback: Kita skip BaconQrCode jika merender SVG karena DOMPDF bisa crash.
+        // Jika butuh fallback PNG BaconQrCode, perlukan driver Imagick dsb yang rumit di Windows.
+        // Oleh karena itu return null secara default jika simple-qrcode gagal/tidak ada PNG.
+        
+        Log::warning('[SeleksiService::generateQrCodeBase64] QrCode gagal digenerate dalam format PNG.', [
             'content' => $content,
         ]);
 

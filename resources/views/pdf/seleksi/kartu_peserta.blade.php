@@ -12,28 +12,26 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'DejaVu Sans', 'Arial', sans-serif;
+            font-family: 'Helvetica', 'Arial', sans-serif;
             font-size: 9.5pt;
             color: #1a1a2e;
             background: #ffffff;
-            width: 148mm;
-            height: 210mm;
-            position: relative;
+            margin: 0;
+            padding: 0;
         }
 
         /* ── OUTER WRAPPER ──────────────────────────────── */
         .card-wrapper {
             border: 2px solid #1a56db;
             border-radius: 8px;
-            margin: 8mm;
+            margin: 10px;
             padding: 0;
             overflow: hidden;
-            min-height: 190mm;
         }
 
         /* ── HEADER STRIP ───────────────────────────────── */
         .card-header {
-            background: linear-gradient(135deg, #1a56db 0%, #1e40af 100%);
+            background-color: #1a56db;
             color: #ffffff;
             padding: 10px 14px;
             text-align: center;
@@ -64,16 +62,12 @@
 
         /* ── BODY ───────────────────────────────────────── */
         .card-body {
-            display: table;
-            width: 100%;
             padding: 14px;
         }
 
         /* ── KOLOM FOTO ─────────────────────────────────── */
         .col-foto {
-            display: table-cell;
             width: 90px;
-            vertical-align: top;
             padding-right: 10px;
         }
         .foto-box {
@@ -83,9 +77,7 @@
             border-radius: 4px;
             overflow: hidden;
             background: #f3f4f6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            text-align: center;
         }
         .foto-box img {
             width: 100%;
@@ -97,18 +89,15 @@
             height: 100px;
             border: 2px dashed #9ca3af;
             border-radius: 4px;
-            display: table-cell;
             text-align: center;
-            vertical-align: middle;
             color: #9ca3af;
             font-size: 7.5pt;
             line-height: 1.3;
+            padding-top: 35px;
         }
 
         /* ── KOLOM DATA ─────────────────────────────────── */
         .col-data {
-            display: table-cell;
-            vertical-align: top;
         }
 
         .data-table {
@@ -167,13 +156,10 @@
 
         /* ── QR CODE AREA ────────────────────────────────── */
         .qr-section {
-            display: table;
             width: 100%;
             padding: 8px 14px 10px;
         }
         .qr-image {
-            display: table-cell;
-            vertical-align: middle;
             width: 70px;
         }
         .qr-image img {
@@ -181,8 +167,6 @@
             height: 65px;
         }
         .qr-text {
-            display: table-cell;
-            vertical-align: middle;
             padding-left: 10px;
         }
         .qr-text p {
@@ -222,68 +206,70 @@
 
     {{-- ── BODY ────────────────────────────────────────────── --}}
     <div class="card-body">
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                {{-- FOTO --}}
+                <td style="width: 90px; vertical-align: top; padding-right: 10px;">
+                    @if(!empty($foto_base64))
+                        <div class="foto-box">
+                            <img src="{{ $foto_base64 }}" alt="Foto Peserta" />
+                        </div>
+                    @else
+                        <div class="foto-placeholder">
+                            Foto<br/>Peserta
+                        </div>
+                    @endif
+                </td>
 
-        {{-- FOTO --}}
-        <div class="col-foto">
-            @if(!empty($foto_base64))
-                <div class="foto-box">
-                    <img src="{{ $foto_base64 }}" alt="Foto Peserta" />
-                </div>
-            @else
-                <div class="foto-placeholder">
-                    Foto<br/>Peserta
-                </div>
-            @endif
-        </div>
-
-        {{-- DATA PESERTA --}}
-        <div class="col-data">
-            <table class="data-table">
-                <tr>
-                    <td class="label">Nama Lengkap</td>
-                    <td class="colon">:</td>
-                    <td class="value strong">{{ $peserta?->nama_lengkap ?? '-' }}</td>
-                </tr>
-                <tr>
-                    <td class="label">NISN</td>
-                    <td class="colon">:</td>
-                    <td class="value">{{ $peserta?->nisn ?? '-' }}</td>
-                </tr>
-                <tr>
-                    <td class="label">NIK</td>
-                    <td class="colon">:</td>
-                    <td class="value">{{ $peserta?->nik ?? '-' }}</td>
-                </tr>
-                <tr>
-                    <td class="label">Tempat, Tgl Lahir</td>
-                    <td class="colon">:</td>
-                    <td class="value">
-                        {{ $peserta?->tempat_lahir ?? '-' }},
-                        {{ $peserta?->tanggal_lahir?->translatedFormat('d F Y') ?? '-' }}
-                    </td>
-                </tr>
-                <tr>
-                    <td class="label">Jenis Kelamin</td>
-                    <td class="colon">:</td>
-                    <td class="value">
-                        {{ $peserta?->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' }}
-                    </td>
-                </tr>
-                <tr>
-                    <td class="label">Jalur Seleksi</td>
-                    <td class="colon">:</td>
-                    <td class="value">{{ $jalur?->nama ?? '-' }}</td>
-                </tr>
-                <tr>
-                    <td class="label">Tanggal Daftar</td>
-                    <td class="colon">:</td>
-                    <td class="value">
-                        {{ $pendaftaran->tanggal_daftar?->translatedFormat('d F Y') ?? '-' }}
-                    </td>
-                </tr>
-            </table>
-        </div>
-
+                {{-- DATA PESERTA --}}
+                <td style="vertical-align: top;">
+                    <table class="data-table">
+                        <tr>
+                            <td class="label">Nama Lengkap</td>
+                            <td class="colon">:</td>
+                            <td class="value strong">{{ $peserta?->nama_lengkap ?? '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">NISN</td>
+                            <td class="colon">:</td>
+                            <td class="value">{{ $peserta?->nisn ?? '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">NIK</td>
+                            <td class="colon">:</td>
+                            <td class="value">{{ $peserta?->nik ?? '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Tempat, Tgl Lahir</td>
+                            <td class="colon">:</td>
+                            <td class="value">
+                                {{ $peserta?->tempat_lahir ?? '-' }},
+                                {{ $peserta?->tanggal_lahir?->translatedFormat('d F Y') ?? '-' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label">Jenis Kelamin</td>
+                            <td class="colon">:</td>
+                            <td class="value">
+                                {{ $peserta?->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label">Jalur Seleksi</td>
+                            <td class="colon">:</td>
+                            <td class="value">{{ $jalur->nama ?? '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Tanggal Daftar</td>
+                            <td class="colon">:</td>
+                            <td class="value">
+                                {{ $pendaftaran->tanggal_daftar?->translatedFormat('d F Y') ?? '-' }}
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
     </div><!-- /card-body -->
 
     <hr class="divider" />
@@ -320,24 +306,30 @@
 
     {{-- ── QR CODE ──────────────────────────────────────────── --}}
     <div class="qr-section">
-        <div class="qr-image">
-            @if(!empty($qr_base64))
-                <img src="{{ $qr_base64 }}" alt="QR Code Verifikasi" />
-            @else
-                <div style="width:65px;height:65px;background:#f3f4f6;border:1px dashed #d1d5db;
-                            display:table-cell;vertical-align:middle;text-align:center;
-                            font-size:7pt;color:#9ca3af;">QR N/A</div>
-            @endif
-        </div>
-        <div class="qr-text">
-            <strong>Scan untuk Verifikasi</strong>
-            <p>
-                Kartu ini merupakan dokumen resmi PPDB.<br />
-                Scan QR code untuk memverifikasi keaslian<br />
-                kartu peserta dengan nomor:<br />
-                <strong>{{ $pendaftaran->no_pendaftaran }}</strong>
-            </p>
-        </div>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="width: 70px; vertical-align: middle;">
+                    @if(!empty($qr_base64))
+                        <img src="{{ $qr_base64 }}" alt="QR Code Verifikasi" style="width: 65px; height: 65px;" />
+                    @else
+                        <div style="width:65px;height:65px;background:#f3f4f6;border:1px dashed #d1d5db;
+                                    text-align:center; padding-top: 15px;
+                                    font-size:7pt;color:#9ca3af;">QR N/A</div>
+                    @endif
+                </td>
+                <td style="vertical-align: middle; padding-left: 10px;">
+                    <div class="qr-text">
+                        <strong>Scan untuk Verifikasi</strong>
+                        <p style="margin: 0;">
+                            Kartu ini merupakan dokumen resmi PPDB.<br />
+                            Scan QR code untuk memverifikasi keaslian<br />
+                            kartu peserta dengan nomor:<br />
+                            <strong>{{ $pendaftaran->no_pendaftaran }}</strong>
+                        </p>
+                    </div>
+                </td>
+            </tr>
+        </table>
     </div>
 
     {{-- ── FOOTER ───────────────────────────────────────────── --}}
