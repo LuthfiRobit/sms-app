@@ -143,6 +143,14 @@ Route::middleware(['auth', 'permission'])->group(function () {
             Route::get('/{id}',       [App\Http\Controllers\Transaksi\PendaftaranController::class, 'show'])->name('show');
         });
 
+        // Pembayaran
+        Route::prefix('pembayaran')->name('pembayaran.')->group(function () {
+            Route::get('list', [App\Http\Controllers\Transaksi\PembayaranController::class, 'list'])->name('list');
+            Route::post('{id}/konfirmasi', [App\Http\Controllers\Transaksi\PembayaranController::class, 'konfirmasiManual'])->name('konfirmasi');
+            Route::get('/',           [App\Http\Controllers\Transaksi\PembayaranController::class, 'index'])->name('index');
+            Route::get('/{id}',       [App\Http\Controllers\Transaksi\PembayaranController::class, 'show'])->name('show');
+        });
+
     });
 });
 
