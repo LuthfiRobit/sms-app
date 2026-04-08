@@ -48,11 +48,22 @@ class PembayaranController extends Controller
             // Oh, wait, the service injects PembayaranPpdbRepositoryInterface. 
             // We should use appropriate repository or write query here, but let's write correct DataTables code.
             
-            $query = \App\Models\Transaksi\PembayaranPpdb::with([
-                'pendaftaran', 
-                'pendaftaran.peserta', 
-                'pendaftaran.jalurPendaftaran'
-            ]);
+            // OPTIMASI: Pilih hanya kolom yang dibutuhkan untuk DataTable.
+            // Hindari menarik snap_token, midtrans_response (kolom besar) di list view.
+            $query = \App\Models\Transaksi\PembayaranPpdb::select([
+                    'pembayaran_ppdb.id',
+                    'pembayaran_ppdb.pendaftaran_id',
+                    'pembayaran_ppdb.status',
+                    'pembayaran_ppdb.amount',
+                    'pembayaran_ppdb.metode',
+                    'pembayaran_ppdb.order_id',
+                    'pembayaran_ppdb.waktu_bayar',
+                ])
+                ->with([
+                    'pendaftaran:id,no_pendaftaran,peserta_id,jalur_pendaftaran_id',
+                    'pendaftaran.peserta:id,nama_lengkap',
+                    'pendaftaran.jalurPendaftaran:id,nama',
+                ]);
 
             if ($request->filled('status')) {
                 $query->where('status', $request->status);

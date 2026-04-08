@@ -5,13 +5,16 @@ namespace App\Http\Controllers\Transaksi;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\Transaksi\SeleksiService;
+use App\Services\LogActivityService;
 use App\Models\Ppdb\JalurPendaftaran;
 use App\Models\Transaksi\Pendaftaran;
 
 class SeleksiController extends Controller
 {
-    public function __construct(protected SeleksiService $seleksiService)
-    {
+    public function __construct(
+        protected SeleksiService $seleksiService,
+        protected LogActivityService $logActivity,
+    ) {
     }
 
     public function index($jalurId)
@@ -61,6 +64,12 @@ class SeleksiController extends Controller
         $response = $this->seleksiService->inputNilai($pendaftaranId, $request->input('nilaiData'), $reviewerId);
 
         if ($response['success']) {
+            $nama = auth()->user()->name ?? 'Admin';
+            $this->logActivity->log(
+                "Admin {$nama} input nilai seleksi",
+                "Admin {$nama} store Seleksi: nilai untuk pendaftaran ID #{$pendaftaranId} ("
+                    . count($request->input('nilaiData')) . ' komponen penilaian)'
+            );
             $pendaftaran = Pendaftaran::findOrFail($pendaftaranId);
             return redirect()->route('admin.seleksi.index', $pendaftaran->jalur_pendaftaran_id)
                              ->with('success', $response['message']);
@@ -77,6 +86,11 @@ class SeleksiController extends Controller
         $response = $this->seleksiService->hitungRanking($jalurId, $userId);
 
         if ($response['success']) {
+            $nama = auth()->user()->name ?? 'Admin';
+            $this->logActivity->log(
+                "Admin {$nama} hitung ranking seleksi",
+                "Admin {$nama} hitungRanking JalurPendaftaran: jalur ID #{$jalurId}"
+            );
             return redirect()->route('admin.seleksi.hasil', $jalurId)
                              ->with('success', $response['message']);
         }
@@ -104,6 +118,11 @@ class SeleksiController extends Controller
         $response = $this->seleksiService->pengumuman($jalurId, $userId);
 
         if ($response['success']) {
+            $nama = auth()->user()->name ?? 'Admin';
+            $this->logActivity->log(
+                "Admin {$nama} umumkan hasil seleksi",
+                "Admin {$nama} pengumuman HasilSeleksi: jalur ID #{$jalurId}"
+            );
             return redirect()->route('admin.seleksi.hasil', $jalurId)->with('success', $response['message']);
         }
 

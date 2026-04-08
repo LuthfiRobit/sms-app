@@ -100,9 +100,12 @@ class PesertaController extends Controller
             'peserta.tempat_lahir'  => 'required|string|max:100',
             'peserta.tanggal_lahir' => 'required|date',
             'peserta.agama'         => 'required|string|max:30',
-            'peserta.nisn'          => 'nullable|digits:10',
-            'peserta.nik'           => 'nullable|digits:16',
-            'peserta.foto'          => 'nullable|image|max:2048',
+            // SECURITY: NIK 16 digit numerik, NISN 10 digit numerik
+            'peserta.nisn'          => ['nullable', 'digits:10', 'regex:/^[0-9]{10}$/'],
+            'peserta.nik'           => ['nullable', 'digits:16', 'regex:/^[0-9]{16}$/'],
+            'peserta.no_kk'         => ['nullable', 'digits:16', 'regex:/^[0-9]{16}$/'],
+            // SECURITY: File upload — hanya format gambar yang aman, max 2MB
+            'peserta.foto'          => 'nullable|file|mimes:jpeg,jpg,png,webp|max:2048',
         ]);
 
         // Handle upload foto — gunakan file() langsung tanpa nested merge
@@ -120,6 +123,13 @@ class PesertaController extends Controller
                 $data['peserta']['foto'] = $fotoPath;
             }
             $result = $this->pesertaService->store($data, auth()->id());
+            // LOG: Store Peserta
+            $nama = auth()->user()->name ?? 'Admin';
+            $namaPeserta = $data['peserta']['nama_lengkap'] ?? '-';
+            $this->logActivity->log(
+                "Admin {$nama} store Peserta",
+                "Admin {$nama} store Peserta: {$namaPeserta}"
+            );
             return $this->responseService->success($result, 'Peserta berhasil ditambahkan.');
         } catch (Exception $e) {
             return $this->responseService->error('Gagal menambahkan peserta: ' . $e->getMessage());
@@ -161,9 +171,12 @@ class PesertaController extends Controller
             'peserta.nama_lengkap'  => 'sometimes|required|string|max:100',
             'peserta.jenis_kelamin' => 'sometimes|required|in:L,P',
             'peserta.tanggal_lahir' => 'sometimes|required|date',
-            'peserta.nisn'          => 'nullable|digits:10',
-            'peserta.nik'           => 'nullable|digits:16',
-            'peserta.foto'          => 'nullable|image|max:2048',
+            // SECURITY: NIK 16 digit numerik, NISN 10 digit numerik
+            'peserta.nisn'          => ['nullable', 'digits:10', 'regex:/^[0-9]{10}$/'],
+            'peserta.nik'           => ['nullable', 'digits:16', 'regex:/^[0-9]{16}$/'],
+            'peserta.no_kk'         => ['nullable', 'digits:16', 'regex:/^[0-9]{16}$/'],
+            // SECURITY: File upload — hanya format gambar yang aman, max 2MB
+            'peserta.foto'          => 'nullable|file|mimes:jpeg,jpg,png,webp|max:2048',
         ]);
 
         // Handle upload foto update
@@ -190,6 +203,13 @@ class PesertaController extends Controller
                 auth()->id(),
                 $isAdmin
             );
+            // LOG: Update Peserta
+            $nama = auth()->user()->name ?? 'Admin';
+            $namaPeserta = $data['peserta']['nama_lengkap'] ?? "ID #{$id}";
+            $this->logActivity->log(
+                "Admin {$nama} update Peserta",
+                "Admin {$nama} update Peserta: {$namaPeserta} (ID #{$id})"
+            );
             return $this->responseService->success($result, 'Data peserta berhasil diperbarui.');
         } catch (Exception $e) {
             return $this->responseService->error('Gagal memperbarui peserta: ' . $e->getMessage());
@@ -204,6 +224,12 @@ class PesertaController extends Controller
     {
         try {
             $result = $this->pesertaService->destroy($id, auth()->id());
+            // LOG: Destroy Peserta
+            $nama = auth()->user()->name ?? 'Admin';
+            $this->logActivity->log(
+                "Admin {$nama} destroy Peserta",
+                "Admin {$nama} destroy Peserta: ID #{$id}"
+            );
             return $this->responseService->success(null, $result['message']);
         } catch (Exception $e) {
             return $this->responseService->error('Gagal menghapus peserta: ' . $e->getMessage());
