@@ -186,7 +186,11 @@
                                 <a class="pc-link" href="{{ route('admin.pembayaran.index') }}">Pembayaran PPDB</a>
                             </li>
                         @endif
-                        <li class="pc-item"><a class="pc-link" href="#">Verifikasi & Seleksi</a></li>
+                        @if(auth()->user()->hasPermissionTo('admin.seleksi.index'))
+                            <li class="pc-item {{ request()->routeIs('admin.seleksi.*') ? 'active' : '' }}">
+                                <a class="pc-link" href="{{ route('admin.ppdb.jalur.index') }}">Verifikasi & Seleksi</a>
+                            </li>
+                        @endif
                         <li class="pc-item"><a class="pc-link" href="#">Daftar Ulang</a></li>
                     </ul>
                 </li>

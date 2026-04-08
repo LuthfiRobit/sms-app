@@ -196,6 +196,9 @@
                 </table>
             </div>
             <div class="modal-footer bg-light text-center">
+                @if(auth()->user()->hasPermissionTo('admin.seleksi.index'))
+                    <a href="#" id="show-btn-seleksi" class="btn btn-success"><i class="bi bi-person-lines-fill me-1"></i> Verifikasi & Seleksi</a>
+                @endif
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
             </div>
         </div>
@@ -283,6 +286,9 @@
                     let statusBadge = d.status === 'aktif' ? '<span class="badge bg-success">Aktif</span>' : '<span class="badge bg-danger">Non-Aktif</span>';
                     $('#show-status').html(statusBadge);
                     $('#show-deskripsi').text(d.deskripsi || '-');
+                    
+                    let seleksiUrl = "{{ route('admin.seleksi.index', ':id') }}".replace(':id', d.id);
+                    $('#show-btn-seleksi').attr('href', seleksiUrl);
                     
                     $('#modal-show').modal('show');
                 }

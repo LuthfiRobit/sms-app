@@ -57,6 +57,11 @@ class JalurPendaftaranController extends Controller
             ->addColumn('action', function ($row) {
                 $btn = '<div class="btn-group" role="group">';
 
+                if (auth()->user()->hasPermissionTo('admin.seleksi.index')) {
+                    $url = route('admin.seleksi.index', $row->id);
+                    $btn .= '<a href="' . $url . '" class="btn btn-sm btn-success text-white" title="Verifikasi & Seleksi"><i class="bi bi-person-lines-fill"></i></a>';
+                }
+
                 if (auth()->user()->hasPermissionTo('admin.ppdb.jalur.show')) {
                     $btn .= '<button type="button" class="btn btn-sm btn-info btn-show text-white" data-id="' . $row->id . '" title="Detail"><i class="bi bi-info-circle"></i></button>';
                 }

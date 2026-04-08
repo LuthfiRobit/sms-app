@@ -152,6 +152,18 @@ Route::middleware(['auth', 'permission'])->group(function () {
             Route::get('/{id}', [App\Http\Controllers\Transaksi\PembayaranController::class, 'show'])->name('show');
         });
 
+        // Seleksi
+        Route::prefix('seleksi')->name('seleksi.')->group(function () {
+            Route::get('jalur/{jalurId}', [App\Http\Controllers\Transaksi\SeleksiController::class, 'index'])->name('index');
+            Route::get('pendaftaran/{pendaftaranId}/penilaian', [App\Http\Controllers\Transaksi\SeleksiController::class, 'penilaian'])->name('penilaian');
+            Route::post('pendaftaran/{pendaftaranId}/nilai', [App\Http\Controllers\Transaksi\SeleksiController::class, 'inputNilai'])->name('nilai.store');
+            Route::post('jalur/{jalurId}/hitung-ranking', [App\Http\Controllers\Transaksi\SeleksiController::class, 'hitungRanking'])->name('hitung-ranking');
+            Route::get('jalur/{jalurId}/hasil', [App\Http\Controllers\Transaksi\SeleksiController::class, 'hasil'])->name('hasil');
+            Route::post('jalur/{jalurId}/pengumuman', [App\Http\Controllers\Transaksi\SeleksiController::class, 'pengumuman'])->name('pengumuman');
+            Route::get('jalur/{jalurId}/download-pengumuman', [App\Http\Controllers\Transaksi\SeleksiController::class, 'downloadPengumuman'])->name('download-pengumuman');
+            Route::get('pendaftaran/{pendaftaranId}/download-kartu', [App\Http\Controllers\Transaksi\SeleksiController::class, 'downloadKartu'])->name('download-kartu');
+        });
+
     });
 });
 
