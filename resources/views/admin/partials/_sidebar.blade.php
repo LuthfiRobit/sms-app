@@ -21,6 +21,18 @@
                         <span class="pc-mtext">Keuangan</span>
                     </a>
                 </li>
+                <li class="pc-item {{ request()->routeIs('admin.notifikasi.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.notifikasi.index') }}" class="pc-link">
+                        <span class="pc-micon"><i class="bi bi-bell-fill"></i></span>
+                        <span class="pc-mtext">Notifikasi Saya</span>
+                        @php
+                            $unreadCount = app(\App\Services\NotifikasiService::class)->getUnreadCount(auth()->id());
+                        @endphp
+                        @if($unreadCount > 0)
+                            <span class="pc-badge bg-danger">{{ $unreadCount }}</span>
+                        @endif
+                    </a>
+                </li>
 
                 <!-- 2. Data Master -->
                 <li class="pc-item pc-caption"><label>Data Master</label><i class="bi bi-database"></i></li>

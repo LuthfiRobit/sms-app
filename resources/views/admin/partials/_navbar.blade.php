@@ -23,31 +23,24 @@
                     <a class="pc-head-link head-link-secondary dropdown-toggle arrow-none me-0"
                         data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                         <i class="bi bi-bell"></i>
-                        <span class="badge bg-danger pc-h-badge">5</span>
+                        <span class="badge bg-danger pc-h-badge" id="notification-badge-count">0</span>
                     </a>
                     <div class="dropdown-menu dropdown-notification dropdown-menu-end pc-h-dropdown">
                         <div class="dropdown-header">
+                            <a href="{{ route('admin.notifikasi.index') }}" class="float-end text-muted small">Tandai semua dibaca</a>
                             <h5>Notifikasi</h5>
                         </div>
                         <div class="dropdown-header px-0 text-wrap header-notification-scroll position-relative"
                             style="max-height: calc(100vh - 215px)">
-                            <div class="list-group list-group-flush w-100">
-                                <div class="list-group-item list-group-item-action">
-                                    <div class="d-flex">
-                                        <div class="flex-shrink-0">
-                                            <div class="user-avtar bg-light-danger"><i
-                                                    class="bi bi-exclamation-circle"></i></div>
-                                        </div>
-                                        <div class="flex-grow-1 ms-1">
-                                            <span class="float-end text-muted">1 jam lalu</span>
-                                            <h5>Jurnal Belum Diisi</h5>
-                                            <p class="text-body fs-6">Mohon isi jurnal mengajar hari ini.</p>
-                                        </div>
-                                    </div>
+                            <div class="list-group list-group-flush w-100" id="notification-list-container">
+                                <!-- Dynamic content via JS -->
+                                <div class="list-group-item text-center py-4">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                                 </div>
                             </div>
                         </div>
-                        <div class="text-center py-2"><a href="#!" class="link-primary">Lihat semua notifikasi</a>
+                        <div class="text-center py-2">
+                            <a href="{{ route('admin.notifikasi.index') }}" class="link-primary">Lihat semua notifikasi</a>
                         </div>
                     </div>
                 </li>

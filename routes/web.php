@@ -51,6 +51,14 @@ Route::middleware(['auth', 'permission'])->group(function () {
             Route::resource('log-activity', \App\Http\Controllers\System\LogActivityController::class)->only(['index', 'show']);
         });
 
+        // Notifikasi Routes
+        Route::prefix('notifikasi')->name('notifikasi.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\NotifikasiController::class, 'index'])->name('index');
+            Route::get('/unread-count', [\App\Http\Controllers\NotifikasiController::class, 'getUnreadCount'])->name('unread-count');
+            Route::post('/{id}/read', [\App\Http\Controllers\NotifikasiController::class, 'markRead'])->name('read');
+            Route::post('/mark-all-read', [\App\Http\Controllers\NotifikasiController::class, 'markAllRead'])->name('mark-all-read');
+        });
+
         // Master Data
         Route::prefix('master')->name('master.')->group(function () {
             // Profil Sekolah
