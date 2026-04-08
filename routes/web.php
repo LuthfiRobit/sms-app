@@ -145,3 +145,15 @@ Route::middleware(['auth', 'permission'])->group(function () {
 
     });
 });
+
+// =========================================================================
+// WEBHOOK ROUTES — Tanpa auth middleware (server-to-server)
+// =========================================================================
+// Rate limit: 60 requests per minute per IP
+// CSRF: excluded via bootstrap/app.php validateCsrfTokens
+Route::prefix('webhook')
+    ->name('webhook.')
+    ->middleware('throttle:60,1')
+    ->group(function () {
+        Route::post('midtrans', [App\Http\Controllers\Webhook\WebhookController::class, 'midtrans'])->name('midtrans');
+    });
