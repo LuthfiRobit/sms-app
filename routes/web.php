@@ -144,6 +144,28 @@ Route::middleware(['auth', 'permission'])->group(function () {
             Route::get('/{id}',       [App\Http\Controllers\Transaksi\PendaftaranController::class, 'show'])->name('show');
         });
 
+        // Pembayaran
+        Route::prefix('pembayaran')->name('pembayaran.')->group(function () {
+            Route::get('list', [App\Http\Controllers\Transaksi\PembayaranController::class, 'list'])->name('list');
+            Route::post('{id}/konfirmasi', [App\Http\Controllers\Transaksi\PembayaranController::class, 'konfirmasiManual'])->name('konfirmasi');
+            Route::get('/',           [App\Http\Controllers\Transaksi\PembayaranController::class, 'index'])->name('index');
+            Route::get('/{id}',       [App\Http\Controllers\Transaksi\PembayaranController::class, 'show'])->name('show');
+        });
+
+    });
+});
+
+// =========================================================================
+// WEBHOOK ROUTES — Tanpa auth middleware (server-to-server)
+// =========================================================================
+// Rate limit: 60 requests per minute per IP
+// CSRF: excluded via bootstrap/app.php validateCsrfTokens
+Route::prefix('webhook')
+    ->name('webhook.')
+    ->middleware('throttle:60,1')
+    ->group(function () {
+        Route::post('midtrans', [App\Http\Controllers\Webhook\WebhookController::class, 'midtrans'])->name('midtrans');
+    });
     });
 });
 
