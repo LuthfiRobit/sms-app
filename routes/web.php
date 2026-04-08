@@ -208,10 +208,11 @@ Route::prefix('ppdb')->name('ppdb.')->group(function () {
             Route::post('/{id}/submit',                   [PendaftaranPesertaController::class, 'submit'])->name('submit');
         });
 
-        // Pembayaran (placeholder — aktif setelah Milestone 7)
+        // Pembayaran — index & token (placeholder M7) + konfirmasi manual (aktif sekarang)
         Route::prefix('/pembayaran')->name('pembayaran.')->group(function () {
-            Route::get('/{id}',        [PembayaranPesertaController::class, 'index'])->name('index');
-            Route::post('/{id}/token', [PembayaranPesertaController::class, 'getToken'])->name('token');
+            Route::get('/{id}',                    [PembayaranPesertaController::class, 'index'])->name('index');
+            Route::post('/{id}/token',             [PembayaranPesertaController::class, 'getToken'])->name('token');
+            Route::post('/{id}/konfirmasi-manual', [PembayaranPesertaController::class, 'konfirmasiManual'])->name('konfirmasi-manual');
         });
 
         // Pengumuman

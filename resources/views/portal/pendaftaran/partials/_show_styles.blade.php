@@ -503,4 +503,36 @@
     .flex-1 {
         flex: 1;
     }
+
+    /* ── Tombol Bayar Pendaftaran ── */
+    .btn-pay-action {
+        background: linear-gradient(135deg, #0f766e, #0d9488);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        transition: all .2s ease;
+        letter-spacing: .3px;
+    }
+
+    .btn-pay-action:hover {
+        background: linear-gradient(135deg, #0d6b64, #0b8177);
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(13, 148, 136, .35);
+    }
+
+    .btn-pay-action:active {
+        transform: translateY(0);
+    }
+
+    /* ── Status box pembayaran ── */
+    .status-box--payment {
+        background: linear-gradient(135deg, #f0fdfa, #ccfbf1);
+        border: 1.5px solid #5eead4;
+        color: #0f766e;
+    }
+
+    .status-box--payment strong {
+        color: #0f766e;
+    }
 </style>
