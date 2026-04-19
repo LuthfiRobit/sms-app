@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('peserta_alamat', function (Blueprint $table) {
             $table->id();
             $table->foreignId('peserta_id')->constrained('peserta')->cascadeOnDelete();
-            $table->string('alamat', 255);
-            $table->string('desa_kelurahan', 50);
-            $table->string('kecamatan', 50);
-            $table->string('kabupaten_kota', 50);
-            $table->string('provinsi', 50);
+            $table->string('alamat', 255)->nullable();
+            $table->string('desa_kelurahan', 50)->nullable();
+            $table->string('kecamatan', 50)->nullable();
+            $table->string('kabupaten_kota', 50)->nullable();
+            $table->string('provinsi', 50)->nullable();
             $table->string('rt', 5)->nullable();
             $table->string('rw', 5)->nullable();
             $table->string('dusun', 50)->nullable();

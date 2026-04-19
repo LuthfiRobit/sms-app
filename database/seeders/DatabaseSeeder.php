@@ -24,8 +24,11 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             RbacSeeder::class,
+            TahunPelajaranSeeder::class,
+            KurikulumSeeder::class,
+            ProfilSekolahSeeder::class,
             JurusanSeeder::class,
-            PembukaanPpdbSeeder::class,
+            PpdbDemoTestDataSeeder::class,
         ]);
     }
 }

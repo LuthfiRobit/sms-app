@@ -24,6 +24,9 @@ return new class extends Migration
             $table->dateTime('waktu_pengumuman')->nullable();
             $table->text('catatan')->nullable();
             $table->timestamps();
+
+            $table->index(['pendaftaran_id', 'peringkat'], 'idx_hasil_seleksi_pendaftaran_peringkat');
+            $table->index('status_kelulusan', 'idx_hasil_seleksi_status');
         });
     }
 

@@ -26,8 +26,8 @@ return new class extends Migration
             $table->json('midtrans_response')->nullable();
             $table->timestamps();
 
-            $table->index(['pendaftaran_id', 'status'], 'pp_pendaftaran_status_idx');
-            $table->index(['order_id'], 'pp_order_id_idx');
+            $table->index(['pendaftaran_id', 'status'], 'idx_pembayaran_pendaftaran_status');
+            $table->index('order_id', 'idx_pembayaran_order_id');
         });
     }
 

@@ -25,7 +25,7 @@ return new class extends Migration
             $table->dateTime('waktu_nilai')->nullable();
             $table->timestamps();
 
-            $table->index(['pendaftaran_id'], 'seleksi_pendaftaran_idx');
+            $table->index(['pendaftaran_id'], 'idx_seleksi_pendaftaran');
         });
     }
 

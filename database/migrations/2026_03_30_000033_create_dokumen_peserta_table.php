@@ -29,7 +29,8 @@ return new class extends Migration
             $table->dateTime('verified_at')->nullable();
             $table->timestamps();
 
-            $table->index(['pendaftaran_id', 'status_verifikasi'], 'dp_pendaftaran_status_idx');
+            $table->index(['pendaftaran_id', 'syarat_pendaftaran_id'], 'idx_dokumen_peserta_pendaftaran_syarat');
+            $table->index(['pendaftaran_id', 'status_verifikasi'], 'idx_dokumen_peserta_status');
         });
     }
 

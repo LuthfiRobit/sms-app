@@ -19,6 +19,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['pendaftaran_id', 'formulir_field_id'], 'pfv_pendaftaran_field_unique');
+            $table->index(['pendaftaran_id', 'formulir_field_id'], 'idx_pfv_pendaftaran_field');
         });
     }
 

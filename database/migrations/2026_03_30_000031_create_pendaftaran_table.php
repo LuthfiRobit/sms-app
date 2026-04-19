@@ -32,6 +32,9 @@ return new class extends Migration
             $table->index(['peserta_id', 'tahun_pelajaran_id'], 'pd_peserta_tp_idx');
             $table->index(['jalur_pendaftaran_id', 'status'], 'pd_jalur_status_idx');
             $table->index(['no_pendaftaran']);
+            $table->index(['status', 'jalur_pendaftaran_id', 'tahun_pelajaran_id'], 'idx_pendaftaran_status_jalur_tahun');
+            $table->index(['peserta_id', 'jalur_pendaftaran_id', 'tahun_pelajaran_id', 'status'], 'idx_pendaftaran_peserta_jalur_tahun');
+            $table->index(['tanggal_daftar', 'status'], 'idx_pendaftaran_tanggal_daftar');
         });
     }
 

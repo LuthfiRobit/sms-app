@@ -29,6 +29,7 @@ class RbacSeeder extends Seeder
             ['name' => 'guru', 'display_name' => 'Guru', 'scope' => 'global', 'description' => 'Guru Pengajar'],
             ['name' => 'wali_kelas', 'display_name' => 'Wali Kelas', 'scope' => 'class', 'description' => 'Wali Kelas Tambahan'],
             ['name' => 'siswa', 'display_name' => 'Siswa', 'scope' => 'global', 'description' => 'Akun Siswa'],
+            ['name' => 'peserta', 'display_name' => 'Peserta PPDB', 'scope' => 'personal', 'description' => 'Role untuk peserta yang mendaftar melalui portal PPDB'],
         ];
 
         foreach ($roles as $r) {
