@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
 use App\Services\Portal\PortalPendaftaranService;
+use App\Services\Transaksi\PembayaranService;
 use App\Services\LogActivityService;
 use App\Models\Transaksi\PembayaranPpdb;
 use App\Repositories\Transaksi\PembayaranPpdbRepositoryInterface;
@@ -23,20 +24,16 @@ use App\Repositories\Transaksi\PembayaranPpdbRepositoryInterface;
  *
  * Routes (prefix: ppdb.pembayaran.*):
  *   GET    /pembayaran/{id}                    → index()              [View]
- *   POST   /pembayaran/{id}/token              → getToken()           [JSON — PLACEHOLDER M7]
- *   POST   /pembayaran/{id}/konfirmasi-manual  → konfirmasiManual()   [JSON — AKTIF]
- *
- * CATATAN M7:
- *   - PembayaranService (Midtrans) BELUM ada — getToken() mengembalikan placeholder.
- *   - Konfirmasi manual upload bukti bayar SUDAH AKTIF.
- *   - Snap.js dimasukkan sebagai komentar TODO dalam view.
+ *   POST   /pembayaran/{id}/token              → getToken()           [JSON]
+ *   POST   /pembayaran/{id}/konfirmasi-manual  → konfirmasiManual()   [JSON]
  */
 class PembayaranPesertaController extends Controller
 {
     public function __construct(
-        protected PortalPendaftaranService        $portalPendaftaranSvc,
+        protected PortalPendaftaranService          $portalPendaftaranSvc,
         protected PembayaranPpdbRepositoryInterface $pembayaranRepo,
-        protected LogActivityService              $logActivity,
+        protected PembayaranService                 $pembayaranService,
+        protected LogActivityService                $logActivity,
     ) {
     }
 
@@ -111,42 +108,24 @@ class PembayaranPesertaController extends Controller
     }
 
     // =========================================================================
-    // 2. GET TOKEN — Midtrans Snap Token (PLACEHOLDER — aktif setelah M7)
+    // 2. GET TOKEN — Midtrans Snap Token
     // =========================================================================
 
     /**
      * Mengambil Snap Token Midtrans untuk pembayaran online.
      *
-     * PLACEHOLDER: PembayaranService (M7) belum diimplementasi.
-     * Mengembalikan pesan yang menginstruksikan peserta untuk menggunakan
-     * konfirmasi manual sementara.
+     * Mendelegasikan ke PembayaranService::createSnapToken().
+     * Response: {success, message, data: {snap_token, client_key, amount, order_id}}
      *
-     * @return JsonResponse {success: false, message: string}
-     *
-     * // TODO: Uncomment setelah PembayaranService (M7) selesai:
-     * // return response()->json($this->pembayaranService->createSnapToken($id, auth()->user()->id_user));
+     * @return JsonResponse
      */
     public function getToken(Request $request, int $id): JsonResponse
     {
         try {
-            $userId = auth()->user()->id_user;
-
-            // Ownership check — throw AuthorizationException jika bukan milik user ini
-            $this->portalPendaftaranSvc->getDetailPendaftaran($id, $userId);
-
-            // ─── PLACEHOLDER: Fitur Midtrans belum aktif ───────────────────────
-            return response()->json([
-                'success' => false,
-                'message' => 'Fitur pembayaran Midtrans akan segera aktif. '
-                    . 'Gunakan konfirmasi transfer manual di bawah untuk sementara ini.',
-            ]);
-
-            // TODO: Uncomment setelah PembayaranService (M7) selesai:
-            // return response()->json(
-            //     $this->pembayaranService->createSnapToken($id, auth()->user()->id_user)
-            // );
-        } catch (AuthorizationException $e) {
-            return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
+            $result = $this->pembayaranService->createSnapToken($id, auth()->user()->id_user);
+            return response()->json($result);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
         }
     }
 
@@ -267,8 +246,7 @@ class PembayaranPesertaController extends Controller
                 "Peserta mengunggah bukti pembayaran untuk pendaftaran #{$noPendaftaran} (ID: {$id})."
             );
 
-            // TODO: Kirim notifikasi ke admin jika NotifikasiService sudah ada:
-            // $this->notifikasiService->notifikasiAdminBuktiManual($id);
+
 
             return response()->json([
                 'success' => true,

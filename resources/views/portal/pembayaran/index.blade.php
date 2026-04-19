@@ -36,7 +36,6 @@
         ? ($statusPembayaranMap[$pembayaran->status] ?? ['label' => ucfirst($pembayaran->status), 'color' => 'secondary', 'icon' => 'bi-circle'])
         : null;
 
-    // TODO: Ambil dari config('ppdb.rekening_tujuan') setelah konfigurasi ditambahkan
     $rekeningTujuan = [
         ['bank' => 'BRI',  'no' => '1234-5678-9012-3456', 'atas_nama' => 'SMK Negeri 1 Contoh'],
         ['bank' => 'BNI',  'no' => '9876-5432-1098-7654', 'atas_nama' => 'SMK Negeri 1 Contoh'],
@@ -182,12 +181,12 @@
             </div>
         </div>
 
-        {{-- ══ CARD 3: Bayar via Midtrans (Placeholder M7) ═══════════════════ --}}
-        <!-- Snap.js: aktifkan setelah M7 → <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script> -->
+        {{-- ══ CARD 3: Bayar via Midtrans ═════════════════════════════════════ --}}
+        <script src="{{ config('midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}"
+                data-client-key="{{ config('midtrans.client_key') }}"></script>
         <div class="pay-card mb-4 pay-card-midtrans">
             <div class="pay-card-header">
                 <span><i class="bi bi-lightning-charge me-2"></i>Bayar via Payment Gateway</span>
-                <span class="badge bg-warning text-dark small">Segera Hadir</span>
             </div>
             <div class="pay-card-body">
                 <div class="midtrans-promo">
@@ -218,10 +217,6 @@
                     <span id="midtrans-alert-msg"></span>
                 </div>
 
-                <p class="midtrans-note mt-2">
-                    <i class="bi bi-clock me-1"></i>
-                    Fitur ini akan segera aktif. Gunakan konfirmasi manual di bawah untuk sementara.
-                </p>
             </div>
         </div>
 
@@ -232,10 +227,9 @@
             </div>
             <div class="pay-card-body">
 
-                {{-- Info Rekening Tujuan --}}
+                    {{-- Info Rekening Tujuan --}}
                 <div class="rekening-section">
                     <div class="rekening-title">Transfer ke Rekening Berikut</div>
-                    {{-- TODO: Ganti dengan config('ppdb.rekening_tujuan') setelah setting ditambahkan --}}
                     @foreach($rekeningTujuan as $rek)
                     <div class="rekening-item">
                         <div class="rek-bank">{{ $rek['bank'] }}</div>
@@ -762,10 +756,10 @@
     const urlKonfirmasi  = '{{ route('ppdb.pembayaran.konfirmasi-manual', $pendaftaran->id ?? 0) }}';
 
     // ─────────────────────────────────────────────────────────────────────
-    // 1. TOMBOL BAYAR MIDTRANS — Placeholder (M7)
+    // 1. TOMBOL BAYAR MIDTRANS — Snap.js Flow
     // ─────────────────────────────────────────────────────────────────────
-    const btnMidtrans    = document.getElementById('btn-bayar-midtrans');
-    const midtransAlert  = document.getElementById('midtrans-alert');
+    const btnMidtrans      = document.getElementById('btn-bayar-midtrans');
+    const midtransAlert    = document.getElementById('midtrans-alert');
     const midtransAlertMsg = document.getElementById('midtrans-alert-msg');
 
     if (btnMidtrans) {
@@ -780,18 +774,26 @@
                 });
                 const data = await res.json();
 
-                if (data.success) {
-                    // ── Aktif setelah M7: Snap.js tersedia ────────────────────────
-                    // snap.pay(data.token, {
-                    //     onSuccess: (result) => { window.location.reload(); },
-                    //     onPending: (result) => { window.location.reload(); },
-                    //     onError:   (result) => { showMidtransAlert(result.status_message, 'danger'); },
-                    //     onClose:   ()       => { showMidtransAlert('Pembayaran dibatalkan.', 'warning'); },
-                    // });
-                    showMidtransAlert(data.message ?? 'Token berhasil didapatkan.', 'success');
+                if (data.success && data.data && data.data.snap_token) {
+                    // Buka popup Snap.js
+                    snap.pay(data.data.snap_token, {
+                        onSuccess: function (result) {
+                            showMidtransAlert('Pembayaran berhasil! Halaman akan dimuat ulang...', 'success');
+                            setTimeout(() => window.location.reload(), 2000);
+                        },
+                        onPending: function (result) {
+                            showMidtransAlert('Pembayaran pending. Segera selesaikan sesuai instruksi.', 'warning');
+                            setTimeout(() => window.location.reload(), 3000);
+                        },
+                        onError: function (result) {
+                            showMidtransAlert(result.status_message ?? 'Terjadi kesalahan pembayaran.', 'danger');
+                        },
+                        onClose: function () {
+                            showMidtransAlert('Popup ditutup. Klik "Bayar Sekarang" untuk mencoba lagi.', 'warning');
+                        },
+                    });
                 } else {
-                    // Pesan placeholder — tampilkan sebagai info (bukan error)
-                    showMidtransAlert(data.message ?? 'Fitur belum aktif.', 'info');
+                    showMidtransAlert(data.message ?? 'Gagal mendapatkan token pembayaran.', 'danger');
                 }
             } catch (err) {
                 showMidtransAlert('Gagal menghubungi server. Silakan coba lagi.', 'danger');
