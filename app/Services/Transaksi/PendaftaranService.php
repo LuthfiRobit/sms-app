@@ -543,10 +543,27 @@ class PendaftaranService
                 $noPendaftaran = $pendaftaran->no_pendaftaran;
 
                 $this->notifikasiService->kirimKeAdmin(
-                    'info',
-                    "Pendaftaran Baru: #{$noPendaftaran}",
-                    "Pendaftaran baru #{$noPendaftaran} dari {$namaPeserta} telah diajukan dan menunggu verifikasi."
+                    'admin_pendaftaran_baru',
+                    [
+                        'nama_peserta'   => $namaPeserta,
+                        'no_pendaftaran' => $noPendaftaran,
+                        'jalur'          => $pendaftaran->jalurPendaftaran?->nama ?? '-',
+                        'tanggal'        => now()->isoFormat('D MMMM YYYY HH:mm')
+                    ]
                 );
+
+                // Kirim notifikasi ke peserta
+                if ($pendaftaran->peserta?->user_id) {
+                    $this->notifikasiService->kirim(
+                        $pendaftaran->peserta->user_id,
+                        'pendaftaran_submit',
+                        [
+                            'nama_peserta'   => $namaPeserta,
+                            'no_pendaftaran' => $noPendaftaran,
+                            'jalur'          => $pendaftaran->jalurPendaftaran?->nama ?? '-'
+                        ]
+                    );
+                }
             });
 
             $this->logActivity->log(
@@ -645,6 +662,19 @@ class PendaftaranService
                     'Verifikasi Approve',
                     "Pendaftaran #{$pendaftaran->no_pendaftaran} di-approve oleh user ID: {$userId}"
                 );
+
+                // Notifikasi ke peserta
+                if ($pendaftaran->peserta?->user_id) {
+                    $this->notifikasiService->kirim(
+                        $pendaftaran->peserta->user_id,
+                        'verifikasi_approve',
+                        [
+                            'nama_peserta'   => $pendaftaran->peserta->nama_lengkap ?? 'Peserta',
+                            'no_pendaftaran' => $pendaftaran->no_pendaftaran,
+                            'jalur'          => $pendaftaran->jalurPendaftaran?->nama ?? '-'
+                        ]
+                    );
+                }
             } else {
                 // submit → draft (reject dengan catatan)
                 $this->pendaftaranRepo->updateStatus(
@@ -657,9 +687,12 @@ class PendaftaranService
                 if ($pendaftaran->peserta?->user_id) {
                     $this->notifikasiService->kirim(
                         $pendaftaran->peserta->user_id,
-                        'warning',
-                        "Pendaftaran #{$pendaftaran->no_pendaftaran} Dikembalikan",
-                        "Pendaftaran Anda #{$pendaftaran->no_pendaftaran} dikembalikan untuk diperbaiki. Catatan: {$catatan}"
+                        'verifikasi_reject',
+                        [
+                            'nama_peserta'   => $pendaftaran->peserta->nama_lengkap ?? 'Peserta',
+                            'no_pendaftaran' => $pendaftaran->no_pendaftaran,
+                            'catatan'        => $catatan
+                        ]
                     );
                 }
 

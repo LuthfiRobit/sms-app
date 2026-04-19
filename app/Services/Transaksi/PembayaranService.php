@@ -386,20 +386,25 @@ class PembayaranService
                         if ($pendaftaran->peserta?->user_id) {
                             $this->notifikasiService->kirim(
                                 $pendaftaran->peserta->user_id,
-                                'success',
-                                'Pembayaran Berhasil',
-                                "Pembayaran untuk pendaftaran #{$pendaftaran->no_pendaftaran} telah berhasil dikonfirmasi. " .
-                                "Jumlah: Rp " . number_format((int) $pembayaran->amount, 0, ',', '.') . ". " .
-                                "Terima kasih, pendaftaran Anda sedang dalam proses verifikasi."
+                                'pembayaran_success',
+                                [
+                                    'nama_peserta'   => $pendaftaran->peserta->nama_lengkap,
+                                    'no_pendaftaran' => $pendaftaran->no_pendaftaran,
+                                    'nominal'        => "Rp " . number_format((int) $pembayaran->amount, 0, ',', '.'),
+                                    'tanggal'        => now()->isoFormat('D MMMM YYYY')
+                                ]
                             );
                         }
 
                         // Notifikasi ke admin juga
                         $this->notifikasiService->kirimKeAdmin(
-                            'info',
-                            'Pembayaran Masuk',
-                            "Pembayaran #{$pembayaran->order_id} untuk pendaftaran #{$pendaftaran->no_pendaftaran} " .
-                            "sebesar Rp " . number_format((int) $pembayaran->amount, 0, ',', '.') . " telah berhasil."
+                            'pembayaran_success',
+                            [
+                                'nama_peserta'   => $pendaftaran->peserta->nama_lengkap,
+                                'no_pendaftaran' => $pendaftaran->no_pendaftaran,
+                                'nominal'        => "Rp " . number_format((int) $pembayaran->amount, 0, ',', '.'),
+                                'tanggal'        => now()->isoFormat('D MMMM YYYY')
+                            ]
                         );
                     }
                 }
@@ -611,10 +616,13 @@ class PembayaranService
                 if ($pendaftaran?->peserta?->user_id) {
                     $this->notifikasiService->kirim(
                         $pendaftaran->peserta->user_id,
-                        'success',
-                        'Pembayaran Dikonfirmasi',
-                        "Pembayaran untuk pendaftaran #{$pendaftaran->no_pendaftaran} telah dikonfirmasi oleh admin. " .
-                        "Jumlah: Rp " . number_format((int) $pembayaran->amount, 0, ',', '.') . "."
+                        'pembayaran_success',
+                        [
+                            'nama_peserta'   => $pendaftaran->peserta->nama_lengkap ?? 'Peserta',
+                            'no_pendaftaran' => $pendaftaran->no_pendaftaran,
+                            'nominal'        => "Rp " . number_format((int) $pembayaran->amount, 0, ',', '.'),
+                            'tanggal'        => now()->isoFormat('D MMMM YYYY')
+                        ]
                     );
                 }
             });
