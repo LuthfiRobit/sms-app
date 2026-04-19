@@ -2,6 +2,14 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Portal\PortalController;
+use App\Http\Controllers\Portal\AuthPesertaController;
+use App\Http\Controllers\Portal\DashboardPesertaController;
+use App\Http\Controllers\Portal\ProfilPesertaController;
+use App\Http\Controllers\Portal\PendaftaranPesertaController;
+use App\Http\Controllers\Portal\PembayaranPesertaController;
+use App\Http\Controllers\Portal\PengumumanPesertaController;
+use App\Http\Controllers\Portal\DaftarUlangPesertaController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -17,11 +25,11 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'permission'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
-
     Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/dashboard', function () {
+            return view('admin.dashboard');
+        })->name('dashboard');
+
         // RBAC System
         Route::prefix('rbac')->name('rbac.')->group(function () {
             // Roles
@@ -132,16 +140,10 @@ Route::middleware(['auth', 'permission'])->group(function () {
         Route::prefix('peserta')->name('peserta.')->group(function () {
             // Endpoint non-resource harus SEBELUM route berparameter agar tidak konfllik
             Route::get('list', [App\Http\Controllers\Peserta\PesertaController::class, 'list'])->name('list');
-            Route::get('list', [App\Http\Controllers\Peserta\PesertaController::class, 'list'])->name('list');
             Route::post('import-csv', [App\Http\Controllers\Peserta\PesertaController::class, 'importCsv'])->name('import-csv');
             Route::get('export-csv', [App\Http\Controllers\Peserta\PesertaController::class, 'exportCsv'])->name('export-csv');
-            Route::get('export-csv', [App\Http\Controllers\Peserta\PesertaController::class, 'exportCsv'])->name('export-csv');
+
             // CRUD — explicit routes dengan parameter {id} yang jelas
-            Route::get('/', [App\Http\Controllers\Peserta\PesertaController::class, 'index'])->name('index');
-            Route::post('/', [App\Http\Controllers\Peserta\PesertaController::class, 'store'])->name('store');
-            Route::get('/{id}', [App\Http\Controllers\Peserta\PesertaController::class, 'show'])->name('show');
-            Route::put('/{id}', [App\Http\Controllers\Peserta\PesertaController::class, 'update'])->name('update');
-            Route::delete('/{id}', [App\Http\Controllers\Peserta\PesertaController::class, 'destroy'])->name('destroy');
             Route::get('/', [App\Http\Controllers\Peserta\PesertaController::class, 'index'])->name('index');
             Route::post('/', [App\Http\Controllers\Peserta\PesertaController::class, 'store'])->name('store');
             Route::get('/{id}', [App\Http\Controllers\Peserta\PesertaController::class, 'show'])->name('show');
@@ -159,6 +161,25 @@ Route::middleware(['auth', 'permission'])->group(function () {
             Route::get('/{id}', [App\Http\Controllers\Transaksi\PendaftaranController::class, 'show'])->name('show');
         });
 
+        // Pembayaran
+        Route::prefix('pembayaran')->name('pembayaran.')->group(function () {
+            Route::get('list', [App\Http\Controllers\Transaksi\PembayaranController::class, 'list'])->name('list');
+            Route::post('{id}/konfirmasi', [App\Http\Controllers\Transaksi\PembayaranController::class, 'konfirmasiManual'])->name('konfirmasi');
+            Route::get('/', [App\Http\Controllers\Transaksi\PembayaranController::class, 'index'])->name('index');
+            Route::get('/{id}', [App\Http\Controllers\Transaksi\PembayaranController::class, 'show'])->name('show');
+        });
+
+        // Seleksi
+        Route::prefix('seleksi')->name('seleksi.')->group(function () {
+            Route::get('jalur/{jalurId}', [App\Http\Controllers\Transaksi\SeleksiController::class, 'index'])->name('index');
+            Route::get('pendaftaran/{pendaftaranId}/penilaian', [App\Http\Controllers\Transaksi\SeleksiController::class, 'penilaian'])->name('penilaian');
+            Route::post('pendaftaran/{pendaftaranId}/nilai', [App\Http\Controllers\Transaksi\SeleksiController::class, 'inputNilai'])->name('nilai.store');
+            Route::post('jalur/{jalurId}/hitung-ranking', [App\Http\Controllers\Transaksi\SeleksiController::class, 'hitungRanking'])->name('hitung-ranking');
+            Route::get('jalur/{jalurId}/hasil', [App\Http\Controllers\Transaksi\SeleksiController::class, 'hasil'])->name('hasil');
+            Route::post('jalur/{jalurId}/pengumuman', [App\Http\Controllers\Transaksi\SeleksiController::class, 'pengumuman'])->name('pengumuman');
+            Route::get('jalur/{jalurId}/download-pengumuman', [App\Http\Controllers\Transaksi\SeleksiController::class, 'downloadPengumuman'])->name('download-pengumuman');
+            Route::get('pendaftaran/{pendaftaranId}/download-kartu', [App\Http\Controllers\Transaksi\SeleksiController::class, 'downloadKartu'])->name('download-kartu');
+        });
     });
 });
 
@@ -178,29 +199,17 @@ Route::prefix('webhook')
 // PORTAL PESERTA PPDB — Route Terpisah dari Admin Panel
 // Guard: web (sama), Middleware: peserta.auth & peserta.aktif (BUKAN permission)
 // =============================================================================
-use App\Http\Controllers\Portal\PortalController;
-use App\Http\Controllers\Portal\AuthPesertaController;
-use App\Http\Controllers\Portal\DashboardPesertaController;
-use App\Http\Controllers\Portal\ProfilPesertaController;
-use App\Http\Controllers\Portal\PendaftaranPesertaController;
-use App\Http\Controllers\Portal\PembayaranPesertaController;
-use App\Http\Controllers\Portal\PengumumanPesertaController;
-use App\Http\Controllers\Portal\DaftarUlangPesertaController;
 
 Route::prefix('ppdb')->name('ppdb.')->group(function () {
 
     // === PUBLIK (tidak perlu login) ===
-    Route::get('/', [PortalController::class, 'beranda'])->name('beranda');
     Route::get('/', [PortalController::class, 'beranda'])->name('beranda');
     Route::get('/info', [PortalController::class, 'info'])->name('info');
 
     // === AUTH ROUTES — guest only ===
     Route::middleware('guest')->group(function () {
         Route::get('/register', [AuthPesertaController::class, 'showRegister'])->name('register');
-        Route::get('/register', [AuthPesertaController::class, 'showRegister'])->name('register');
         Route::post('/register', [AuthPesertaController::class, 'register'])->name('register.post');
-        Route::get('/login', [AuthPesertaController::class, 'showLogin'])->name('login');
-        Route::post('/login', [AuthPesertaController::class, 'login'])->name('login.post');
         Route::get('/login', [AuthPesertaController::class, 'showLogin'])->name('login');
         Route::post('/login', [AuthPesertaController::class, 'login'])->name('login.post');
     });
@@ -208,10 +217,7 @@ Route::prefix('ppdb')->name('ppdb.')->group(function () {
     // === VERIFIKASI EMAIL (perlu login peserta, belum perlu aktif) ===
     Route::middleware('peserta.auth')->group(function () {
         Route::get('/verify-email', [AuthPesertaController::class, 'showVerifyEmail'])->name('verify-email');
-        Route::get('/verify-email', [AuthPesertaController::class, 'showVerifyEmail'])->name('verify-email');
         Route::post('/verify-email', [AuthPesertaController::class, 'verifyEmail'])->name('verify-email.post');
-        Route::post('/resend-otp', [AuthPesertaController::class, 'resendOtp'])->name('resend-otp');
-        Route::post('/logout', [AuthPesertaController::class, 'logout'])->name('logout');
         Route::post('/resend-otp', [AuthPesertaController::class, 'resendOtp'])->name('resend-otp');
         Route::post('/logout', [AuthPesertaController::class, 'logout'])->name('logout');
     });
@@ -224,9 +230,6 @@ Route::prefix('ppdb')->name('ppdb.')->group(function () {
 
         // Profil & Data Dapodik
         Route::prefix('/profil')->name('profil.')->group(function () {
-            Route::get('/', [ProfilPesertaController::class, 'index'])->name('index');
-            Route::put('/akun', [ProfilPesertaController::class, 'updateAkun'])->name('akun');
-            Route::put('/dapodik', [ProfilPesertaController::class, 'updateDapodik'])->name('dapodik');
             Route::get('/', [ProfilPesertaController::class, 'index'])->name('index');
             Route::put('/akun', [ProfilPesertaController::class, 'updateAkun'])->name('akun');
             Route::put('/dapodik', [ProfilPesertaController::class, 'updateDapodik'])->name('dapodik');
@@ -243,20 +246,10 @@ Route::prefix('ppdb')->name('ppdb.')->group(function () {
             Route::post('/{id}/dokumen/{syaratId}', [PendaftaranPesertaController::class, 'uploadDokumen'])->name('dokumen.upload');
             Route::delete('/{id}/dokumen/{dokumenId}', [PendaftaranPesertaController::class, 'hapusDokumen'])->name('dokumen.hapus');
             Route::post('/{id}/submit', [PendaftaranPesertaController::class, 'submit'])->name('submit');
-            Route::get('/', [PendaftaranPesertaController::class, 'index'])->name('index');
-            Route::get('/pilih-jalur', [PendaftaranPesertaController::class, 'pilihJalur'])->name('pilih');
-            Route::post('/pilih-jalur', [PendaftaranPesertaController::class, 'store'])->name('store');
-            Route::get('/{id}', [PendaftaranPesertaController::class, 'show'])->name('show');
-            Route::post('/{id}/formulir', [PendaftaranPesertaController::class, 'saveFormulir'])->name('formulir');
-            Route::post('/{id}/dokumen/{syaratId}', [PendaftaranPesertaController::class, 'uploadDokumen'])->name('dokumen.upload');
-            Route::delete('/{id}/dokumen/{dokumenId}', [PendaftaranPesertaController::class, 'hapusDokumen'])->name('dokumen.hapus');
-            Route::post('/{id}/submit', [PendaftaranPesertaController::class, 'submit'])->name('submit');
         });
 
         // Pembayaran — index & token (placeholder M7) + konfirmasi manual (aktif sekarang)
         Route::prefix('/pembayaran')->name('pembayaran.')->group(function () {
-            Route::get('/{id}', [PembayaranPesertaController::class, 'index'])->name('index');
-            Route::post('/{id}/token', [PembayaranPesertaController::class, 'getToken'])->name('token');
             Route::get('/{id}', [PembayaranPesertaController::class, 'index'])->name('index');
             Route::post('/{id}/token', [PembayaranPesertaController::class, 'getToken'])->name('token');
             Route::post('/{id}/konfirmasi-manual', [PembayaranPesertaController::class, 'konfirmasiManual'])->name('konfirmasi-manual');
@@ -270,8 +263,6 @@ Route::prefix('ppdb')->name('ppdb.')->group(function () {
 
         // Daftar Ulang
         Route::prefix('/daftar-ulang')->name('daftar-ulang.')->group(function () {
-            Route::get('/{pendaftaranId}', [DaftarUlangPesertaController::class, 'index'])->name('index');
-            Route::post('/{pendaftaranId}', [DaftarUlangPesertaController::class, 'store'])->name('store');
             Route::get('/{pendaftaranId}', [DaftarUlangPesertaController::class, 'index'])->name('index');
             Route::post('/{pendaftaranId}', [DaftarUlangPesertaController::class, 'store'])->name('store');
         });
