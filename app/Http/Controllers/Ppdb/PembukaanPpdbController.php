@@ -103,6 +103,11 @@ class PembukaanPpdbController extends Controller
         $result = $this->pembukaanService->store($validatedData, $userId);
 
         if ($result['success']) {
+            $nama = auth()->user()->name ?? 'Admin';
+            $this->logActivity->log(
+                "Admin {$nama} store PembukaanPpdb",
+                "Admin {$nama} store PembukaanPpdb: {$validatedData['nama']} ({$validatedData['tahun_pelajaran_id']})"
+            );
             return $this->responseService->success($result['data'], $result['message']);
         }
 
@@ -134,6 +139,11 @@ class PembukaanPpdbController extends Controller
         $result = $this->pembukaanService->update($id, $validatedData, $userId);
 
         if ($result['success']) {
+            $nama = auth()->user()->name ?? 'Admin';
+            $this->logActivity->log(
+                "Admin {$nama} update PembukaanPpdb",
+                "Admin {$nama} update PembukaanPpdb: ID #{$id} — {$validatedData['nama']}"
+            );
             return $this->responseService->success($result['data'], $result['message']);
         }
 
@@ -146,6 +156,11 @@ class PembukaanPpdbController extends Controller
         $result = $this->pembukaanService->destroy($id, $userId);
 
         if ($result['success']) {
+            $nama = auth()->user()->name ?? 'Admin';
+            $this->logActivity->log(
+                "Admin {$nama} destroy PembukaanPpdb",
+                "Admin {$nama} destroy PembukaanPpdb: ID #{$id}"
+            );
             return $this->responseService->success(null, $result['message']);
         }
 

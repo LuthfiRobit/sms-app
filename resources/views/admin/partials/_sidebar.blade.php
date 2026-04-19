@@ -21,6 +21,18 @@
                         <span class="pc-mtext">Keuangan</span>
                     </a>
                 </li>
+                <li class="pc-item {{ request()->routeIs('admin.notifikasi.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.notifikasi.index') }}" class="pc-link">
+                        <span class="pc-micon"><i class="bi bi-bell-fill"></i></span>
+                        <span class="pc-mtext">Notifikasi Saya</span>
+                        @php
+                            $unreadCount = app(\App\Services\NotifikasiService::class)->getUnreadCount(auth()->id());
+                        @endphp
+                        @if($unreadCount > 0)
+                            <span class="pc-badge bg-danger">{{ $unreadCount }}</span>
+                        @endif
+                    </a>
+                </li>
 
                 <!-- 2. Data Master -->
                 <li class="pc-item pc-caption"><label>Data Master</label><i class="bi bi-database"></i></li>
@@ -181,7 +193,16 @@
                                 <a class="pc-link" href="{{ route('admin.pendaftaran.index') }}">Data Pendaftar</a>
                             </li>
                         @endif
-                        <li class="pc-item"><a class="pc-link" href="#">Verifikasi & Seleksi</a></li>
+                        @if(auth()->user()->hasPermissionTo('admin.pembayaran.index'))
+                            <li class="pc-item {{ request()->routeIs('admin.pembayaran.*') ? 'active' : '' }}">
+                                <a class="pc-link" href="{{ route('admin.pembayaran.index') }}">Pembayaran PPDB</a>
+                            </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.seleksi.index'))
+                            <li class="pc-item {{ request()->routeIs('admin.seleksi.*') ? 'active' : '' }}">
+                                <a class="pc-link" href="{{ route('admin.ppdb.jalur.index') }}">Verifikasi & Seleksi</a>
+                            </li>
+                        @endif
                         <li class="pc-item"><a class="pc-link" href="#">Daftar Ulang</a></li>
                     </ul>
                 </li>

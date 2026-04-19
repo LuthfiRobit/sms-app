@@ -51,6 +51,14 @@ Route::middleware(['auth', 'permission'])->group(function () {
             Route::resource('log-activity', \App\Http\Controllers\System\LogActivityController::class)->only(['index', 'show']);
         });
 
+        // Notifikasi Routes
+        Route::prefix('notifikasi')->name('notifikasi.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\NotifikasiController::class, 'index'])->name('index');
+            Route::get('/unread-count', [\App\Http\Controllers\NotifikasiController::class, 'getUnreadCount'])->name('unread-count');
+            Route::post('/{id}/read', [\App\Http\Controllers\NotifikasiController::class, 'markRead'])->name('read');
+            Route::post('/mark-all-read', [\App\Http\Controllers\NotifikasiController::class, 'markAllRead'])->name('mark-all-read');
+        });
+
         // Master Data
         Route::prefix('master')->name('master.')->group(function () {
             // Profil Sekolah
@@ -124,9 +132,16 @@ Route::middleware(['auth', 'permission'])->group(function () {
         Route::prefix('peserta')->name('peserta.')->group(function () {
             // Endpoint non-resource harus SEBELUM route berparameter agar tidak konfllik
             Route::get('list', [App\Http\Controllers\Peserta\PesertaController::class, 'list'])->name('list');
+            Route::get('list', [App\Http\Controllers\Peserta\PesertaController::class, 'list'])->name('list');
             Route::post('import-csv', [App\Http\Controllers\Peserta\PesertaController::class, 'importCsv'])->name('import-csv');
             Route::get('export-csv', [App\Http\Controllers\Peserta\PesertaController::class, 'exportCsv'])->name('export-csv');
+            Route::get('export-csv', [App\Http\Controllers\Peserta\PesertaController::class, 'exportCsv'])->name('export-csv');
             // CRUD — explicit routes dengan parameter {id} yang jelas
+            Route::get('/', [App\Http\Controllers\Peserta\PesertaController::class, 'index'])->name('index');
+            Route::post('/', [App\Http\Controllers\Peserta\PesertaController::class, 'store'])->name('store');
+            Route::get('/{id}', [App\Http\Controllers\Peserta\PesertaController::class, 'show'])->name('show');
+            Route::put('/{id}', [App\Http\Controllers\Peserta\PesertaController::class, 'update'])->name('update');
+            Route::delete('/{id}', [App\Http\Controllers\Peserta\PesertaController::class, 'destroy'])->name('destroy');
             Route::get('/', [App\Http\Controllers\Peserta\PesertaController::class, 'index'])->name('index');
             Route::post('/', [App\Http\Controllers\Peserta\PesertaController::class, 'store'])->name('store');
             Route::get('/{id}', [App\Http\Controllers\Peserta\PesertaController::class, 'show'])->name('show');
@@ -147,6 +162,18 @@ Route::middleware(['auth', 'permission'])->group(function () {
     });
 });
 
+// =========================================================================
+// WEBHOOK ROUTES — Tanpa auth middleware (server-to-server)
+// =========================================================================
+// Rate limit: 60 requests per minute per IP
+// CSRF: excluded via bootstrap/app.php validateCsrfTokens
+Route::prefix('webhook')
+    ->name('webhook.')
+    ->middleware('throttle:60,1')
+    ->group(function () {
+        Route::post('midtrans', [App\Http\Controllers\Webhook\WebhookController::class, 'midtrans'])->name('midtrans');
+    });
+
 // =============================================================================
 // PORTAL PESERTA PPDB — Route Terpisah dari Admin Panel
 // Guard: web (sama), Middleware: peserta.auth & peserta.aktif (BUKAN permission)
@@ -164,12 +191,16 @@ Route::prefix('ppdb')->name('ppdb.')->group(function () {
 
     // === PUBLIK (tidak perlu login) ===
     Route::get('/', [PortalController::class, 'beranda'])->name('beranda');
+    Route::get('/', [PortalController::class, 'beranda'])->name('beranda');
     Route::get('/info', [PortalController::class, 'info'])->name('info');
 
     // === AUTH ROUTES — guest only ===
     Route::middleware('guest')->group(function () {
         Route::get('/register', [AuthPesertaController::class, 'showRegister'])->name('register');
+        Route::get('/register', [AuthPesertaController::class, 'showRegister'])->name('register');
         Route::post('/register', [AuthPesertaController::class, 'register'])->name('register.post');
+        Route::get('/login', [AuthPesertaController::class, 'showLogin'])->name('login');
+        Route::post('/login', [AuthPesertaController::class, 'login'])->name('login.post');
         Route::get('/login', [AuthPesertaController::class, 'showLogin'])->name('login');
         Route::post('/login', [AuthPesertaController::class, 'login'])->name('login.post');
     });
@@ -177,7 +208,10 @@ Route::prefix('ppdb')->name('ppdb.')->group(function () {
     // === VERIFIKASI EMAIL (perlu login peserta, belum perlu aktif) ===
     Route::middleware('peserta.auth')->group(function () {
         Route::get('/verify-email', [AuthPesertaController::class, 'showVerifyEmail'])->name('verify-email');
+        Route::get('/verify-email', [AuthPesertaController::class, 'showVerifyEmail'])->name('verify-email');
         Route::post('/verify-email', [AuthPesertaController::class, 'verifyEmail'])->name('verify-email.post');
+        Route::post('/resend-otp', [AuthPesertaController::class, 'resendOtp'])->name('resend-otp');
+        Route::post('/logout', [AuthPesertaController::class, 'logout'])->name('logout');
         Route::post('/resend-otp', [AuthPesertaController::class, 'resendOtp'])->name('resend-otp');
         Route::post('/logout', [AuthPesertaController::class, 'logout'])->name('logout');
     });
@@ -190,6 +224,9 @@ Route::prefix('ppdb')->name('ppdb.')->group(function () {
 
         // Profil & Data Dapodik
         Route::prefix('/profil')->name('profil.')->group(function () {
+            Route::get('/', [ProfilPesertaController::class, 'index'])->name('index');
+            Route::put('/akun', [ProfilPesertaController::class, 'updateAkun'])->name('akun');
+            Route::put('/dapodik', [ProfilPesertaController::class, 'updateDapodik'])->name('dapodik');
             Route::get('/', [ProfilPesertaController::class, 'index'])->name('index');
             Route::put('/akun', [ProfilPesertaController::class, 'updateAkun'])->name('akun');
             Route::put('/dapodik', [ProfilPesertaController::class, 'updateDapodik'])->name('dapodik');
@@ -206,10 +243,20 @@ Route::prefix('ppdb')->name('ppdb.')->group(function () {
             Route::post('/{id}/dokumen/{syaratId}', [PendaftaranPesertaController::class, 'uploadDokumen'])->name('dokumen.upload');
             Route::delete('/{id}/dokumen/{dokumenId}', [PendaftaranPesertaController::class, 'hapusDokumen'])->name('dokumen.hapus');
             Route::post('/{id}/submit', [PendaftaranPesertaController::class, 'submit'])->name('submit');
+            Route::get('/', [PendaftaranPesertaController::class, 'index'])->name('index');
+            Route::get('/pilih-jalur', [PendaftaranPesertaController::class, 'pilihJalur'])->name('pilih');
+            Route::post('/pilih-jalur', [PendaftaranPesertaController::class, 'store'])->name('store');
+            Route::get('/{id}', [PendaftaranPesertaController::class, 'show'])->name('show');
+            Route::post('/{id}/formulir', [PendaftaranPesertaController::class, 'saveFormulir'])->name('formulir');
+            Route::post('/{id}/dokumen/{syaratId}', [PendaftaranPesertaController::class, 'uploadDokumen'])->name('dokumen.upload');
+            Route::delete('/{id}/dokumen/{dokumenId}', [PendaftaranPesertaController::class, 'hapusDokumen'])->name('dokumen.hapus');
+            Route::post('/{id}/submit', [PendaftaranPesertaController::class, 'submit'])->name('submit');
         });
 
         // Pembayaran — index & token (placeholder M7) + konfirmasi manual (aktif sekarang)
         Route::prefix('/pembayaran')->name('pembayaran.')->group(function () {
+            Route::get('/{id}', [PembayaranPesertaController::class, 'index'])->name('index');
+            Route::post('/{id}/token', [PembayaranPesertaController::class, 'getToken'])->name('token');
             Route::get('/{id}', [PembayaranPesertaController::class, 'index'])->name('index');
             Route::post('/{id}/token', [PembayaranPesertaController::class, 'getToken'])->name('token');
             Route::post('/{id}/konfirmasi-manual', [PembayaranPesertaController::class, 'konfirmasiManual'])->name('konfirmasi-manual');
@@ -225,7 +272,48 @@ Route::prefix('ppdb')->name('ppdb.')->group(function () {
         Route::prefix('/daftar-ulang')->name('daftar-ulang.')->group(function () {
             Route::get('/{pendaftaranId}', [DaftarUlangPesertaController::class, 'index'])->name('index');
             Route::post('/{pendaftaranId}', [DaftarUlangPesertaController::class, 'store'])->name('store');
+            Route::get('/{pendaftaranId}', [DaftarUlangPesertaController::class, 'index'])->name('index');
+            Route::post('/{pendaftaranId}', [DaftarUlangPesertaController::class, 'store'])->name('store');
         });
     });
+});
+
+// =============================================================================
+// TEST NOTIFIKASI ROUTE
+// =============================================================================
+Route::get('/test-notif', function () {
+    try {
+        // Default target user ID 1
+        $userId = 13;
+
+        app(\App\Services\NotifikasiService::class)->kirim($userId, 'pendaftaran_submit', [
+            'no_pendaftaran' => 'PPDB202600001',
+            'nama_peserta' => 'Ahmad'
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Notifikasi pendaftaran_submit berhasil di-dispatch ke queue.',
+            'info' => 'Silakan cek tabel `jobs` (karena queue driver database) atau jalankan `php artisan queue:work`.',
+            'payload' => [
+                'user_id' => $userId,
+                'event' => 'pendaftaran_submit',
+                'no_pendaftaran' => 'PPDB202600001',
+                'nama_peserta' => 'Ahmad'
+            ]
+        ]);
+
+        Log::info('Notifikasi pendaftaran_submit berhasil di-dispatch ke queue.', [
+            'user_id' => $userId,
+            'event' => 'pendaftaran_submit',
+            'no_pendaftaran' => 'PPDB202600001',
+            'nama_peserta' => 'Ahmad'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Gagal mengirim notifikasi: ' . $e->getMessage()
+        ], 500);
+    }
 });
 

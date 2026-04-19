@@ -57,6 +57,11 @@ class JalurPendaftaranController extends Controller
             ->addColumn('action', function ($row) {
                 $btn = '<div class="btn-group" role="group">';
 
+                if (auth()->user()->hasPermissionTo('admin.seleksi.index')) {
+                    $url = route('admin.seleksi.index', $row->id);
+                    $btn .= '<a href="' . $url . '" class="btn btn-sm btn-success text-white" title="Verifikasi & Seleksi"><i class="bi bi-person-lines-fill"></i></a>';
+                }
+
                 if (auth()->user()->hasPermissionTo('admin.ppdb.jalur.show')) {
                     $btn .= '<button type="button" class="btn btn-sm btn-info btn-show text-white" data-id="' . $row->id . '" title="Detail"><i class="bi bi-info-circle"></i></button>';
                 }
@@ -94,6 +99,11 @@ class JalurPendaftaranController extends Controller
         $result = $this->jalurService->store($validatedData, $userId);
 
         if ($result['success']) {
+            $nama = auth()->user()->name ?? 'Admin';
+            $this->logActivity->log(
+                "Admin {$nama} store JalurPendaftaran",
+                "Admin {$nama} store JalurPendaftaran: {$validatedData['nama']} (kode: {$validatedData['kode_jalur']})"
+            );
             return $this->responseService->success($result['data'], $result['message']);
         }
 
@@ -126,6 +136,11 @@ class JalurPendaftaranController extends Controller
         $result = $this->jalurService->update($id, $validatedData, $userId);
 
         if ($result['success']) {
+            $nama = auth()->user()->name ?? 'Admin';
+            $this->logActivity->log(
+                "Admin {$nama} update JalurPendaftaran",
+                "Admin {$nama} update JalurPendaftaran: ID #{$id} — {$validatedData['nama']}"
+            );
             return $this->responseService->success($result['data'], $result['message']);
         }
 
@@ -138,6 +153,11 @@ class JalurPendaftaranController extends Controller
         $result = $this->jalurService->destroy($id, $userId);
 
         if ($result['success']) {
+            $nama = auth()->user()->name ?? 'Admin';
+            $this->logActivity->log(
+                "Admin {$nama} destroy JalurPendaftaran",
+                "Admin {$nama} destroy JalurPendaftaran: ID #{$id}"
+            );
             return $this->responseService->success(null, $result['message']);
         }
 

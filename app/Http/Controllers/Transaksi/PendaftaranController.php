@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Transaksi;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\Transaksi\PendaftaranService;
+use App\Services\LogActivityService;
 use App\Repositories\Ppdb\JalurPendaftaranRepositoryInterface;
 use App\Repositories\Master\TahunPelajaranRepositoryInterface;
 use App\Repositories\Transaksi\DokumenPesertaRepositoryInterface;
@@ -17,7 +18,8 @@ class PendaftaranController extends Controller
         protected PendaftaranService $pendaftaranService,
         protected JalurPendaftaranRepositoryInterface $jalurRepo,
         protected TahunPelajaranRepositoryInterface $tahunRepo,
-        protected DokumenPesertaRepositoryInterface $dokumenRepo
+        protected DokumenPesertaRepositoryInterface $dokumenRepo,
+        protected LogActivityService $logActivity,
     ) {
     }
 
@@ -109,6 +111,12 @@ class PendaftaranController extends Controller
         $result = $this->pendaftaranService->verifikasi($id, $request->action, $request->catatan, $userId);
 
         if ($result['success']) {
+            $nama  = Auth::user()->name ?? 'Admin';
+            $aksi  = $request->action === 'approve' ? 'approve' : 'reject';
+            $this->logActivity->log(
+                "Admin {$nama} verifikasi pendaftaran",
+                "Admin {$nama} {$aksi} pendaftaran ID #{$id}" . ($request->catatan ? " — Catatan: {$request->catatan}" : '')
+            );
             return response()->json(['success' => true, 'message' => $result['message']]);
         }
 
@@ -126,6 +134,11 @@ class PendaftaranController extends Controller
         $updated = $this->dokumenRepo->verifikasi($dokumenId, $request->status, $request->keterangan, $userId);
 
         if ($updated) {
+            $nama = Auth::user()->name ?? 'Admin';
+            $this->logActivity->log(
+                "Admin {$nama} verifikasi dokumen",
+                "Admin {$nama} verifikasi dokumen ID #{$dokumenId} pada pendaftaran #{$id} → status: {$request->status}"
+            );
             return response()->json(['success' => true, 'message' => 'Status dokumen berhasil disimpan']);
         }
 

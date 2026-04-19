@@ -114,10 +114,16 @@ class PendaftaranService
         try {
             $query = $this->pendaftaranRepo->datatable()
                 ->with([
-                    'peserta',
-                    'jalurPendaftaran',
-                    'tahunPelajaran',
-                    'verifier',
+                    // Hanya kolom yang dipakai di DataTable (foto, nama, nisn)
+                    'peserta:id,nama_lengkap,foto,nisn',
+                    // Hanya nama jalur
+                    'jalurPendaftaran:id,nama,kode_jalur',
+                    // Nama tahun
+                    'tahunPelajaran:id,nama',
+                    // Untuk tampilan status verifikator
+                    'verifier:id_user,name',
+                    // Status pembayaran terbaru — penting untuk info lunas/belum
+                    'pembayaranPpdb:id,pendaftaran_id,status,amount',
                 ]);
 
             // Filter: status (exact match)
