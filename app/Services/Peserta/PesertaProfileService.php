@@ -46,14 +46,14 @@ class PesertaProfileService
         'agama',
         'kebutuhan_khusus',
         'foto',
+        'nisn', // Baru: Boleh diisi jika masih kosong
+        'nik',  // Baru: Boleh diisi jika masih kosong
     ];
 
     /**
      * Field yang DITOLAK — hanya admin yang dapat mengubahnya.
      */
     protected const FIELD_HANYA_ADMIN = [
-        'nisn',
-        'nik',
         'no_kk',
     ];
 
@@ -193,6 +193,8 @@ class PesertaProfileService
      */
     public function updatePribadi(int $userId, array $data, ?UploadedFile $foto = null): array
     {
+        $peserta = $this->getOrCreatePeserta($userId);
+
         // Guard: tolak field yang hanya boleh diubah admin
         $fieldTerlarang = array_intersect(array_keys($data), self::FIELD_HANYA_ADMIN);
         if (!empty($fieldTerlarang)) {
@@ -201,7 +203,17 @@ class PesertaProfileService
             );
         }
 
-        $peserta = $this->getOrCreatePeserta($userId);
+        // Logic khusus: NISN & NIK hanya boleh diisi jika record di DB masih kosong
+        foreach (['nisn', 'nik'] as $field) {
+            if (isset($data[$field]) && !empty($peserta->$field)) {
+                // Jika user mencoba mengirim data yang sudah ada isinya
+                if ($data[$field] != $peserta->$field) {
+                    throw new Exception(
+                        ucfirst($field) . " sudah terdaftar dan tidak dapat diubah oleh peserta."
+                    );
+                }
+            }
+        }
 
         return DB::transaction(function () use ($userId, $data, $foto, $peserta) {
             // Filter hanya field yang diizinkan
@@ -574,15 +586,19 @@ class PesertaProfileService
      *   - kabupaten_kota (alamat) terisi
      *   - no_hp (kontak) terisi
      *   - Minimal 1 orang tua (ayah atau ibu) dengan nama terisi
-     *
-     * @param  int  $userId  ID user peserta ($user->id_user)
-     * @return array{cukup: bool, kekurangan: string[]}
-     *
-     * @throws Exception Jika peserta tidak ditemukan
      */
     public function isProfilCukupUntukDaftar(int $userId): array
     {
-        $peserta = $this->loadFullRelations($userId);
+        $peserta = $this->pesertaRepo->findByUserId($userId);
+
+        if (!$peserta) {
+            return [
+                'cukup' => false,
+                'kekurangan' => ['Profil Anda belum dibuat. Silakan lengkapi profil terlebih dahulu.'],
+                'missing_record' => true,
+            ];
+        }
+
         $kekurangan = [];
 
         // Cek data pribadi minimum
@@ -618,6 +634,7 @@ class PesertaProfileService
         return [
             'cukup' => empty($kekurangan),
             'kekurangan' => $kekurangan,
+            'missing_record' => false,
         ];
     }
 

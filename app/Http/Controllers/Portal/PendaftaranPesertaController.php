@@ -48,11 +48,19 @@ class PendaftaranPesertaController extends Controller
      * sudah di-scope ke peserta_id dari userId yang terautentikasi — aman
      * tanpa perlu ownership check tambahan.
      */
-    public function index(): View
+    public function index(): View|RedirectResponse
     {
-        $data = $this->portalPendaftaranSvc->getPendaftaranSaya(
-            auth()->user()->id_user
-        );
+        $userId = auth()->user()->id_user;
+
+        // Cek apakah record peserta sudah ada
+        $cekProfil = $this->pesertaProfileSvc->isProfilCukupUntukDaftar($userId);
+        if ($cekProfil['missing_record'] ?? false) {
+            return redirect()
+                ->route('ppdb.profil.index')
+                ->with('warning', 'Silakan lengkapi data profil Anda terlebih dahulu.');
+        }
+
+        $data = $this->portalPendaftaranSvc->getPendaftaranSaya($userId);
 
         return view('portal.pendaftaran.index', compact('data'));
     }
@@ -70,12 +78,20 @@ class PendaftaranPesertaController extends Controller
      *
      * View bertanggung jawab menampilkan warning jika profil belum lengkap.
      */
-    public function pilihJalur(): View
+    public function pilihJalur(): View|RedirectResponse
     {
         $userId = auth()->user()->id_user;
 
-        $jalur     = $this->portalPendaftaranSvc->getJalurTersedia($userId);
         $cekProfil = $this->pesertaProfileSvc->isProfilCukupUntukDaftar($userId);
+
+        // Jika record peserta belum ada sama sekali, arahkan ke profil untuk inisialisasi
+        if ($cekProfil['missing_record'] ?? false) {
+            return redirect()
+                ->route('ppdb.profil.index')
+                ->with('warning', 'Silakan lengkapi data profil Anda terlebih dahulu untuk memulai pendaftaran.');
+        }
+
+        $jalur = $this->portalPendaftaranSvc->getJalurTersedia($userId);
 
         return view('portal.pendaftaran.pilih-jalur', compact('jalur', 'cekProfil'));
     }

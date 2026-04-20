@@ -122,7 +122,7 @@ class ProfilPesertaController extends Controller
         $section = $request->input('section');
 
         // Validasi per section
-        $validationRules = $this->getValidationRules($section);
+        $validationRules = $this->getValidationRules($section, $userId);
         if ($validationRules !== null) {
             $request->validate($validationRules['rules'], $validationRules['messages'] ?? []);
         }
@@ -235,10 +235,17 @@ class ProfilPesertaController extends Controller
      * Mengembalikan rules dan messages validasi sesuai section.
      *
      * @param  string|null $section
+     * @param  int|null    $userId  Dibutuhkan untuk ignore unique check
      * @return array{rules: array, messages: array}|null  null = tidak ada validasi
      */
-    private function getValidationRules(?string $section): ?array
+    private function getValidationRules(?string $section, ?int $userId = null): ?array
     {
+        $pesertaId = null;
+        if ($userId) {
+            $peserta   = $this->profileSvc->getOrCreatePeserta($userId);
+            $pesertaId = $peserta->id;
+        }
+
         return match ($section) {
             'pribadi' => [
                 'rules' => [
@@ -249,6 +256,8 @@ class ProfilPesertaController extends Controller
                     'agama'          => 'nullable|in:Islam,Kristen,Katolik,Hindu,Buddha,Konghucu',
                     'kebutuhan_khusus' => 'nullable|string|max:255',
                     'foto'           => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+                    'nik'            => 'nullable|numeric|digits:16|unique:peserta,nik,' . $pesertaId,
+                    'nisn'           => 'nullable|numeric|digits:10|unique:peserta,nisn,' . $pesertaId,
                 ],
                 'messages' => [
                     'nama_lengkap.required'  => 'Nama lengkap wajib diisi.',
@@ -258,6 +267,12 @@ class ProfilPesertaController extends Controller
                     'tanggal_lahir.before'   => 'Tanggal lahir harus sebelum hari ini.',
                     'foto.image'             => 'File harus berupa gambar.',
                     'foto.max'               => 'Ukuran foto maksimal 2MB.',
+                    'nik.numeric'            => 'NIK harus berupa angka.',
+                    'nik.digits'             => 'NIK harus 16 digit.',
+                    'nik.unique'             => 'NIK sudah digunakan oleh pendaftar lain.',
+                    'nisn.numeric'           => 'NISN harus berupa angka.',
+                    'nisn.digits'            => 'NISN harus 10 digit.',
+                    'nisn.unique'            => 'NISN sudah digunakan oleh pendaftar lain.',
                 ],
             ],
             'alamat' => [
