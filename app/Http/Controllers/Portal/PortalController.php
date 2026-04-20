@@ -38,9 +38,9 @@ class PortalController extends Controller
         }
 
         // Semua jadwal untuk section timeline (dari pembukaan aktif)
-        $semua_jadwal = collect();
+        $agenda = collect();
         if ($pembukaan) {
-            $semua_jadwal = JadwalPendaftaran::whereHas(
+            $agenda = JadwalPendaftaran::whereHas(
                 'jalurPendaftaran',
                 fn($q) => $q->where('pembukaan_ppdb_id', $pembukaan->id)
             )
@@ -48,7 +48,7 @@ class PortalController extends Controller
                 ->get();
         }
 
-        return view('portal.beranda', compact('pembukaan', 'jadwal_terdekat', 'semua_jadwal'));
+        return view('portal.beranda', compact('pembukaan', 'jadwal_terdekat', 'agenda'));
     }
 
     /**
