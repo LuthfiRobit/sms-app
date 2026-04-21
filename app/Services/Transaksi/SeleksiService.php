@@ -71,19 +71,19 @@ class SeleksiService
     /**
      * Direktori root untuk menyimpan file PDF generated.
      */
-    private const PDF_DISK       = 'public';
+    private const PDF_DISK = 'public';
     private const PDF_DIR_PENGUMUMAN = 'seleksi/pengumuman';
-    private const PDF_DIR_KARTU      = 'seleksi/kartu';
+    private const PDF_DIR_KARTU = 'seleksi/kartu';
 
     // =========================================================================
     // CONSTRUCTOR
     // =========================================================================
 
     public function __construct(
-        protected PendaftaranRepositoryInterface  $pendaftaranRepo,
+        protected PendaftaranRepositoryInterface $pendaftaranRepo,
         protected HasilSeleksiRepositoryInterface $hasilSeleksiRepo,
-        protected NotifikasiService               $notifikasiService,
-        protected LogActivityService              $logActivity,
+        protected NotifikasiService $notifikasiService,
+        protected LogActivityService $logActivity,
     ) {
     }
 
@@ -116,7 +116,7 @@ class SeleksiService
     {
         try {
             $jalur = JalurPendaftaran::find($jalurId);
-            if (! $jalur) {
+            if (!$jalur) {
                 return $this->notFound('Jalur Pendaftaran', $jalurId);
             }
 
@@ -140,22 +140,22 @@ class SeleksiService
             $data = $pendaftaranList->map(function (Pendaftaran $p) {
                 $nilaiList = $p->seleksi->map(fn(Seleksi $s) => [
                     'model_penilaian' => $s->model_penilaian,
-                    'nilai'           => (float) $s->nilai,
-                    'bobot'           => (float) $s->bobot,
-                    'reviewer_name'   => $s->reviewer?->name ?? '-',
-                    'waktu_nilai'     => $s->waktu_nilai?->format('d/m/Y H:i'),
+                    'nilai' => (float) $s->nilai,
+                    'bobot' => (float) $s->bobot,
+                    'reviewer_name' => $s->reviewer?->name ?? '-',
+                    'waktu_nilai' => $s->waktu_nilai?->format('d/m/Y H:i'),
                 ])->values()->toArray();
 
                 return [
-                    'pendaftaran_id'   => $p->id,
-                    'no_pendaftaran'   => $p->no_pendaftaran,
-                    'nama_peserta'     => $p->peserta?->nama_lengkap ?? '-',
-                    'nisn'             => $p->peserta?->nisn ?? '-',
-                    'tanggal_daftar'   => $p->tanggal_daftar?->format('d/m/Y H:i'),
-                    'status'           => $p->status,
-                    'nilai'            => $nilaiList,
-                    'total_nilai'      => $p->hasilSeleksi ? (float) $p->hasilSeleksi->total_nilai : null,
-                    'peringkat'        => $p->hasilSeleksi?->peringkat,
+                    'pendaftaran_id' => $p->id,
+                    'no_pendaftaran' => $p->no_pendaftaran,
+                    'nama_peserta' => $p->peserta?->nama_lengkap ?? '-',
+                    'nisn' => $p->peserta?->nisn ?? '-',
+                    'tanggal_daftar' => $p->tanggal_daftar?->format('d/m/Y H:i'),
+                    'status' => $p->status,
+                    'nilai' => $nilaiList,
+                    'total_nilai' => $p->hasilSeleksi ? (float) $p->hasilSeleksi->total_nilai : null,
+                    'peringkat' => $p->hasilSeleksi?->peringkat,
                     'status_kelulusan' => $p->hasilSeleksi?->status_kelulusan,
                 ];
             })->sortBy('peringkat')->values()->toArray();
@@ -163,23 +163,23 @@ class SeleksiService
             return [
                 'success' => true,
                 'message' => "Berhasil mengambil data seleksi jalur '{$jalur->nama}'.",
-                'data'    => [
-                    'jalur'        => $jalur,
-                    'kuota'        => $jalur->kuota,
-                    'total_peserta'=> count($data),
-                    'pendaftaran'  => $data,
+                'data' => [
+                    'jalur' => $jalur,
+                    'kuota' => $jalur->kuota,
+                    'total_peserta' => count($data),
+                    'pendaftaran' => $data,
                 ],
             ];
         } catch (Exception $e) {
             Log::error('[SeleksiService::index] ' . $e->getMessage(), [
                 'jalur_id' => $jalurId,
-                'trace'    => $e->getTraceAsString(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
                 'success' => false,
                 'message' => 'Gagal mengambil data seleksi: ' . $e->getMessage(),
-                'data'    => null,
+                'data' => null,
             ];
         }
     }
@@ -219,7 +219,7 @@ class SeleksiService
             'jalurPendaftaran',
         ]);
 
-        if (! $pendaftaran) {
+        if (!$pendaftaran) {
             return $this->notFound('Pendaftaran', $pendaftaranId);
         }
 
@@ -228,8 +228,8 @@ class SeleksiService
             return [
                 'success' => false,
                 'message' => "Input nilai hanya dapat dilakukan saat pendaftaran berstatus 'verifikasi'. " .
-                             "Status saat ini: '{$pendaftaran->status}'.",
-                'data'    => null,
+                    "Status saat ini: '{$pendaftaran->status}'.",
+                'data' => null,
             ];
         }
 
@@ -238,7 +238,7 @@ class SeleksiService
             return [
                 'success' => false,
                 'message' => 'Data nilai tidak boleh kosong.',
-                'data'    => null,
+                'data' => null,
             ];
         }
 
@@ -275,12 +275,12 @@ class SeleksiService
             );
         }
 
-        if (! empty($errors)) {
+        if (!empty($errors)) {
             return [
                 'success' => false,
                 'message' => 'Validasi gagal.',
-                'data'    => null,
-                'errors'  => $errors,
+                'data' => null,
+                'errors' => $errors,
             ];
         }
 
@@ -290,14 +290,14 @@ class SeleksiService
                 foreach ($nilaiData as $item) {
                     Seleksi::updateOrCreate(
                         [
-                            'pendaftaran_id'  => $pendaftaranId,
+                            'pendaftaran_id' => $pendaftaranId,
                             'model_penilaian' => $item['model_penilaian'],
                         ],
                         [
                             'reviewer_id' => $reviewerId,
-                            'nilai'       => (float) $item['nilai'],
-                            'bobot'       => (float) $item['bobot'],
-                            'keterangan'  => $item['keterangan'] ?? null,
+                            'nilai' => (float) $item['nilai'],
+                            'bobot' => (float) $item['bobot'],
+                            'keterangan' => $item['keterangan'] ?? null,
                             'waktu_nilai' => now(),
                         ]
                     );
@@ -316,39 +316,39 @@ class SeleksiService
 
             // Ambil data hasil setelah update
             $hasilSeleksi = HasilSeleksi::where('pendaftaran_id', $pendaftaranId)->first();
-            $seleksiList  = Seleksi::where('pendaftaran_id', $pendaftaranId)
+            $seleksiList = Seleksi::where('pendaftaran_id', $pendaftaranId)
                 ->with('reviewer')
                 ->get()
                 ->map(fn(Seleksi $s) => [
                     'model_penilaian' => $s->model_penilaian,
-                    'nilai'           => (float) $s->nilai,
-                    'bobot'           => (float) $s->bobot,
-                    'kontribusi'      => round((float) $s->nilai * (float) $s->bobot, 4),
-                    'reviewer_name'   => $s->reviewer?->name ?? '-',
-                    'waktu_nilai'     => $s->waktu_nilai?->format('d/m/Y H:i'),
+                    'nilai' => (float) $s->nilai,
+                    'bobot' => (float) $s->bobot,
+                    'kontribusi' => round((float) $s->nilai * (float) $s->bobot, 4),
+                    'reviewer_name' => $s->reviewer?->name ?? '-',
+                    'waktu_nilai' => $s->waktu_nilai?->format('d/m/Y H:i'),
                 ]);
 
             return [
                 'success' => true,
                 'message' => "Nilai seleksi untuk pendaftaran #{$pendaftaran->no_pendaftaran} berhasil disimpan.",
-                'data'    => [
+                'data' => [
                     'pendaftaran_id' => $pendaftaranId,
                     'no_pendaftaran' => $pendaftaran->no_pendaftaran,
-                    'nama_peserta'   => $pendaftaran->peserta?->nama_lengkap,
-                    'nilai_detail'   => $seleksiList,
-                    'total_nilai'    => $hasilSeleksi ? (float) $hasilSeleksi->total_nilai : null,
+                    'nama_peserta' => $pendaftaran->peserta?->nama_lengkap,
+                    'nilai_detail' => $seleksiList,
+                    'total_nilai' => $hasilSeleksi ? (float) $hasilSeleksi->total_nilai : null,
                 ],
             ];
         } catch (Exception $e) {
             Log::error('[SeleksiService::inputNilai] ' . $e->getMessage(), [
                 'pendaftaran_id' => $pendaftaranId,
-                'reviewer_id'    => $reviewerId,
+                'reviewer_id' => $reviewerId,
             ]);
 
             return [
                 'success' => false,
                 'message' => 'Gagal menyimpan nilai seleksi: ' . $e->getMessage(),
-                'data'    => null,
+                'data' => null,
             ];
         }
     }
@@ -381,11 +381,11 @@ class SeleksiService
     {
         try {
             $jalur = JalurPendaftaran::find($jalurId);
-            if (! $jalur) {
+            if (!$jalur) {
                 return $this->notFound('Jalur Pendaftaran', $jalurId);
             }
 
-            $kuotaPersen   = (int) $jalur->kuota; // nilai di DB adalah persen (0-100)
+            $kuotaPersen = (int) $jalur->kuota; // nilai di DB adalah persen (0-100)
 
             // Ambil semua pendaftaran yang sudah diverifikasi di jalur ini
             $pendaftaranList = Pendaftaran::with(['seleksi', 'hasilSeleksi', 'peserta'])
@@ -402,7 +402,7 @@ class SeleksiService
                 return [
                     'success' => true,
                     'message' => 'Tidak ada pendaftaran terverifikasi di jalur ini untuk diperingkat.',
-                    'data'    => [],
+                    'data' => [],
                 ];
             }
 
@@ -415,8 +415,8 @@ class SeleksiService
                 : (int) max(1, ceil($kuotaPersen / 100 * $totalPeserta));
 
             Log::info('[SeleksiService::hitungRanking] Kalkulasi kuota', [
-                'jalur_id'      => $jalurId,
-                'kuota_persen'  => $kuotaPersen,
+                'jalur_id' => $jalurId,
+                'kuota_persen' => $kuotaPersen,
                 'total_peserta' => $totalPeserta,
                 'kuota_absolut' => $kuota,
             ]);
@@ -430,7 +430,7 @@ class SeleksiService
                 return [
                     'success' => false,
                     'message' => 'Belum ada pendaftaran yang memiliki nilai seleksi di jalur ini.',
-                    'data'    => null,
+                    'data' => null,
                 ];
             }
 
@@ -441,9 +441,9 @@ class SeleksiService
                 );
 
                 return [
-                    'pendaftaran'   => $p,
-                    'total_nilai'   => round($totalNilai, 4),
-                    'tanggal_daftar'=> $p->tanggal_daftar,
+                    'pendaftaran' => $p,
+                    'total_nilai' => round($totalNilai, 4),
+                    'tanggal_daftar' => $p->tanggal_daftar,
                 ];
             });
 
@@ -462,8 +462,8 @@ class SeleksiService
                 foreach ($sorted as $rank => $item) {
                     /** @var Pendaftaran $pendaftaran */
                     $pendaftaran = $item['pendaftaran'];
-                    $peringkat   = $rank + 1; // 1-based
-                    $totalNilai  = $item['total_nilai'];
+                    $peringkat = $rank + 1; // 1-based
+                    $totalNilai = $item['total_nilai'];
 
                     // Tentukan status_kelulusan
                     $statusKelulusan = $this->tentikanStatusKelulusan($peringkat, $kuota);
@@ -472,21 +472,21 @@ class SeleksiService
                     HasilSeleksi::updateOrCreate(
                         ['pendaftaran_id' => $pendaftaran->id],
                         [
-                            'total_nilai'      => $totalNilai,
-                            'peringkat'        => $peringkat,
+                            'total_nilai' => $totalNilai,
+                            'peringkat' => $peringkat,
                             'status_kelulusan' => $statusKelulusan,
-                            'reviewer_id'      => $userId,
+                            'reviewer_id' => $userId,
                         ]
                     );
 
                     $rankingResult[] = [
-                        'peringkat'        => $peringkat,
-                        'pendaftaran_id'   => $pendaftaran->id,
-                        'no_pendaftaran'   => $pendaftaran->no_pendaftaran,
-                        'nama_peserta'     => $pendaftaran->peserta?->nama_lengkap ?? '-',
-                        'nisn'             => $pendaftaran->peserta?->nisn ?? '-',
-                        'tanggal_daftar'   => $pendaftaran->tanggal_daftar?->format('d/m/Y H:i'),
-                        'total_nilai'      => $totalNilai,
+                        'peringkat' => $peringkat,
+                        'pendaftaran_id' => $pendaftaran->id,
+                        'no_pendaftaran' => $pendaftaran->no_pendaftaran,
+                        'nama_peserta' => $pendaftaran->peserta?->nama_lengkap ?? '-',
+                        'nisn' => $pendaftaran->peserta?->nisn ?? '-',
+                        'tanggal_daftar' => $pendaftaran->tanggal_daftar?->format('d/m/Y H:i'),
+                        'total_nilai' => $totalNilai,
                         'status_kelulusan' => $statusKelulusan,
                     ];
                 }
@@ -501,24 +501,24 @@ class SeleksiService
             return [
                 'success' => true,
                 'message' => 'Ranking berhasil dihitung. Total ' . count($rankingResult) . ' peserta diperingkat.',
-                'data'    => [
-                    'jalur_id'         => $jalurId,
-                    'nama_jalur'       => $jalur->nama,
-                    'kuota'            => $kuota,
-                    'total_diperingkat'=> count($rankingResult),
-                    'ranking'          => $rankingResult,
+                'data' => [
+                    'jalur_id' => $jalurId,
+                    'nama_jalur' => $jalur->nama,
+                    'kuota' => $kuota,
+                    'total_diperingkat' => count($rankingResult),
+                    'ranking' => $rankingResult,
                 ],
             ];
         } catch (Exception $e) {
             Log::error('[SeleksiService::hitungRanking] ' . $e->getMessage(), [
                 'jalur_id' => $jalurId,
-                'trace'    => $e->getTraceAsString(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
                 'success' => false,
                 'message' => 'Gagal menghitung ranking: ' . $e->getMessage(),
-                'data'    => null,
+                'data' => null,
             ];
         }
     }
@@ -550,7 +550,7 @@ class SeleksiService
     {
         try {
             $jalur = JalurPendaftaran::find($jalurId);
-            if (! $jalur) {
+            if (!$jalur) {
                 return $this->notFound('Jalur Pendaftaran', $jalurId);
             }
 
@@ -573,7 +573,7 @@ class SeleksiService
                 return [
                     'success' => false,
                     'message' => 'Tidak ada peserta terverifikasi di jalur ini untuk diumumkan.',
-                    'data'    => null,
+                    'data' => null,
                 ];
             }
 
@@ -586,12 +586,12 @@ class SeleksiService
                 return [
                     'success' => false,
                     'message' => 'Pengumuman belum dapat dilakukan. Ada ' . $belumNilai->count() .
-                                 ' peserta yang belum dinilai.',
-                    'data'    => [
+                        ' peserta yang belum dinilai.',
+                    'data' => [
                         'belum_dinilai' => $belumNilai->map(fn($p) => [
                             'pendaftaran_id' => $p->id,
                             'no_pendaftaran' => $p->no_pendaftaran,
-                            'nama_peserta'   => $p->peserta?->nama_lengkap,
+                            'nama_peserta' => $p->peserta?->nama_lengkap,
                         ])->values(),
                     ],
                 ];
@@ -599,14 +599,14 @@ class SeleksiService
 
             // Validasi 2: semua peserta harus sudah punya hasil_seleksi (ranking sudah dihitung)
             $belumRanking = $pendaftaranList->filter(
-                fn(Pendaftaran $p) => ! $p->hasilSeleksi
+                fn(Pendaftaran $p) => !$p->hasilSeleksi
             );
 
             if ($belumRanking->isNotEmpty()) {
                 return [
                     'success' => false,
                     'message' => 'Ranking belum dihitung untuk semua peserta. Jalankan hitungRanking() terlebih dahulu.',
-                    'data'    => null,
+                    'data' => null,
                 ];
             }
 
@@ -617,7 +617,7 @@ class SeleksiService
                 $waktuPengumuman = now();
 
                 foreach ($pendaftaranList as $pendaftaran) {
-                    $hasil           = $pendaftaran->hasilSeleksi;
+                    $hasil = $pendaftaran->hasilSeleksi;
                     $statusKelulusan = $hasil->status_kelulusan;
 
                     // Update waktu_pengumuman di hasil_seleksi
@@ -625,9 +625,9 @@ class SeleksiService
 
                     // Update status pendaftaran
                     $statusBaru = match ($statusKelulusan) {
-                        HasilSeleksi::STATUS_LULUS      => Pendaftaran::STATUS_LULUS,
+                        HasilSeleksi::STATUS_LULUS => Pendaftaran::STATUS_LULUS,
                         HasilSeleksi::STATUS_TIDAK_LULUS => Pendaftaran::STATUS_TIDAK_LULUS,
-                        default                          => $pendaftaran->status, // cadangan: tetap verifikasi
+                        default => $pendaftaran->status, // cadangan: tetap verifikasi
                     };
 
                     if ($statusBaru !== $pendaftaran->status) {
@@ -635,44 +635,44 @@ class SeleksiService
                     }
 
                     // Kirim notifikasi in-app ke peserta
-                    $userId_peserta = $pendaftaran->peserta?->user_id;
-                    if ($userId_peserta) {
-                        [$judulNotif, $isiNotif, $tipeNotif] = $this->buildNotifikasiPengumuman(
-                            $pendaftaran,
-                            $hasil,
-                        );
+                    // $userId_peserta = $pendaftaran->peserta?->user_id;
+                    // if ($userId_peserta) {
+                    //     [$judulNotif, $isiNotif, $tipeNotif] = $this->buildNotifikasiPengumuman(
+                    //         $pendaftaran,
+                    //         $hasil,
+                    //     );
 
-                        $this->notifikasiService->kirim(
-                            $userId_peserta,
-                            $tipeNotif,
-                            $judulNotif,
-                            $isiNotif
-                        );
+                    //     $this->notifikasiService->kirim(
+                    //         $userId_peserta,
+                    //         $tipeNotif,
+                    //         $judulNotif,
+                    //         $isiNotif
+                    //     );
 
-                        // Log email intent (implementasi kirim email bisa via queue)
-                        $emailPeserta = $pendaftaran->peserta?->kontak?->email
-                                     ?? $pendaftaran->peserta?->user?->email;
+                    //     // Log email intent (implementasi kirim email bisa via queue)
+                    //     $emailPeserta = $pendaftaran->peserta?->kontak?->email
+                    //                  ?? $pendaftaran->peserta?->user?->email;
 
-                        if ($emailPeserta) {
-                            Log::info('[SeleksiService::pengumuman] Email pengumuman untuk peserta', [
-                                'no_pendaftaran'   => $pendaftaran->no_pendaftaran,
-                                'email'            => $emailPeserta,
-                                'status_kelulusan' => $statusKelulusan,
-                            ]);
+                    //     if ($emailPeserta) {
+                    //         Log::info('[SeleksiService::pengumuman] Email pengumuman untuk peserta', [
+                    //             'no_pendaftaran'   => $pendaftaran->no_pendaftaran,
+                    //             'email'            => $emailPeserta,
+                    //             'status_kelulusan' => $statusKelulusan,
+                    //         ]);
 
-                            // TODO: Dispatch email job
-                            // SendPengumumanEmailJob::dispatch($pendaftaran, $hasil)->onQueue('notifications');
-                        }
-                    }
+                    //         // TODO: Dispatch email job
+                    //         // SendPengumumanEmailJob::dispatch($pendaftaran, $hasil)->onQueue('notifications');
+                    //     }
+                    // }
 
                     $summary[] = [
-                        'pendaftaran_id'   => $pendaftaran->id,
-                        'no_pendaftaran'   => $pendaftaran->no_pendaftaran,
-                        'nama_peserta'     => $pendaftaran->peserta?->nama_lengkap,
-                        'peringkat'        => $hasil->peringkat,
-                        'total_nilai'      => (float) $hasil->total_nilai,
+                        'pendaftaran_id' => $pendaftaran->id,
+                        'no_pendaftaran' => $pendaftaran->no_pendaftaran,
+                        'nama_peserta' => $pendaftaran->peserta?->nama_lengkap,
+                        'peringkat' => $hasil->peringkat,
+                        'total_nilai' => (float) $hasil->total_nilai,
                         'status_kelulusan' => $statusKelulusan,
-                        'status_baru'      => $statusBaru,
+                        'status_baru' => $statusBaru,
                         'waktu_pengumuman' => $waktuPengumuman->format('d/m/Y H:i:s'),
                     ];
                 }
@@ -684,33 +684,33 @@ class SeleksiService
                 'Total peserta diumumkan: ' . count($summary)
             );
 
-            $totalLulus     = collect($summary)->where('status_kelulusan', HasilSeleksi::STATUS_LULUS)->count();
-            $totalCadangan  = collect($summary)->where('status_kelulusan', HasilSeleksi::STATUS_CADANGAN)->count();
+            $totalLulus = collect($summary)->where('status_kelulusan', HasilSeleksi::STATUS_LULUS)->count();
+            $totalCadangan = collect($summary)->where('status_kelulusan', HasilSeleksi::STATUS_CADANGAN)->count();
             $totalTidakLulus = collect($summary)->where('status_kelulusan', HasilSeleksi::STATUS_TIDAK_LULUS)->count();
 
             return [
                 'success' => true,
                 'message' => "Pengumuman hasil seleksi jalur '{$jalur->nama}' berhasil dipublikasikan.",
-                'data'    => [
-                    'jalur_id'         => $jalurId,
-                    'nama_jalur'       => $jalur->nama,
-                    'total_peserta'    => count($summary),
-                    'total_lulus'      => $totalLulus,
-                    'total_cadangan'   => $totalCadangan,
-                    'total_tidak_lulus'=> $totalTidakLulus,
-                    'detail'           => $summary,
+                'data' => [
+                    'jalur_id' => $jalurId,
+                    'nama_jalur' => $jalur->nama,
+                    'total_peserta' => count($summary),
+                    'total_lulus' => $totalLulus,
+                    'total_cadangan' => $totalCadangan,
+                    'total_tidak_lulus' => $totalTidakLulus,
+                    'detail' => $summary,
                 ],
             ];
         } catch (Exception $e) {
             Log::error('[SeleksiService::pengumuman] ' . $e->getMessage(), [
                 'jalur_id' => $jalurId,
-                'trace'    => $e->getTraceAsString(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
                 'success' => false,
                 'message' => 'Gagal mempublikasikan pengumuman: ' . $e->getMessage(),
-                'data'    => null,
+                'data' => null,
             ];
         }
     }
@@ -738,7 +738,7 @@ class SeleksiService
     public function generatePdfPengumuman(int $jalurId): string
     {
         $jalur = JalurPendaftaran::with(['pembukaanPpdb'])->find($jalurId);
-        if (! $jalur) {
+        if (!$jalur) {
             throw new Exception("Jalur Pendaftaran ID: {$jalurId} tidak ditemukan.");
         }
 
@@ -757,11 +757,11 @@ class SeleksiService
 
         // Data untuk blade
         $data = [
-            'jalur'             => $jalur,
-            'hasil_list'        => $hasilList,
-            'tanggal_cetak'     => now()->translatedFormat('d F Y'),
-            'total_lulus'       => $hasilList->where('status_kelulusan', HasilSeleksi::STATUS_LULUS)->count(),
-            'total_cadangan'    => $hasilList->where('status_kelulusan', HasilSeleksi::STATUS_CADANGAN)->count(),
+            'jalur' => $jalur,
+            'hasil_list' => $hasilList,
+            'tanggal_cetak' => now()->translatedFormat('d F Y'),
+            'total_lulus' => $hasilList->where('status_kelulusan', HasilSeleksi::STATUS_LULUS)->count(),
+            'total_cadangan' => $hasilList->where('status_kelulusan', HasilSeleksi::STATUS_CADANGAN)->count(),
         ];
 
         // Generate PDF menggunakan DomPDF
@@ -772,9 +772,9 @@ class SeleksiService
             ->setOption('isPhpEnabled', false);
 
         // Tentukan path output
-        $fileName  = 'pengumuman_' . $jalurId . '_' . now()->format('Ymd_His') . '.pdf';
+        $fileName = 'pengumuman_' . $jalurId . '_' . now()->format('Ymd_His') . '.pdf';
         $directory = self::PDF_DIR_PENGUMUMAN . '/' . $jalurId;
-        $filePath  = $directory . '/' . $fileName;
+        $filePath = $directory . '/' . $fileName;
 
         // Simpan ke storage
         Storage::disk(self::PDF_DISK)->makeDirectory($directory);
@@ -822,7 +822,7 @@ class SeleksiService
             'hasilSeleksi',
         ])->find($pendaftaranId);
 
-        if (! $pendaftaran) {
+        if (!$pendaftaran) {
             throw new Exception("Pendaftaran ID: {$pendaftaranId} tidak ditemukan.");
         }
 
@@ -836,19 +836,19 @@ class SeleksiService
 
         $fotoBase64 = null;
         if ($fotoPath && file_exists($fotoPath)) {
-            $mime        = mime_content_type($fotoPath);
-            $fotoBase64  = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($fotoPath));
+            $mime = mime_content_type($fotoPath);
+            $fotoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($fotoPath));
         }
 
         $data = [
-            'pendaftaran'  => $pendaftaran,
-            'peserta'      => $pendaftaran->peserta,
-            'jalur'        => $pendaftaran->jalurPendaftaran,
-            'tahun'        => $pendaftaran->tahunPelajaran,
-            'hasil'        => $pendaftaran->hasilSeleksi,
-            'qr_base64'    => $qrBase64,
-            'foto_base64'  => $fotoBase64,
-            'tanggal_cetak'=> now()->translatedFormat('d F Y'),
+            'pendaftaran' => $pendaftaran,
+            'peserta' => $pendaftaran->peserta,
+            'jalur' => $pendaftaran->jalurPendaftaran,
+            'tahun' => $pendaftaran->tahunPelajaran,
+            'hasil' => $pendaftaran->hasilSeleksi,
+            'qr_base64' => $qrBase64,
+            'foto_base64' => $fotoBase64,
+            'tanggal_cetak' => now()->translatedFormat('d F Y'),
         ];
 
         // Generate PDF kartu (ukuran A5 portrait)
@@ -859,10 +859,10 @@ class SeleksiService
             ->setOption('isHtml5ParserEnabled', true);
 
         // Path output
-        $noBersih  = preg_replace('/[^a-zA-Z0-9]/', '_', $pendaftaran->no_pendaftaran);
-        $fileName  = "kartu_{$noBersih}.pdf";
+        $noBersih = preg_replace('/[^a-zA-Z0-9]/', '_', $pendaftaran->no_pendaftaran);
+        $fileName = "kartu_{$noBersih}.pdf";
         $directory = self::PDF_DIR_KARTU . '/' . $pendaftaran->jalur_pendaftaran_id;
-        $filePath  = $directory . '/' . $fileName;
+        $filePath = $directory . '/' . $fileName;
 
         Storage::disk(self::PDF_DISK)->makeDirectory($directory);
         Storage::disk(self::PDF_DISK)->put($filePath, $pdf->output());
@@ -890,7 +890,7 @@ class SeleksiService
     {
         try {
             $jalur = JalurPendaftaran::with(['pembukaanPpdb'])->find($jalurId);
-            if (! $jalur) {
+            if (!$jalur) {
                 return $this->notFound('Jalur Pendaftaran', $jalurId);
             }
 
@@ -902,18 +902,18 @@ class SeleksiService
                 ->get();
 
             $mapper = fn(HasilSeleksi $h) => [
-                'pendaftaran_id'   => $h->pendaftaran_id,
-                'no_pendaftaran'   => $h->pendaftaran?->no_pendaftaran,
-                'nama_peserta'     => $h->pendaftaran?->peserta?->nama_lengkap ?? '-',
-                'nisn'             => $h->pendaftaran?->peserta?->nisn ?? '-',
-                'peringkat'        => $h->peringkat,
-                'total_nilai'      => (float) $h->total_nilai,
+                'pendaftaran_id' => $h->pendaftaran_id,
+                'no_pendaftaran' => $h->pendaftaran?->no_pendaftaran,
+                'nama_peserta' => $h->pendaftaran?->peserta?->nama_lengkap ?? '-',
+                'nisn' => $h->pendaftaran?->peserta?->nisn ?? '-',
+                'peringkat' => $h->peringkat,
+                'total_nilai' => (float) $h->total_nilai,
                 'status_kelulusan' => $h->status_kelulusan,
                 'waktu_pengumuman' => $h->waktu_pengumuman?->format('d/m/Y H:i'),
             ];
 
-            $lulus      = $hasilList->where('status_kelulusan', HasilSeleksi::STATUS_LULUS)->map($mapper)->values();
-            $cadangan   = $hasilList->where('status_kelulusan', HasilSeleksi::STATUS_CADANGAN)->map($mapper)->values();
+            $lulus = $hasilList->where('status_kelulusan', HasilSeleksi::STATUS_LULUS)->map($mapper)->values();
+            $cadangan = $hasilList->where('status_kelulusan', HasilSeleksi::STATUS_CADANGAN)->map($mapper)->values();
             $tidakLulus = $hasilList->where('status_kelulusan', HasilSeleksi::STATUS_TIDAK_LULUS)->map($mapper)->values();
 
             // Cek apakah sudah diumumkan (ada waktu_pengumuman)
@@ -922,23 +922,23 @@ class SeleksiService
             return [
                 'success' => true,
                 'message' => 'Data hasil seleksi berhasil diambil.',
-                'data'    => [
-                    'jalur'             => [
-                        'id'   => $jalur->id,
+                'data' => [
+                    'jalur' => [
+                        'id' => $jalur->id,
                         'nama' => $jalur->nama,
-                        'kuota'=> $jalur->kuota,
+                        'kuota' => $jalur->kuota,
                     ],
-                    'sudah_diumumkan'   => $sudahDiumumkan,
-                    'waktu_pengumuman'  => $hasilList->whereNotNull('waktu_pengumuman')
-                                            ->first()?->waktu_pengumuman?->format('d/m/Y H:i'),
-                    'lulus'             => $lulus,
-                    'cadangan'          => $cadangan,
-                    'tidak_lulus'       => $tidakLulus,
-                    'statistik'         => [
-                        'total_peserta'    => $hasilList->count(),
-                        'total_lulus'      => $lulus->count(),
-                        'total_cadangan'   => $cadangan->count(),
-                        'total_tidak_lulus'=> $tidakLulus->count(),
+                    'sudah_diumumkan' => $sudahDiumumkan,
+                    'waktu_pengumuman' => $hasilList->whereNotNull('waktu_pengumuman')
+                        ->first()?->waktu_pengumuman?->format('d/m/Y H:i'),
+                    'lulus' => $lulus,
+                    'cadangan' => $cadangan,
+                    'tidak_lulus' => $tidakLulus,
+                    'statistik' => [
+                        'total_peserta' => $hasilList->count(),
+                        'total_lulus' => $lulus->count(),
+                        'total_cadangan' => $cadangan->count(),
+                        'total_tidak_lulus' => $tidakLulus->count(),
                     ],
                 ],
             ];
@@ -950,7 +950,7 @@ class SeleksiService
             return [
                 'success' => false,
                 'message' => 'Gagal mengambil hasil seleksi: ' . $e->getMessage(),
-                'data'    => null,
+                'data' => null,
             ];
         }
     }
@@ -1014,9 +1014,9 @@ class SeleksiService
         Pendaftaran $pendaftaran,
         HasilSeleksi $hasil
     ): array {
-        $nama  = $pendaftaran->peserta?->nama_lengkap ?? 'Ananda';
+        $nama = $pendaftaran->peserta?->nama_lengkap ?? 'Ananda';
         $jalur = $pendaftaran->jalurPendaftaran?->nama ?? 'PPDB';
-        $no    = $pendaftaran->no_pendaftaran;
+        $no = $pendaftaran->no_pendaftaran;
 
         return match ($hasil->status_kelulusan) {
             HasilSeleksi::STATUS_LULUS => [
@@ -1054,7 +1054,8 @@ class SeleksiService
     private function generateQrCodeBase64(string $content): ?string
     {
         // Coba SimpleSoftwareIO/simple-qrcode (composer require simplesoftwareio/simple-qrcode)
-        if (class_exists(\SimpleSoftwareIO\QrCode\Facades\QrCode::class)
+        if (
+            class_exists(\SimpleSoftwareIO\QrCode\Facades\QrCode::class)
             || class_exists(\SimpleSoftwareIO\QrCode\QrCode::class)
         ) {
             try {
@@ -1074,7 +1075,7 @@ class SeleksiService
         // Fallback: Kita skip BaconQrCode jika merender SVG karena DOMPDF bisa crash.
         // Jika butuh fallback PNG BaconQrCode, perlukan driver Imagick dsb yang rumit di Windows.
         // Oleh karena itu return null secara default jika simple-qrcode gagal/tidak ada PNG.
-        
+
         Log::warning('[SeleksiService::generateQrCodeBase64] QrCode gagal digenerate dalam format PNG.', [
             'content' => $content,
         ]);
@@ -1090,7 +1091,7 @@ class SeleksiService
         return [
             'success' => false,
             'message' => "{$entity} dengan ID {$id} tidak ditemukan.",
-            'data'    => null,
+            'data' => null,
         ];
     }
 }
