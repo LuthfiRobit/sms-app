@@ -319,18 +319,22 @@
         await doAutoSave();
 
         // Ambil progress terbaru dari DOM
-        const fPct = parseFloat(document.getElementById('formulir-pct').textContent) || 0;
-        const dPct = parseFloat(document.getElementById('dokumen-pct').textContent) || 0;
+        const fPct = parseFloat(document.getElementById('formulir-pct')?.textContent || 0);
+        const dPct = parseFloat(document.getElementById('dokumen-pct')?.textContent || 0);
 
         // Update checklist
         const setCheck = (id, pct, label) => {
             const ok = pct >= 100;
-            document.getElementById('ck-' + id + '-icon').innerHTML =
-                ok ? '<i class="bi bi-check-circle-fill text-success"></i>'
+            const iconEl = document.getElementById('ck-' + id + '-icon');
+            const pctEl = document.getElementById('ck-' + id + '-pct');
+            const subEl = document.getElementById('ck-' + id + '-sub');
+            const containerEl = document.getElementById('ck-' + id);
+
+            if (iconEl) iconEl.innerHTML = ok ? '<i class="bi bi-check-circle-fill text-success"></i>'
                     : '<i class="bi bi-exclamation-circle-fill text-warning"></i>';
-            document.getElementById('ck-' + id + '-pct').textContent = pct + '%';
-            document.getElementById('ck-' + id + '-sub').textContent = ok ? 'Lengkap' : 'Belum lengkap';
-            document.getElementById('ck-' + id).style.borderColor = ok ? '#86efac' : '#fcd34d';
+            if (pctEl) pctEl.textContent = pct + '%';
+            if (subEl) subEl.textContent = ok ? 'Lengkap' : 'Belum lengkap';
+            if (containerEl) containerEl.style.borderColor = ok ? '#86efac' : '#fcd34d';
         };
         setCheck('formulir', fPct);
         setCheck('dokumen', dPct);
@@ -338,15 +342,18 @@
         // Warning kekurangan
         const warnBox = document.getElementById('submit-warning-box');
         const warnList = document.getElementById('submit-kekurangan-list');
-        const kurang = [];
-        if (fPct < 100) { const n = parseInt(document.getElementById('formulir-pct').textContent); kurang.push('Formulir: ' + fPct + '% — belum semua field wajib terisi'); }
-        if (dPct < 100) { kurang.push('Dokumen: ' + dPct + '% — belum semua dokumen wajib diupload'); }
 
-        if (kurang.length) {
-            warnBox.classList.remove('d-none');
-            warnList.innerHTML = kurang.map(k => `<li>${k}</li>`).join('');
-        } else {
-            warnBox.classList.add('d-none');
+        if (warnBox && warnList) {
+            const kurang = [];
+            if (fPct < 100) kurang.push('Formulir: ' + fPct + '% — belum semua field wajib terisi');
+            if (dPct < 100) kurang.push('Dokumen: ' + dPct + '% — belum semua dokumen wajib diupload');
+
+            if (kurang.length) {
+                warnBox.classList.remove('d-none');
+                warnList.innerHTML = kurang.map(k => `<li>${k}</li>`).join('');
+            } else {
+                warnBox.classList.add('d-none');
+            }
         }
 
         new bootstrap.Modal(document.getElementById('modalSubmit')).show();

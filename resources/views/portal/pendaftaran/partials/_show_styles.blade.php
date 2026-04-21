@@ -1,5 +1,11 @@
 <style>
-    /* ── Breadcrumb ── */
+    /* ═══════════════════════════════════════════════════════════════════════
+       📝 PENDAFTARAN SHOW STYLES
+       Layout: Header card + Navigation (kiri) + Content (kanan)
+       Mengadopsi design tokens dari portal.blade.php dan profil.blade.php
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    /* ── BREADCRUMB ── */
     .breadcrumb-ppdb {
         background: none;
         padding: 0;
@@ -8,133 +14,269 @@
     }
 
     .breadcrumb-ppdb .breadcrumb-item a {
-        color: #16a34a;
+        color: var(--color-primary);
         text-decoration: none;
+        font-weight: 500;
     }
 
     .breadcrumb-ppdb .breadcrumb-item.active {
-        color: #6b7280;
+        color: var(--color-text-muted);
     }
 
-    /* ── Page Header ── */
-    .show-header {
+    /* ─────────────────────────────────────────────────────────────────────
+       🎯 PROFILE GREETING CARD (Header)
+       ───────────────────────────────────────────────────────────────────── */
+    .profile-greeting-card {
+        background: linear-gradient(135deg, var(--color-primary-hover) 0%, var(--color-accent-teal) 100%);
+        border-radius: var(--radius-xl);
+        padding: clamp(1.5rem, 3vw, 2.5rem);
+        box-shadow: var(--shadow-primary);
+        position: relative;
+        overflow: hidden;
+        margin-bottom: clamp(1.5rem, 3vw, 2rem);
+    }
+
+    /* Decorative circles */
+    .profile-greeting-card::before,
+    .profile-greeting-card::after {
+        content: '';
+        position: absolute;
+        border-radius: var(--radius-full);
+        opacity: 0.08;
+        pointer-events: none;
         background: #fff;
-        border: 1.5px solid #e5e7eb;
-        border-radius: 16px;
-        padding: 22px 24px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, .05);
     }
 
-    .show-no-label {
-        display: block;
-        font-size: .67rem;
-        color: #9ca3af;
-        text-transform: uppercase;
-        letter-spacing: .5px;
+    .profile-greeting-card::before {
+        width: 320px;
+        height: 320px;
+        top: -120px;
+        right: -60px;
     }
 
-    .show-no-value {
-        font-family: 'Courier New', monospace;
-        font-size: 1.2rem;
-        font-weight: 800;
-        color: #111827;
-        letter-spacing: 1.5px;
+    .profile-greeting-card::after {
+        width: 200px;
+        height: 200px;
+        bottom: -80px;
+        right: 100px;
     }
 
-    .show-meta-row {
+    .profile-greeting-inner {
+        position: relative;
+        z-index: 1;
         display: flex;
         align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
         flex-wrap: wrap;
-        gap: 12px;
-        margin-top: 8px;
     }
 
-    .show-meta-item {
+    /* 👤 RIGHT SIDE: Profil Siswa (Reverse Order by flex) */
+    .profile-user-side {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        order: 2;
+        /* Di kanan */
+    }
+
+    .foto-wrapper {
+        width: 100px;
+        height: 100px;
+        flex-shrink: 0;
+    }
+
+    .foto-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: var(--radius-full);
+        box-shadow: 0 0 0 4px #fff, 0 0 0 6px rgba(255, 255, 255, 0.3);
+    }
+
+    .profile-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .profile-name {
+        font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+        font-weight: 900;
+        color: #fff;
+        margin: 0 0 0.5rem;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        line-height: 1.2;
+    }
+
+    .profile-email {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .profile-status-badge {
         display: inline-flex;
         align-items: center;
-        font-size: .8375rem;
-        color: #374151;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(8px);
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.375rem 0.875rem;
+        border-radius: var(--radius-full);
+        border: 1.5px solid rgba(255, 255, 255, 0.3);
     }
 
-    /* Progress Block */
-    .show-progress-block {
-        margin-top: 18px;
-        padding-top: 18px;
-        border-top: 1px solid #f3f4f6;
+    /* 📊 LEFT SIDE: Info Pendaftaran (profile-completion style) */
+    .pendaftaran-summary-side {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1.5px solid rgba(255, 255, 255, 0.25);
+        border-radius: var(--radius-lg);
+        padding: 1.25rem 1.5rem;
+        min-width: 320px;
+        order: 1;
+        /* Di kiri */
     }
 
-    .show-progress-top {
+    .completion-header {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 6px;
+        align-items: flex-end;
+        margin-bottom: 0.75rem;
     }
 
-    .show-progress-title {
-        font-size: .825rem;
-        font-weight: 700;
-        color: #374151;
+    .completion-label-wrapper {
+        display: flex;
+        flex-direction: column;
     }
 
-    .show-progress-pct {
-        font-size: 1rem;
+    .completion-label {
+        font-size: 0.7rem;
         font-weight: 800;
-        color: #16a34a;
+        color: rgba(255, 255, 255, 0.85);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.25rem;
     }
 
-    .show-progress-track {
-        height: 8px;
-        background: #f3f4f6;
-        border-radius: 4px;
+    .pendaftaran-no-val {
+        font-family: 'Courier New', monospace;
+        font-size: 1.125rem;
+        font-weight: 900;
+        color: #fff;
+        letter-spacing: 1px;
+    }
+
+    .completion-percent {
+        font-size: 1.75rem;
+        font-weight: 950;
+        color: #fff;
+        line-height: 1;
+    }
+
+    .profil-progress-track {
+        height: 10px;
+        border-radius: var(--radius-full);
+        background: rgba(255, 255, 255, 0.2);
         overflow: hidden;
-        margin-bottom: 6px;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
     }
 
-    .show-progress-fill {
+    .profil-progress-fill {
         height: 100%;
-        background: linear-gradient(90deg, #16a34a, #22c55e);
-        border-radius: 4px;
-        transition: width .8s ease;
+        background: #fff;
+        border-radius: var(--radius-full);
+        transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
     }
 
-    .show-progress-subs {
+    /* Shimmer effect pada progres bar */
+    .profil-progress-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        animation: progressShimmer 2s infinite;
+    }
+
+    @keyframes progressShimmer {
+        0% {
+            transform: translateX(-100%);
+        }
+
+        100% {
+            transform: translateX(100%);
+        }
+    }
+
+    .jalur-info-row {
         display: flex;
-        gap: 20px;
-        font-size: .78rem;
-        color: #6b7280;
+        align-items: center;
+        gap: 1rem;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 600;
     }
 
-    .show-progress-subs strong {
-        color: #111827;
+    .jalur-info-row i {
+        font-size: 1rem;
+        color: #fff;
     }
 
-    /* Status Boxes */
-    .status-box {
+    /* 🧩 MAIN CONTENT AREA - Sidebar + Cards */
+    .profil-sidebar {
+        background: var(--color-surface);
+        border-radius: var(--radius-lg);
+        border: 2px solid var(--color-border);
+        box-shadow: var(--shadow-sm);
+        padding: 1.25rem;
+        position: sticky;
+        top: 1rem;
+    }
+
+    .profil-nav {
         display: flex;
-        align-items: flex-start;
-        gap: 14px;
-        border-radius: 14px;
-        padding: 16px 20px;
-        margin-bottom: 0;
+        flex-direction: column;
+        gap: 0.375rem;
     }
 
-    .status-box--info {
-        background: #eff6ff;
-        border: 1.5px solid #93c5fd;
-        color: #1e40af;
+    .profil-nav-item {
+        display: flex;
+        align-items: center;
+        padding: 0.875rem 1rem;
+        border: 1.5px solid transparent;
+        background: transparent;
+        border-radius: var(--radius-md);
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--color-text);
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        gap: 0.75rem;
     }
 
-    .status-box--success {
-        background: #f0fdf4;
-        border: 1.5px solid #86efac;
-        color: #15803d;
+    .profil-nav-item:hover {
+        background: var(--color-primary-50);
+        color: var(--color-primary-hover);
+        transform: translateX(4px);
     }
 
-    .status-box--warning {
-        background: #fffbeb;
-        border: 1.5px solid #fcd34d;
-        border-left: 5px solid #f59e0b;
-        color: #92400e;
+    .profil-nav-item.active {
+        background: linear-gradient(135deg, var(--color-primary-light), #bbf7d0);
+        color: var(--color-primary-hover);
+        font-weight: 700;
+        border-color: var(--color-primary);
+        box-shadow: var(--shadow-sm);
     }
 
     /* ── Show Section ── */
@@ -165,6 +307,35 @@
 
     .show-section-body {
         padding: 20px 24px;
+    }
+
+    /* ── CTA Button (Sync with Profile) ── */
+    .btn-daftar {
+        background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-md);
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding: 0.875rem 1.25rem;
+        width: 100%;
+        transition: all var(--transition-normal);
+        box-shadow: var(--shadow-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-daftar:hover {
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(22, 163, 74, 0.35);
+    }
+
+    .btn-daftar:active {
+        transform: translateY(0);
     }
 
     /* ── Autosave ── */
@@ -226,6 +397,40 @@
     .form-select:focus {
         border-color: #86efac;
         box-shadow: 0 0 0 3px rgba(22, 163, 74, .12);
+    }
+
+    /* ── STATUS BOXES ── */
+    .status-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.25rem 1.5rem;
+        border-radius: var(--radius-md);
+        margin-bottom: 1.25rem;
+    }
+
+    .status-box--info {
+        background: #eff6ff;
+        border: 1.5px solid #bfdbfe;
+        color: #1e40af;
+    }
+
+    .status-box--success {
+        background: #f0fdf4;
+        border: 1.5px solid #bbf7d0;
+        color: #15803d;
+    }
+
+    .status-box--warning {
+        background: #fffbeb;
+        border: 1.5px solid #fde68a;
+        color: #92400e;
+    }
+
+    .status-box--payment {
+        background: #f0fdfa;
+        border: 1.5px solid #99f6e4;
+        color: #0f766e;
     }
 
     /* ── Dokumen Grid ── */
@@ -377,20 +582,31 @@
     /* ── Actions Bar ── */
     .show-actions-bar {
         position: sticky;
-        bottom: 0;
+        bottom: 1rem;
         z-index: 100;
         background: rgba(255, 255, 255, .95);
-        backdrop-filter: blur(8px);
-        border-top: 1px solid #e5e7eb;
-        margin: 0 -20px;
-        padding: 14px 20px;
+        backdrop-filter: blur(12px);
+        border: 1.5px solid #e5e7eb;
+        border-radius: var(--radius-lg);
+        padding: 12px 20px;
+        margin-top: 2rem;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
     }
 
     .show-actions-inner {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        max-width: 100%;
+        gap: 1rem;
+    }
+
+    /* Standardizing all buttons to be smaller and uniform */
+    .show-actions-inner .btn {
+        padding: 0.625rem 1.5rem !important;
+        font-size: 0.875rem !important;
+        border-radius: var(--radius-md) !important;
+        font-weight: 700 !important;
+        height: auto !important;
     }
 
     @media(max-width:576px) {
@@ -400,139 +616,188 @@
             left: 0;
             right: 0;
             margin: 0;
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+            border-bottom: none;
         }
     }
 
-    /* ── Modal Submit ── */
-    .modal-submit {
-        border-radius: 18px;
-        overflow: hidden;
+    /* ── Modal Custom Styling ── */
+    .modal-content {
         border: none;
-        box-shadow: 0 24px 64px rgba(0, 0, 0, .15);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
     }
 
     .modal-submit-header {
-        background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-        border-bottom: 1px solid #bbf7d0;
-        padding: 18px 22px;
+        padding: 1.5rem 1.75rem;
+        background: linear-gradient(135deg, var(--color-primary-50) 0%, #fff 100%);
+        border-bottom: 2px solid var(--color-border-light);
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: 1.25rem;
     }
 
     .modal-submit-icon {
-        width: 42px;
-        height: 42px;
-        background: linear-gradient(135deg, #16a34a, #059669);
-        border-radius: 11px;
+        width: 52px;
+        height: 52px;
+        background: var(--color-primary-light);
+        color: var(--color-primary-hover);
+        border-radius: var(--radius-md);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.2rem;
-        color: #fff;
+        font-size: 1.5rem;
         flex-shrink: 0;
+        box-shadow: var(--shadow-sm);
     }
 
     .submit-checklist {
         display: flex;
         flex-direction: column;
-        gap: 10px;
-        margin-bottom: 14px;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
     }
 
     .checklist-item {
         display: flex;
         align-items: center;
-        gap: 12px;
-        background: #f9fafb;
-        border: 1px solid #f3f4f6;
-        border-radius: 10px;
-        padding: 12px 14px;
+        gap: 1rem;
+        padding: 1rem 1.25rem;
+        border-radius: var(--radius-md);
+        border: 1.5px solid var(--color-border);
+        background: var(--color-surface);
+        transition: all var(--transition-fast);
+    }
+
+    .checklist-item:hover {
+        border-color: var(--color-primary);
+        background: var(--color-primary-50);
+        transform: translateY(-2px);
     }
 
     .ck-icon {
-        font-size: 1.1rem;
-        flex-shrink: 0;
+        font-size: 1.35rem;
     }
 
     .ck-label {
-        font-size: .85rem;
-        font-weight: 700;
-        color: #111827;
+        font-weight: 800;
+        font-size: 0.9rem;
+        color: var(--color-text);
+        line-height: 1.2;
     }
 
     .ck-sub {
-        font-size: .75rem;
-        color: #9ca3af;
-        margin-top: 2px;
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
     }
 
     .ck-pct {
-        font-size: .875rem;
-        font-weight: 800;
-        color: #16a34a;
+        font-weight: 900;
+        font-size: 0.95rem;
+        color: var(--color-primary);
         margin-left: auto;
     }
 
     .submit-warning-box {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
         background: #fffbeb;
-        border: 1px solid #fcd34d;
-        border-radius: 10px;
-        padding: 12px 14px;
-        margin-bottom: 12px;
-        font-size: .82rem;
+        border: 1.5px solid #fde68a;
+        border-radius: var(--radius-md);
+        padding: 1rem 1.25rem;
         color: #92400e;
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        font-size: 0.85rem;
     }
 
     .submit-notice {
+        background: var(--color-primary-50);
+        border: 1px solid var(--color-primary-light);
+        border-radius: var(--radius-md);
+        padding: 0.875rem 1.125rem;
+        color: var(--color-primary-hover);
         display: flex;
         align-items: center;
-        gap: 8px;
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        border-radius: 10px;
-        padding: 10px 14px;
-        font-size: .79rem;
-        color: #1e40af;
-        margin-top: 4px;
+        font-size: 0.8rem;
+        font-weight: 500;
     }
 
-    .flex-1 {
-        flex: 1;
+    /* Responsive adjustments */
+    @media (max-width: 991.98px) {
+        .profile-greeting-inner {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .pendaftaran-summary-side,
+        .profile-user-side {
+            width: 100%;
+            order: unset;
+        }
+
+        .profile-user-side {
+            justify-content: center;
+        }
     }
 
-    /* ── Tombol Bayar Pendaftaran ── */
-    .btn-pay-action {
-        background: linear-gradient(135deg, #0f766e, #0d9488);
-        color: #fff;
-        border: none;
-        border-radius: 12px;
-        transition: all .2s ease;
-        letter-spacing: .3px;
+    /* Mobile: Horizontal scrolling nav (Sync with Profile) */
+    @media (max-width: 767.98px) {
+        .profil-sidebar {
+            position: static;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .profil-nav {
+            flex-direction: row;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: stretch;
+        }
+
+        .profil-nav-item {
+            flex: 1 1 0;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0.75rem 0.5rem;
+            font-size: 0.75rem;
+            gap: 0.5rem;
+            transform: none !important;
+            text-align: center;
+            min-width: 0;
+        }
+
+        .profil-nav-item i {
+            width: auto;
+            font-size: 1.25rem;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        .tab-dot {
+            display: none;
+        }
     }
 
-    .btn-pay-action:hover {
-        background: linear-gradient(135deg, #0d6b64, #0b8177);
-        color: #fff;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(13, 148, 136, .35);
-    }
+    @media (max-width: 575.98px) {
+        .profile-user-side {
+            flex-direction: column;
+            text-align: center;
+        }
 
-    .btn-pay-action:active {
-        transform: translateY(0);
-    }
+        .show-section-body {
+            padding: 1.25rem 1rem;
+        }
 
-    /* ── Status box pembayaran ── */
-    .status-box--payment {
-        background: linear-gradient(135deg, #f0fdfa, #ccfbf1);
-        border: 1.5px solid #5eead4;
-        color: #0f766e;
-    }
-
-    .status-box--payment strong {
-        color: #0f766e;
+        .pendaftaran-summary-side {
+            min-width: 0;
+        }
     }
 </style>

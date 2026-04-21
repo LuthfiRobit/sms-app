@@ -47,17 +47,83 @@
 
 @section('content')
 
+    {{-- Breadcrumb & Header --}}
     @include('portal.pendaftaran.partials._show_header')
-    @include('portal.pendaftaran.partials._show_status')
-    @include('portal.pendaftaran.partials._show_formulir')
-    @include('portal.pendaftaran.partials._show_dokumen')
-    @include('portal.pendaftaran.partials._show_actions')
+
+    <div class="row g-4 mb-5">
+        {{-- SIDEBAR NAVIGATION --}}
+        <div class="col-lg-3 col-md-4">
+            <div class="profil-sidebar">
+                <nav class="profil-nav" aria-label="Navigasi Pendaftaran">
+                    <a href="#status" class="profil-nav-item ">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <span class="nav-label">Status & Informasi</span>
+                        <span class="tab-dot dot-ok"></span>
+                    </a>
+                    <a href="#formulir" class="profil-nav-item">
+                        <i class="bi bi-ui-checks-grid"></i>
+                        <span class="nav-label">Formulir Peserta</span>
+                        <span class="tab-dot {{ $prog['formulir']['persen'] >= 100 ? 'dot-ok' : 'dot-miss' }}"></span>
+                    </a>
+                    <a href="#dokumen" class="profil-nav-item">
+                        <i class="bi bi-file-earmark-arrow-up-fill"></i>
+                        <span class="nav-label">Berkas Dokumen</span>
+                        <span class="tab-dot {{ $prog['dokumen']['persen'] >= 100 ? 'dot-ok' : 'dot-miss' }}"></span>
+                    </a>
+                </nav>
+
+                {{-- Action Quick Link --}}
+                <div class="mt-4 pt-4 border-top">
+                    <a href="{{ route('ppdb.pendaftaran.index') }}" class="btn-daftar">
+                        <i class="bi bi-arrow-left"></i>
+                        Kembali ke Daftar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {{-- CONTENT AREA --}}
+        <div class="col-lg-9 col-md-8">
+            <div id="status">
+                @include('portal.pendaftaran.partials._show_status')
+            </div>
+
+            <div id="formulir">
+                @include('portal.pendaftaran.partials._show_formulir')
+            </div>
+
+            <div id="dokumen">
+                @include('portal.pendaftaran.partials._show_dokumen')
+            </div>
+
+            @include('portal.pendaftaran.partials._show_actions')
+        </div>
+    </div>
+
     @include('portal.pendaftaran.partials._show_modals')
 
 @endsection
 
 @push('styles')
     @include('portal.pendaftaran.partials._show_styles')
+    <style>
+        /* Smooth scrolling for anchor links */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Sticky sidebar offset */
+        .profil-sidebar {
+            top: 2rem;
+            z-index: 10;
+        }
+
+        /* Active state for navigation items - handled via JS or CSS if using anchors */
+        .profil-nav-item:target {
+            background: linear-gradient(135deg, var(--color-primary-light), #bbf7d0);
+            border-color: var(--color-primary);
+        }
+    </style>
 @endpush
 
 @push('scripts')

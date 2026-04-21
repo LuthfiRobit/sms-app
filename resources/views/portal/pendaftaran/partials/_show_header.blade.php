@@ -1,49 +1,74 @@
-{{-- ══ BREADCRUMB ══ --}}
-<nav aria-label="breadcrumb" class="mb-3">
-    <ol class="breadcrumb breadcrumb-ppdb">
-        <li class="breadcrumb-item"><a href="{{ route('ppdb.dashboard') }}"><i
-                    class="bi bi-house me-1"></i>Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="{{ route('ppdb.pendaftaran.index') }}">Pendaftaran</a></li>
-        <li class="breadcrumb-item active">{{ $pend?->no_pendaftaran }}</li>
-    </ol>
-</nav>
+{{-- PROFILE GREETING CARD (Header Pendaftaran) --}}
+<div class="profile-greeting-card">
+    <div class="profile-greeting-inner">
 
-{{-- ══ PAGE HEADER ══ --}}
-<div class="show-header mb-4">
-    <div class="show-header-main">
-        <div class="show-no-block">
-            <span class="show-no-label">No. Pendaftaran</span>
-            <span class="show-no-value">{{ $pend?->no_pendaftaran }}</span>
-        </div>
-        <div class="show-meta-row">
-            <span class="show-meta-item">
-                <i class="bi bi-diagram-3 me-1 text-success"></i>
-                <strong>{{ $jalur?->nama ?? '—' }}</strong>
-            </span>
-            <span class="show-meta-item">
-                <i class="bi bi-calendar3 me-1 text-muted"></i>
-                {{ $fmtTgl($pend?->tanggal_daftar ?? $pend?->created_at) }}
-            </span>
-            <span class="badge bg-{{ $st['color'] }} px-3 py-2">
-                <i class="bi {{ $st['icon'] }} me-1"></i>{{ $st['label'] }}
-            </span>
-        </div>
-    </div>
+        {{-- LEFT SIDE: Kelengkapan & Informasi Pendaftaran --}}
+        <div class="pendaftaran-summary-side">
+            <div class="completion-header">
+                <div class="completion-label-wrapper">
+                    <span class="completion-label">No. Pendaftaran</span>
+                    <span class="pendaftaran-no-val">{{ $pend?->no_pendaftaran }}</span>
+                </div>
+                <div class="text-end">
+                    <span class="completion-label d-block">Kelengkapan</span>
+                    <span class="completion-percent" id="main-pct">{{ $totalPersen }}%</span>
+                </div>
+            </div>
 
-    {{-- Progress Besar --}}
-    <div class="show-progress-block">
-        <div class="show-progress-top">
-            <span class="show-progress-title">Kelengkapan Pengisian</span>
-            <span class="show-progress-pct" id="main-pct">{{ $totalPersen }}%</span>
+            <div class="profil-progress-track">
+                <div class="profil-progress-fill" id="main-bar" style="width:{{ $totalPersen }}%" role="progressbar"
+                    aria-valuenow="{{ $totalPersen }}" aria-valuemin="0" aria-valuemax="100">
+                </div>
+            </div>
+
+            <div class="jalur-info-row">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-diagram-3-fill"></i>
+                    <span>{{ $jalur?->nama ?? '—' }}</span>
+                </div>
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <i class="bi bi-calendar-check-fill"></i>
+                    <span>{{ $fmtTgl($pend?->tanggal_daftar ?? $pend?->created_at) }}</span>
+                </div>
+            </div>
+
+            {{-- Hidden stats for JS validation --}}
+            <div class="d-none">
+                <span id="formulir-pct">{{ $prog['formulir']['persen'] }}%</span>
+                <span id="dokumen-pct">{{ $prog['dokumen']['persen'] }}%</span>
+            </div>
         </div>
-        <div class="show-progress-track">
-            <div class="show-progress-fill" id="main-bar" style="width:{{ $totalPersen }}%"></div>
+
+        {{-- RIGHT SIDE: Profil Siswa --}}
+        @php $user = auth()->user(); @endphp
+        <div class="profile-user-side">
+            <div class="foto-wrapper">
+                <img src="{{ $peserta?->foto
+    ? asset('storage/' . $peserta->foto)
+    : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&size=100&background=16a34a&color=fff&bold=true&rounded=true' }}"
+                    alt="Foto {{ $user->name }}">
+            </div>
+
+            <div class="profile-info">
+                <h1 class="profile-name">{{ $user->name }}</h1>
+
+                <div class="profile-email">
+                    <i class="bi bi-envelope-fill me-1"></i>
+                    <span>{{ $user->email }}</span>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <span class="profile-status-badge">
+                        <i class="bi bi-circle-fill text-white opacity-75"></i>
+                        Akun Aktif
+                    </span>
+                    <span class="badge bg-{{ $st['color'] }} px-3 py-2"
+                        style="border-radius: var(--radius-full); border: 1.5px solid rgba(255,255,255,0.3);">
+                        <i class="bi {{ $st['icon'] }} me-1"></i>{{ $st['label'] }}
+                    </span>
+                </div>
+            </div>
         </div>
-        <div class="show-progress-subs">
-            <span><i class="bi bi-ui-checks me-1"></i>Formulir: <strong
-                    id="formulir-pct">{{ $prog['formulir']['persen'] }}%</strong></span>
-            <span><i class="bi bi-paperclip me-1"></i>Dokumen: <strong
-                    id="dokumen-pct">{{ $prog['dokumen']['persen'] }}%</strong></span>
-        </div>
+
     </div>
 </div>
