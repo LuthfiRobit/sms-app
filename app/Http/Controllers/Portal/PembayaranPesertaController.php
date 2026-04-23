@@ -273,4 +273,94 @@ class PembayaranPesertaController extends Controller
             ], 500);
         }
     }
+    /**
+     * Memaksa sinkronisasi status pembayaran dengan Midtrans API.
+     * Digunakan oleh frontend setelah callback Snap (success/pending).
+     *
+     * @return JsonResponse
+     */
+    public function syncStatus(Request $request, int $id): JsonResponse
+    {
+        try {
+            $userId = auth()->user()->id_user;
+
+            // Ownership check
+            $this->portalPendaftaranSvc->getDetailPendaftaran($id, $userId);
+
+            // Ambil record pembayaran terbaru untuk pendaftaran ini
+            $pembayaran = $this->pembayaranRepo
+                ->datatable(['pendaftaran_id' => $id])
+                ->latest()
+                ->first();
+
+            if (!$pembayaran || !$pembayaran->order_id || $pembayaran->metode !== 'midtrans') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada transaksi Midtrans aktif untuk pendaftaran ini.',
+                ], 404);
+            }
+
+            // Panggil service untuk sinkronisasi
+            $result = $this->pembayaranService->syncStatus($pembayaran->order_id);
+
+            return response()->json($result);
+        } catch (AuthorizationException $e) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
+        } catch (\Exception $e) {
+            Log::error('[PembayaranPesertaController::syncStatus] ' . $e->getMessage(), [
+                'pendaftaran_id' => $id,
+                'user_id'        => auth()->user()->id_user ?? null,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal sinkronisasi: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Membatalkan transaksi Midtrans yang berstatus pending (Ganti Metode).
+     *
+     * @return JsonResponse
+     */
+    public function cancelPending(Request $request, int $id): JsonResponse
+    {
+        try {
+            $userId = auth()->user()->id_user;
+
+            // Ownership check
+            $this->portalPendaftaranSvc->getDetailPendaftaran($id, $userId);
+
+            // Ambil record pembayaran terbaru
+            $pembayaran = $this->pembayaranRepo
+                ->datatable(['pendaftaran_id' => $id])
+                ->latest()
+                ->first();
+
+            if (!$pembayaran || $pembayaran->status !== PembayaranPpdb::STATUS_PENDING) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada transaksi pending yang bisa dibatalkan.',
+                ], 404);
+            }
+
+            // Panggil service untuk membatalkan
+            $result = $this->pembayaranService->cancelPayment($pembayaran->id, $userId);
+
+            return response()->json($result);
+        } catch (AuthorizationException $e) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
+        } catch (\Exception $e) {
+            Log::error('[PembayaranPesertaController::cancelPending] ' . $e->getMessage(), [
+                'pendaftaran_id' => $id,
+                'user_id'        => auth()->user()->id_user ?? null,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membatalkan transaksi: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }

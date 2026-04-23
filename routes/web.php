@@ -252,6 +252,8 @@ Route::prefix('ppdb')->name('ppdb.')->group(function () {
         Route::prefix('/pembayaran')->name('pembayaran.')->group(function () {
             Route::get('/{id}', [PembayaranPesertaController::class, 'index'])->name('index');
             Route::post('/{id}/token', [PembayaranPesertaController::class, 'getToken'])->name('token');
+            Route::post('/{id}/sync', [PembayaranPesertaController::class, 'syncStatus'])->name('sync');
+            Route::post('/{id}/cancel-pending', [PembayaranPesertaController::class, 'cancelPending'])->name('cancel-pending');
             Route::post('/{id}/konfirmasi-manual', [PembayaranPesertaController::class, 'konfirmasiManual'])->name('konfirmasi-manual');
         });
 

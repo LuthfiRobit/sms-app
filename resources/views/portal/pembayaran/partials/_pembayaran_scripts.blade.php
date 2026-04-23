@@ -9,7 +9,39 @@
 
     // Endpoints
     const urlGetToken    = '{{ route('ppdb.pembayaran.token', $pendaftaran->id ?? 0) }}';
+    const urlSyncStatus  = '{{ route('ppdb.pembayaran.sync', $pendaftaran->id ?? 0) }}';
     const urlKonfirmasi  = '{{ route('ppdb.pembayaran.konfirmasi-manual', $pendaftaran->id ?? 0) }}';
+    const urlCancelPending = '{{ route('ppdb.pembayaran.cancel-pending', $pendaftaran->id ?? 0) }}';
+    
+    // Status State
+    const currentStatus  = '{{ $pembayaran->status ?? '' }}';
+    const isMidtrans     = '{{ $pembayaran->metode ?? '' }}' === 'midtrans';
+
+    // ══════════════════════════════════════════════════════
+    // 0. BACKGROUND POLLING (Jika Pending)
+    // ══════════════════════════════════════════════════════
+    if (currentStatus === 'pending' && isMidtrans) {
+        // Lakukan polling setiap 10 detik
+        const pollInterval = setInterval(async () => {
+            try {
+                const res = await fetch(urlSyncStatus, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': _TOKEN, 'Accept': 'application/json' },
+                });
+                const data = await res.json();
+                
+                // Jika status sudah tidak pending (sukses/gagal/kadaluwarsa)
+                if (data.success && data.message && !data.message.includes('pending')) {
+                    clearInterval(pollInterval);
+                    // Tambahkan toast atau alert sebelum reload
+                    showMidtransAlert('Status pembayaran diperbarui! Memuat ulang halaman...', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                }
+            } catch (err) {
+                console.error('Polling error:', err);
+            }
+        }, 10000); // 10 detik
+    }
 
     // ══════════════════════════════════════════════════════
     // 1. MIDTRANS FLOW
@@ -32,13 +64,15 @@
 
                 if (data.success && data.data && data.data.snap_token) {
                     snap.pay(data.data.snap_token, {
-                        onSuccess: function (result) {
-                            showMidtransAlert('Pembayaran berhasil! Halaman akan dimuat ulang...', 'success');
-                            setTimeout(() => window.location.reload(), 2000);
+                        onSuccess: async function (result) {
+                            showMidtransAlert('Pembayaran berhasil! Mengambil status terbaru...', 'success');
+                            await syncPaymentStatus();
+                            window.location.reload();
                         },
-                        onPending: function (result) {
-                            showMidtransAlert('Pembayaran pending. Segera selesaikan sesuai instruksi.', 'warning');
-                            setTimeout(() => window.location.reload(), 3000);
+                        onPending: async function (result) {
+                            showMidtransAlert('Pembayaran pending. Mengupdate data pendaftaran...', 'warning');
+                            await syncPaymentStatus();
+                            window.location.reload();
                         },
                         onError: function (result) {
                             showMidtransAlert(result.status_message ?? 'Terjadi kesalahan pembayaran.', 'danger');
@@ -57,6 +91,18 @@
                 this.disabled = false;
             }
         });
+    }
+
+    async function syncPaymentStatus() {
+        try {
+            const res = await fetch(urlSyncStatus, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': _TOKEN, 'Accept': 'application/json' },
+            });
+            return await res.json();
+        } catch (err) {
+            console.error('Gagal sinkronisasi status:', err);
+        }
     }
 
     function showMidtransAlert(msg, type) {
@@ -109,7 +155,7 @@
     }
 
     // ══════════════════════════════════════════════════════
-    // 3. KONFIRMASI MANUAL (AJAX UPLOAD)
+    // 3. KONFIRMASI MANUAL (AJAX UPLOAD) & CANCEL MIDTRANS
     // ══════════════════════════════════════════════════════
     const formManual   = document.getElementById('form-konfirmasi-manual');
     const btnUpload    = document.getElementById('btn-upload-bukti');
@@ -117,6 +163,49 @@
     const progressBar  = document.getElementById('upload-progress-bar');
     const progressPct  = document.getElementById('upload-pct');
     const resultDiv    = document.getElementById('manual-result');
+    const btnCancelMidtrans = document.getElementById('btn-cancel-midtrans');
+
+    if (btnCancelMidtrans) {
+        btnCancelMidtrans.addEventListener('click', function () {
+            Swal.fire({
+                title: 'Batalkan Tagihan?',
+                text: "Anda yakin ingin membatalkan tagihan otomatis Midtrans saat ini? Anda harus mengunggah bukti secara manual setelah pembatalan.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ffc107',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Batalkan!',
+                cancelButtonText: 'Batal'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Membatalkan...';
+
+                    try {
+                        const res = await fetch(urlCancelPending, {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': _TOKEN, 'Accept': 'application/json' },
+                        });
+                        const data = await res.json();
+
+                        if (data.success) {
+                            showToast('Berhasil membatalkan tagihan otomatis.', 'success');
+                            setTimeout(() => window.location.reload(), 1500);
+                        } else {
+                            showToast(data.message || 'Gagal membatalkan tagihan.', 'danger');
+                            this.disabled = false;
+                            this.innerHTML = '<i class="bi bi-x-circle me-1"></i>Batalkan Tagihan Otomatis';
+                        }
+                    } catch (err) {
+                        console.error('Error canceling pending midtrans:', err);
+                        showToast('Terjadi kesalahan koneksi.', 'danger');
+                        this.disabled = false;
+                        this.innerHTML = '<i class="bi bi-x-circle me-1"></i>Batalkan Tagihan Otomatis';
+                    }
+                }
+            });
+        });
+    }
 
     if (formManual) {
         formManual.addEventListener('submit', function (e) {
@@ -206,13 +295,51 @@
             const origHTML = btn.innerHTML;
             btn.innerHTML = '<i class="bi bi-check2 text-success"></i>';
             btn.classList.add('border-success');
+            
+            // Tampilkan Toast
+            showToast('Berhasil disalin!');
+
             setTimeout(() => { 
                 btn.innerHTML = origHTML; 
                 btn.classList.remove('border-success');
             }, 2000);
         }).catch(err => {
             console.error('Gagal menyalin:', err);
+            showToast('Gagal menyalin text', 'danger');
         });
+    };
+
+    // Fungsi helper Toast sederhana
+    function showToast(message, type = 'success') {
+        const toastId = 'custom-toast';
+        let toastEl = document.getElementById(toastId);
+        
+        if (!toastEl) {
+            toastEl = document.createElement('div');
+            toastEl.id = toastId;
+            toastEl.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;min-width:200px;padding:12px 20px;border-radius:8px;color:#fff;font-weight:bold;box-shadow:0 4px 6px rgba(0,0,0,0.1);transition:opacity 0.3s;opacity:0;';
+            document.body.appendChild(toastEl);
+        }
+        
+        toastEl.style.backgroundColor = type === 'success' ? '#198754' : '#dc3545';
+        toastEl.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle' : 'x-circle'} me-2"></i> ${message}`;
+        toastEl.style.opacity = '1';
+        
+        setTimeout(() => {
+            toastEl.style.opacity = '0';
+        }, 3000);
+    }
+
+    // ══════════════════════════════════════════════════════
+    // PREVIEW DOKUMEN
+    // ══════════════════════════════════════════════════════
+    window.previewDokumen = function(url, type, nama) {
+        document.getElementById('preview-filename').textContent = nama;
+        const body = document.getElementById('preview-body');
+        body.innerHTML = type === 'pdf'
+            ? `<iframe src="${url}" style="width:100%;height:70vh;border:none;"></iframe>`
+            : `<div class="text-center p-2"><img src="${url}" class="img-fluid" style="max-height:70vh;border-radius:8px;"></div>`;
+        new bootstrap.Modal(document.getElementById('modalPreview')).show();
     };
 
     // Navigation Scroll Spy simple

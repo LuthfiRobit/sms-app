@@ -82,15 +82,48 @@
                                     <div class="status-banner status-banner--success py-4 mb-4">
                                         <i class="bi bi-check-circle-fill fs-1 mb-2 d-block"></i>
                                         <h5 class="fw-900 mb-1">Pembayaran Terkonfirmasi!</h5>
-                                        <p class="small mb-0 opacity-90">Pembayaran Anda telah berhasil diverifikasi oleh sistem.</p>
+                                        <p class="small mb-0 opacity-90">
+                                            @if($pembayaran->metode === 'midtrans')
+                                                Pembayaran Anda telah berhasil diverifikasi otomatis oleh sistem.
+                                            @else
+                                                Pembayaran Anda telah berhasil diverifikasi oleh Panitia.
+                                            @endif
+                                        </p>
                                     </div>
                                 @elseif($pembayaran->status === 'pending')
-                                    <div class="status-banner status-banner--warning py-4 mb-4">
-                                        <i class="bi bi-hourglass-split fs-1 mb-2 d-block text-warning"></i>
-                                        <h5 class="fw-900 mb-1">Menunggu Verifikasi</h5>
-                                        <p class="small mb-0 opacity-90">Bukti transfer Anda sedang dalam proses peninjauan oleh
-                                            Panitia.</p>
-                                    </div>
+                                    @if($pembayaran->metode === 'midtrans')
+                                        <div class="status-banner status-banner--warning py-4 mb-4" style="background-color: #fff3cd; border-color: #ffe69c;">
+                                            <i class="bi bi-exclamation-circle fs-1 mb-2 d-block text-warning"></i>
+                                            <h5 class="fw-900 mb-1">Segera Lakukan Pembayaran!</h5>
+                                            <p class="small mb-0 opacity-90">Anda memiliki tagihan otomatis yang belum dibayar.</p>
+                                            
+                                            @if(is_array($pembayaran->midtrans_response) && isset($pembayaran->midtrans_response['va_numbers'][0]))
+                                                <div class="mt-3 p-3 bg-white rounded border text-start shadow-sm">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <span class="text-uppercase fw-bold text-muted">{{ $pembayaran->midtrans_response['va_numbers'][0]['bank'] }} Virtual Account</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                                        <span class="fs-5 fw-bold font-monospace text-primary-emphasis">{{ $pembayaran->midtrans_response['va_numbers'][0]['va_number'] }}</span>
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary fw-bold" onclick="copyToClipboard('{{ $pembayaran->midtrans_response['va_numbers'][0]['va_number'] }}', this)">
+                                                            <i class="bi bi-clipboard me-1"></i>Salin
+                                                        </button>
+                                                    </div>
+                                                    @if(isset($pembayaran->midtrans_response['expiry_time']))
+                                                    <hr class="my-2 opacity-25">
+                                                    <div class="small text-danger fw-600">
+                                                        <i class="bi bi-clock-history me-1"></i>Batas Waktu: {{ \Carbon\Carbon::parse($pembayaran->midtrans_response['expiry_time'])->isoFormat('D MMMM YYYY, HH:mm') }} WIB
+                                                    </div>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <div class="status-banner status-banner--warning py-4 mb-4">
+                                            <i class="bi bi-hourglass-split fs-1 mb-2 d-block text-warning"></i>
+                                            <h5 class="fw-900 mb-1">Menunggu Verifikasi Manual</h5>
+                                            <p class="small mb-0 opacity-90">Bukti transfer Anda sedang dalam proses peninjauan oleh Panitia.</p>
+                                        </div>
+                                    @endif
                                 @endif
 
                                 <div class="info-grid">
@@ -111,10 +144,16 @@
                                     @if($pembayaran->bukti_bayar)
                                         <div class="info-row">
                                             <span class="info-label">Bukti Bayar</span>
-                                            <a href="{{ Storage::url($pembayaran->bukti_bayar) }}" target="_blank"
+                                            @php
+                                                $ext = pathinfo($pembayaran->bukti_bayar, PATHINFO_EXTENSION);
+                                                $type = strtolower($ext) === 'pdf' ? 'pdf' : 'image';
+                                                $url = Storage::url($pembayaran->bukti_bayar);
+                                            @endphp
+                                            <button type="button" 
+                                                    onclick="previewDokumen('{{ $url }}', '{{ $type }}', 'Bukti Pembayaran')"
                                                 class="btn btn-sm btn-outline-success fw-bold px-3">
                                                 <i class="bi bi-eye me-1"></i>Lihat Berkas
-                                            </a>
+                                            </button>
                                         </div>
                                     @endif
                                 </div>
@@ -156,6 +195,7 @@
                 </div>
 
                 {{-- ══ SECTION: METODE ══ --}}
+                @if(!$pembayaran || $pembayaran->status !== 'paid')
                 <div id="metode">
                     <div class="profil-card">
                         <div class="profil-card-header">
@@ -287,17 +327,37 @@
 
                                         <div id="manual-result" class="d-none mb-4"></div>
 
-                                        <button type="submit" id="btn-upload-bukti" class="btn-daftar py-3 shadow-none"
-                                            @if(!$biaya) disabled @endif>
-                                            <i class="bi bi-cloud-upload-fill"></i>
-                                            Kirim Bukti Pembayaran
-                                        </button>
+                                            @if($pembayaran && $pembayaran->status === 'pending' && $pembayaran->metode === 'midtrans')
+                                                <div class="bg-light border-warning border-start border-4 rounded-3 shadow-sm p-3 mb-4">
+                                                    <div class="d-flex align-items-start gap-3">
+                                                        <div class="text-warning fs-3">
+                                                            <i class="bi bi-exclamation-triangle-fill"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="fw-bold mb-1 text-dark">Tagihan Otomatis Aktif</h6>
+                                                            <p class="small text-muted mb-3" style="line-height: 1.4;">
+                                                                Anda harus membatalkan tagihan Midtrans saat ini terlebih dahulu sebelum dapat menggunakan metode transfer manual.
+                                                            </p>
+                                                            <button type="button" class="btn btn-warning btn-sm fw-bold px-4 rounded-pill shadow-sm" id="btn-cancel-midtrans">
+                                                                Batalkan Tagihan
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <button type="submit" id="btn-upload-bukti" class="btn-daftar py-3 shadow-none"
+                                                    @if(!$biaya) disabled @endif>
+                                                    <i class="bi bi-cloud-upload-fill"></i>
+                                                    Kirim Bukti Pembayaran
+                                                </button>
+                                            @endif
                                     </form>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                @endif
 
                 {{-- ══ SECTION: PANDUAN ══ --}}
                 <div id="panduan">
@@ -309,31 +369,27 @@
                         <div class="profil-card-body">
                             <div class="row gx-5">
                                 <div class="col-md-7">
-                                    <h6 class="fw-bold mb-3">Langkah Pembayaran Manual:</h6>
-                                    <ul class="list-group list-group-flush small">
-                                        <li class="list-group-item d-flex  align-items-start border-0">
-                                            <span class="badge bg-primary-light text-primary rounded-circle p-2"
-                                                style="width: 28px; height: 28px">1</span>
-                                            <span>Pilih salah satu rekening tujuan di atas dan catat nomor rekeningnya.</span>
-                                        </li>
-                                        <li class="list-group-item d-flex  align-items-start border-0">
-                                            <span class="badge bg-primary-light text-primary rounded-circle p-2"
-                                                style="width: 28px; height: 28px">2</span>
-                                            <span>Lakukan transfer saldo sebesar <strong>{{ $nominalFmt }}</strong> ke rekening
-                                                tersebut.</span>
-                                        </li>
-                                        <li class="list-group-item d-flex  align-items-start border-0">
-                                            <span class="badge bg-primary-light text-primary rounded-circle p-2"
-                                                style="width: 28px; height: 28px">3</span>
-                                            <span>Simpan bukti transfer dalam format foto (JPG/PNG) atau PDF.</span>
-                                        </li>
-                                        <li class="list-group-item d-flex  align-items-start border-0">
-                                            <span class="badge bg-primary-light text-primary rounded-circle p-2"
-                                                style="width: 28px; height: 28px">4</span>
-                                            <span>Upload bukti tersebut melalui form "Konfirmasi Manual" dan tunggu verifikasi
-                                                1x24 jam.</span>
-                                        </li>
-                                    </ul>
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold text-dark"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Pembayaran Otomatis (Midtrans)</h6>
+                                        <ul class="text-muted small ps-4 mb-0" style="line-height: 1.6;">
+                                            <li>Klik tombol <strong>Bayar Sekarang</strong> dan pilih metode (VA, QRIS, e-Wallet) pada jendela yang muncul.</li>
+                                            <li>Sistem akan mendeteksi pelunasan secara <strong>otomatis & instan</strong> tanpa perlu mengunggah bukti pembayaran.</li>
+                                        </ul>
+                                    </div>
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold text-dark"><i class="bi bi-bank text-primary me-2"></i>Transfer Manual</h6>
+                                        <ul class="text-muted small ps-4 mb-0" style="line-height: 1.6;">
+                                            <li>Lakukan transfer sesuai nominal ke salah satu rekening resmi yang tertera.</li>
+                                            <li>Unggah foto/PDF bukti transfer pada form yang tersedia.</li>
+                                            <li>Verifikasi dilakukan secara manual oleh Panitia maksimal <strong>1x24 jam kerja</strong>.</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark"><i class="bi bi-arrow-left-right text-info me-2"></i>Kendala & Ganti Metode</h6>
+                                        <p class="text-muted small mb-0" style="line-height: 1.6;">
+                                            Jika Anda sudah membuat tagihan otomatis namun ingin beralih ke metode transfer manual, Anda <strong>wajib</strong> membatalkannya terlebih dahulu dengan menekan tombol <span class="badge bg-warning text-dark"><i class="bi bi-x-circle me-1"></i>Batalkan Tagihan Otomatis</span>.
+                                        </p>
+                                    </div>
                                 </div>
                                 <div class="col-md-5">
                                     <div
@@ -357,6 +413,21 @@
             </div>
         </div>
     @endif
+
+    {{-- MODAL PREVIEW DOKUMEN --}}
+    <div class="modal fade" id="modalPreview" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-light border-bottom-0">
+                    <h5 class="modal-title fw-bold" id="preview-filename">Preview Berkas</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0" id="preview-body" style="background-color: #f8f9fa;">
+                    {{-- Konten preview diisi oleh JS --}}
+                </div>
+            </div>
+        </div>
+    </div>
 
 @endsection
 
