@@ -230,7 +230,7 @@ class PembayaranService
                 'snap_token'         => $snapToken,
                 'order_id'           => $orderId,
                 'amount'             => $amount,
-                'midtrans_response'  => $params,
+                'midtrans_response'  => ['info' => 'Snap token generated', 'request_time' => now()->toIso8601String()],
             ]);
 
             // --- Log activity ---
@@ -353,79 +353,24 @@ class PembayaranService
             // --- 4. MAP transaction_status Midtrans → status internal ---
             $newStatus = $this->mapMidtransStatus($transactionStatus, $fraudStatus);
 
-            // --- 5. ATOMIC UPDATE (DB::transaction) ---
-            DB::transaction(function () use ($pembayaran, $newStatus, $callbackData, $orderId) {
-                $updateData = [
-                    'status'            => $newStatus,
-                    'midtrans_response' => $callbackData,
-                ];
+            // --- 5. PROCESS UPDATE ---
+            $result = $this->processPaymentUpdate($pembayaran, $newStatus, $callbackData, 'webhook');
 
-                // Jika status = paid, set waktu_bayar
-                if ($newStatus === PembayaranPpdb::STATUS_PAID) {
-                    $updateData['waktu_bayar'] = now();
-                }
+            if ($result['success'] && str_contains($result['message'] ?? '', 'berhasil diperbarui')) {
+                $this->logActivity->log(
+                    'Callback Pembayaran',
+                    "Webhook Midtrans diproses: Order {$orderId}, Status: {$transactionStatus} → {$newStatus}"
+                );
 
-                // Update pembayaran
-                $this->pembayaranRepo->updateByOrderId($orderId, $updateData);
+                Log::info('[PembayaranService::handleCallback] Success', [
+                    'order_id'    => $orderId,
+                    'midtrans_status' => $transactionStatus,
+                    'internal_status' => $newStatus,
+                ]);
+            }
 
-                // --- 5a. Jika PAID: update status pendaftaran ke 'verifikasi' ---
-                if ($newStatus === PembayaranPpdb::STATUS_PAID) {
-                    $pendaftaran = $this->pendaftaranRepo->findById($pembayaran->pendaftaran_id, ['peserta']);
+            return $result;
 
-                    if ($pendaftaran) {
-                        // Hanya update ke verifikasi jika status saat ini adalah 'submit'
-                        // Tidak force-update jika sudah di status yang lebih maju
-                        if ($pendaftaran->status === Pendaftaran::STATUS_SUBMIT) {
-                            $this->pendaftaranRepo->updateStatus(
-                                $pendaftaran->id,
-                                Pendaftaran::STATUS_VERIFIKASI
-                            );
-                        }
-
-                        // --- 5b. Kirim notifikasi ke peserta ---
-                        if ($pendaftaran->peserta?->user_id) {
-                            $this->notifikasiService->kirim(
-                                $pendaftaran->peserta->user_id,
-                                'pembayaran_success',
-                                [
-                                    'nama_peserta'   => $pendaftaran->peserta->nama_lengkap,
-                                    'no_pendaftaran' => $pendaftaran->no_pendaftaran,
-                                    'nominal'        => "Rp " . number_format((int) $pembayaran->amount, 0, ',', '.'),
-                                    'tanggal'        => now()->isoFormat('D MMMM YYYY')
-                                ]
-                            );
-                        }
-
-                        // Notifikasi ke admin juga
-                        $this->notifikasiService->kirimKeAdmin(
-                            'pembayaran_success',
-                            [
-                                'nama_peserta'   => $pendaftaran->peserta->nama_lengkap,
-                                'no_pendaftaran' => $pendaftaran->no_pendaftaran,
-                                'nominal'        => "Rp " . number_format((int) $pembayaran->amount, 0, ',', '.'),
-                                'tanggal'        => now()->isoFormat('D MMMM YYYY')
-                            ]
-                        );
-                    }
-                }
-            });
-
-            // --- 6. Log activity ---
-            $this->logActivity->log(
-                'Callback Pembayaran',
-                "Webhook Midtrans diproses: Order {$orderId}, Status: {$transactionStatus} → {$newStatus}"
-            );
-
-            Log::info('[PembayaranService::handleCallback] Success', [
-                'order_id'    => $orderId,
-                'midtrans_status' => $transactionStatus,
-                'internal_status' => $newStatus,
-            ]);
-
-            return [
-                'success' => true,
-                'message' => "Callback berhasil diproses. Status: {$newStatus}.",
-            ];
         } catch (Exception $e) {
             Log::error('[PembayaranService::handleCallback] ' . $e->getMessage(), [
                 'order_id' => $orderId,
@@ -437,6 +382,172 @@ class PembayaranService
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat memproses callback: ' . $e->getMessage(),
             ];
+        }
+    }
+
+    /**
+     * Sinkronisasi status pembayaran langsung dari API Midtrans.
+     * Berguna jika webhook terlambat atau tidak sampai (terutama di environment local).
+     *
+     * @param  string $orderId
+     * @return array
+     */
+    public function syncStatus(string $orderId): array
+    {
+        try {
+            // Find payment record
+            $pembayaran = $this->pembayaranRepo->findByOrderId($orderId);
+            if (!$pembayaran) {
+                return [
+                    'success' => false,
+                    'message' => "Pembayaran dengan Order ID {$orderId} tidak ditemukan.",
+                ];
+            }
+
+            // Get status from Midtrans API
+            $statusResponse = \Midtrans\Transaction::status($orderId);
+            
+            // Convert Midtrans object to array for easier handling
+            $data = json_decode(json_encode($statusResponse), true);
+
+            $transactionStatus = $data['transaction_status'] ?? null;
+            $fraudStatus      = $data['fraud_status'] ?? null;
+            $signatureKey     = $data['signature_key'] ?? null;
+            $statusCode       = $data['status_code'] ?? null;
+            $grossAmount      = $data['gross_amount'] ?? null;
+
+            // Validasi Signature Key jika disediakan oleh API (untuk perlindungan ekstra MITM)
+            if ($signatureKey && !$this->validateSignature($orderId, $statusCode, $grossAmount, $signatureKey)) {
+                Log::warning('[PembayaranService::syncStatus] SIGNATURE INVALID', [
+                    'order_id' => $orderId,
+                    'payload'  => $data,
+                ]);
+                throw new Exception("Signature key tidak valid pada respons Midtrans API.");
+            }
+
+            // Map status
+            $newStatus = $this->mapMidtransStatus($transactionStatus, $fraudStatus);
+
+            // Check if status changed or update is needed
+            // (We update anyway to refresh the midtrans_response data)
+            $result = $this->processPaymentUpdate($pembayaran, $newStatus, $data, 'sync');
+
+            if ($result['success'] && str_contains($result['message'] ?? '', 'berhasil diperbarui')) {
+                $this->logActivity->log(
+                    'Sinkronisasi Pembayaran',
+                    "Status pembayaran #{$orderId} disinkronkan manual: {$newStatus}"
+                );
+            }
+
+            return $result;
+
+        } catch (Exception $e) {
+            Log::error('[PembayaranService::syncStatus] ' . $e->getMessage(), [
+                'order_id' => $orderId,
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Gagal sinkronisasi status: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Logika internal untuk update status pembayaran, update pendaftaran, dan kirim notifikasi.
+     * Diekstrak agar bisa dipakai oleh handleCallback (webhook) dan syncStatus (pull).
+     *
+     * @param  PembayaranPpdb $pembayaran
+     * @param  string         $newStatus
+     * @param  array          $responseData
+     * @param  string         $source       Asal trigger (webhook/sync)
+     * @return array
+     */
+    private function processPaymentUpdate(PembayaranPpdb $pembayaran, string $newStatus, array $responseData, string $source = 'sync'): array
+    {
+        try {
+            return DB::transaction(function () use ($pembayaran, $newStatus, $responseData, $source) {
+                // Lock row pembayaran untuk mencegah race condition antara webhook dan sync
+                $lockedPembayaran = PembayaranPpdb::where('id', $pembayaran->id)->lockForUpdate()->first();
+                
+                if (!$lockedPembayaran) {
+                    throw new Exception("Data pembayaran tidak ditemukan saat memproses update.");
+                }
+
+                // Re-check status final di dalam lock (Idempotency)
+                $finalStatuses = [
+                    PembayaranPpdb::STATUS_PAID,
+                    PembayaranPpdb::STATUS_FAILED,
+                    PembayaranPpdb::STATUS_EXPIRED,
+                    PembayaranPpdb::STATUS_REFUND,
+                ];
+
+                if (in_array($lockedPembayaran->status, $finalStatuses)) {
+                    return [
+                        'success' => true,
+                        'message' => "Abaikan update via {$source}. Status sudah final: {$lockedPembayaran->status}",
+                    ];
+                }
+
+                $updateData = [
+                    'status'            => $newStatus,
+                    'midtrans_response' => $responseData,
+                ];
+
+                // Jika status = paid, set waktu_bayar (jika belum ada)
+                if ($newStatus === PembayaranPpdb::STATUS_PAID) {
+                    $updateData['waktu_bayar'] = $lockedPembayaran->waktu_bayar ?? now();
+                }
+
+                // Update pembayaran (langsung pakai method model karena sudah di-load)
+                $lockedPembayaran->update($updateData);
+
+                // --- Jika PAID: update status pendaftaran ke 'verifikasi' ---
+                if ($newStatus === PembayaranPpdb::STATUS_PAID) {
+                    $pendaftaran = $this->pendaftaranRepo->findById($lockedPembayaran->pendaftaran_id, ['peserta']);
+
+                    if ($pendaftaran) {
+                        // Hanya update ke verifikasi jika status saat ini adalah 'submit'
+                        if ($pendaftaran->status === Pendaftaran::STATUS_SUBMIT) {
+                            $this->pendaftaranRepo->updateStatus(
+                                $pendaftaran->id,
+                                Pendaftaran::STATUS_VERIFIKASI
+                            );
+                        }
+
+                        // Kirim notifikasi
+                        if ($pendaftaran->peserta?->user_id) {
+                            $this->notifikasiService->kirim(
+                                $pendaftaran->peserta->user_id,
+                                'pembayaran_success',
+                                [
+                                    'nama_peserta'   => $pendaftaran->peserta->nama_lengkap,
+                                    'no_pendaftaran' => $pendaftaran->no_pendaftaran,
+                                    'nominal'        => "Rp " . number_format((int) $lockedPembayaran->amount, 0, ',', '.'),
+                                    'tanggal'        => now()->isoFormat('D MMMM YYYY')
+                                ]
+                            );
+
+                            $this->notifikasiService->kirimKeAdmin(
+                                'pembayaran_success',
+                                [
+                                    'nama_peserta'   => $pendaftaran->peserta->nama_lengkap,
+                                    'no_pendaftaran' => $pendaftaran->no_pendaftaran,
+                                    'nominal'        => "Rp " . number_format((int) $lockedPembayaran->amount, 0, ',', '.'),
+                                    'tanggal'        => now()->isoFormat('D MMMM YYYY')
+                                ]
+                            );
+                        }
+                    }
+                }
+
+                return [
+                    'success' => true,
+                    'message' => "Status pembayaran berhasil diperbarui menjadi: {$newStatus} via {$source}",
+                ];
+            });
+        } catch (Exception $e) {
+            throw $e;
         }
     }
 
