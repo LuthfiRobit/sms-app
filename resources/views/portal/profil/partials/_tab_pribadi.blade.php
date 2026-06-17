@@ -1,138 +1,198 @@
-{{-- TAB 2 — Data Pribadi --}}
-<div class="tab-pane-profil d-none" id="pane-pribadi">
-    <div class="profil-card">
-        <div class="profil-card-header">
-            <i class="bi bi-person-vcard" aria-hidden="true"></i>Data Pribadi (Dapodik)
+{{-- TAB: Data Pribadi --}}
+<div class="tab-pane-profil hidden" id="pane-pribadi">
+    <div class="bg-surface-container-lowest rounded-xl border-t-[3px] border-tertiary-fixed-dim soft-shadow overflow-hidden">
+        <div class="flex items-center gap-3 px-6 py-4 bg-surface-container-low border-b border-outline-variant">
+            <span class="material-symbols-outlined text-primary text-[22px]">badge</span>
+            <h2 class="text-headline-sm text-on-surface">Data Pribadi (Dapodik)</h2>
         </div>
-        <div class="profil-card-body">
+        <div class="p-6">
             <form id="form-pribadi" novalidate enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="section" value="pribadi">
 
-                {{-- Upload foto di dalam tab --}}
-                <div class="d-flex align-items-center gap-3 mb-4 p-3"
-                        style="background:var(--c-primary-50);border-radius:var(--r-md);border:1px solid var(--c-primary-light)">
+                {{-- Foto Upload --}}
+                <div class="flex items-center gap-4 mb-6 p-4 bg-surface-container-low rounded-xl border border-outline-variant">
                     <img id="foto-preview-tab"
-                            src="{{ $peserta->foto
-                                ? asset('storage/'.$peserta->foto)
-                                : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&size=80&background=16a34a&color=fff&bold=true&rounded=true' }}"
-                            class="rounded-circle object-fit-cover flex-shrink-0"
-                            style="width:72px;height:72px;box-shadow:0 0 0 3px #fff,0 0 0 5px var(--c-primary-light)"
-                            alt="Foto Profil">
-                    <div>
-                        <label class="form-label" for="input-foto-tab">Foto Profil</label>
-                        <input type="file" name="foto" id="input-foto-tab" accept="image/*"
-                                class="form-control form-control-sm" style="max-width:260px">
-                        <div class="form-text">JPG/PNG/WebP · maks. 2 MB .</div>
+                         src="{{ $peserta->foto ? asset('storage/'.$peserta->foto) : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&size=80&background=00843d&color=fff&bold=true&rounded=true' }}"
+                         class="w-16 h-16 rounded-xl object-cover ring-2 ring-primary/20 flex-shrink-0"
+                         alt="Foto Profil">
+                    <div class="flex-1 min-w-0">
+                        <label class="block text-label-md text-on-surface-variant mb-2" for="input-foto-tab">Foto Profil</label>
+                        <div class="flex rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                            <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                <span class="material-symbols-outlined text-outline text-[20px]">photo_camera</span>
+                            </div>
+                            <input type="file" name="foto" id="input-foto-tab" accept="image/*"
+                                   class="flex-1 bg-surface-container-lowest px-4 py-2.5 text-body-sm text-on-surface border-none focus:ring-0 focus:outline-none min-w-0 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-body-sm file:font-semibold file:bg-surface-container file:text-on-surface-variant hover:file:bg-surface-container-high">
+                        </div>
+                        <p class="mt-1 text-body-sm text-on-surface-variant">JPG/PNG/WebP · maks. 2 MB</p>
                     </div>
                 </div>
 
-                <div class="row g-3">
-                    <div class="col-md-8">
-                        <label class="form-label" for="pribadi-nama">Nama Lengkap <span class="text-danger" aria-label="wajib">*</span></label>
-                        <input type="text" id="pribadi-nama" name="nama_lengkap" class="form-control"
-                                value="{{ $peserta->nama_lengkap }}" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label d-block">Jenis Kelamin</label>
-                        <div class="d-flex gap-3 mt-1">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="jenis_kelamin" value="L" id="jk-l"
-                                        {{ $peserta->jenis_kelamin === 'L' ? 'checked' : '' }}>
-                                <label class="form-check-label" for="jk-l">Laki-laki</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    {{-- Nama Lengkap --}}
+                    <div class="md:col-span-2">
+                        <label class="block text-label-md text-on-surface-variant mb-2" for="pribadi-nama">
+                            Nama Lengkap Siswa <span class="text-error">*</span>
+                        </label>
+                        <div class="flex rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                            <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                <span class="material-symbols-outlined text-outline text-[20px]">person</span>
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="jenis_kelamin" value="P" id="jk-p"
-                                        {{ $peserta->jenis_kelamin === 'P' ? 'checked' : '' }}>
-                                <label class="form-check-label" for="jk-p">Perempuan</label>
-                            </div>
+                            <input type="text" id="pribadi-nama" name="nama_lengkap"
+                                   class="flex-1 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0"
+                                   value="{{ $peserta->nama_lengkap }}" required
+                                   placeholder="Sesuai Akta Kelahiran atau Ijazah">
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label" for="pribadi-tempat-lahir">Tempat Lahir</label>
-                        <input type="text" id="pribadi-tempat-lahir" name="tempat_lahir" class="form-control"
-                                value="{{ $peserta->tempat_lahir }}" placeholder="Kota tempat lahir">
+
+                    {{-- Tempat Lahir --}}
+                    <div>
+                        <label class="block text-label-md text-on-surface-variant mb-2" for="pribadi-tempat-lahir">Tempat Lahir</label>
+                        <div class="flex rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                            <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                <span class="material-symbols-outlined text-outline text-[20px]">location_on</span>
+                            </div>
+                            <input type="text" id="pribadi-tempat-lahir" name="tempat_lahir"
+                                   class="flex-1 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0"
+                                   value="{{ $peserta->tempat_lahir }}" placeholder="Kota/Kabupaten">
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label" for="pribadi-tgl-lahir">Tanggal Lahir</label>
-                        <input type="date" id="pribadi-tgl-lahir" name="tanggal_lahir" class="form-control"
-                                value="{{ $peserta->tanggal_lahir?->format('Y-m-d') }}"
-                                max="{{ now()->subDay()->format('Y-m-d') }}">
+
+                    {{-- Tanggal Lahir --}}
+                    <div>
+                        <label class="block text-label-md text-on-surface-variant mb-2" for="pribadi-tgl-lahir">Tanggal Lahir</label>
+                        <div class="flex rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                            <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                <span class="material-symbols-outlined text-outline text-[20px]">calendar_today</span>
+                            </div>
+                            <input type="date" id="pribadi-tgl-lahir" name="tanggal_lahir"
+                                   class="flex-1 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0"
+                                   value="{{ $peserta->tanggal_lahir?->format('Y-m-d') }}"
+                                   max="{{ now()->subDay()->format('Y-m-d') }}">
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label" for="pribadi-agama">Agama</label>
-                        <select id="pribadi-agama" name="agama" class="form-select">
-                            <option value="">— Pilih Agama —</option>
-                            @foreach(['Islam','Kristen','Katolik','Hindu','Buddha','Konghucu'] as $ag)
-                                <option value="{{ $ag }}" {{ $peserta->agama === $ag ? 'selected' : '' }}>{{ $ag }}</option>
+
+                    {{-- Agama --}}
+                    <div>
+                        <label class="block text-label-md text-on-surface-variant mb-2" for="pribadi-agama">Agama</label>
+                        <div class="flex rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all relative">
+                            <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                <span class="material-symbols-outlined text-outline text-[20px]">church</span>
+                            </div>
+                            <select id="pribadi-agama" name="agama"
+                                    class="flex-1 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none appearance-none cursor-pointer min-w-0">
+                                <option value="">— Pilih Agama —</option>
+                                @foreach(['Islam','Kristen','Katolik','Hindu','Buddha','Konghucu'] as $ag)
+                                    <option value="{{ $ag }}" {{ $peserta->agama === $ag ? 'selected' : '' }}>{{ $ag }}</option>
+                                @endforeach
+                            </select>
+                            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">arrow_drop_down</span>
+                        </div>
+                    </div>
+
+                    {{-- Kebutuhan Khusus --}}
+                    <div>
+                        <label class="block text-label-md text-on-surface-variant mb-2" for="pribadi-kebutuhan">Kebutuhan Khusus</label>
+                        <div class="flex rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                            <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                <span class="material-symbols-outlined text-outline text-[20px]">accessibility</span>
+                            </div>
+                            <input type="text" id="pribadi-kebutuhan" name="kebutuhan_khusus"
+                                   class="flex-1 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0"
+                                   value="{{ $peserta->kebutuhan_khusus }}" placeholder="Kosongkan jika tidak ada">
+                        </div>
+                    </div>
+
+                    {{-- Jenis Kelamin --}}
+                    <div class="md:col-span-2">
+                        <label class="block text-label-md text-on-surface-variant mb-3">Jenis Kelamin</label>
+                        <div class="grid grid-cols-2 gap-3 max-w-sm">
+                            @foreach([['L','Laki-laki','man'], ['P','Perempuan','woman']] as $jk)
+                            <label class="flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer transition-all duration-150
+                                {{ $peserta->jenis_kelamin === $jk[0] ? 'border-primary bg-surface-container-low' : 'border-outline-variant bg-surface-container-lowest hover:bg-surface-container' }}">
+                                <input type="radio" name="jenis_kelamin" value="{{ $jk[0] }}"
+                                       class="hidden peer"
+                                       {{ $peserta->jenis_kelamin === $jk[0] ? 'checked' : '' }}>
+                                <div class="w-5 h-5 rounded-full border-2 {{ $peserta->jenis_kelamin === $jk[0] ? 'border-primary' : 'border-outline' }} flex items-center justify-center flex-shrink-0">
+                                    @if($peserta->jenis_kelamin === $jk[0])
+                                        <div class="w-2.5 h-2.5 rounded-full bg-primary"></div>
+                                    @endif
+                                </div>
+                                <span class="material-symbols-outlined text-[20px] text-outline">{{ $jk[2] }}</span>
+                                <span class="text-body-md text-on-surface font-medium">{{ $jk[1] }}</span>
+                            </label>
                             @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label" for="pribadi-kebutuhan">Kebutuhan Khusus</label>
-                        <input type="text" id="pribadi-kebutuhan" name="kebutuhan_khusus" class="form-control"
-                                value="{{ $peserta->kebutuhan_khusus }}" placeholder="Kosongkan jika tidak ada">
+                        </div>
                     </div>
 
                     {{-- NIK --}}
-                    <div class="col-md-6">
-                        <label class="form-label d-flex align-items-center gap-2" for="pribadi-nik">
+                    <div>
+                        <label class="block text-label-md text-on-surface-variant mb-2" for="pribadi-nik">
                             NIK
                             @if($peserta->nik)
-                                <span class="badge bg-secondary" data-bs-toggle="tooltip"
-                                        title="Sudah terkunci, hubungi Admin jika ada kesalahan">
-                                    🔒 Hanya Admin
-                                </span>
+                                <span class="ml-1 text-[10px] bg-surface-container-highest text-on-surface-variant px-2 py-0.5 rounded-full">🔒 Hanya Admin</span>
                             @else
-                                <span class="badge bg-info text-dark" data-bs-toggle="tooltip"
-                                        title="Dapat diisi satu kali — pastikan benar">
-                                    🔓 Sekali Isi
-                                </span>
+                                <span class="ml-1 text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full">Sekali Isi</span>
                             @endif
                         </label>
-                        <input type="text" id="pribadi-nik"
-                                name="{{ $peserta->nik ? '' : 'nik' }}"
-                                class="form-control {{ $peserta->nik ? 'bg-light' : '' }}"
-                                value="{{ $peserta->nik }}"
-                                placeholder="{{ $peserta->nik ? '' : '16 digit NIK' }}"
-                                maxlength="16"
-                                {{ $peserta->nik ? 'readonly' : '' }}>
+                        <div class="flex rounded-lg overflow-hidden border {{ $peserta->nik ? 'border-outline-variant bg-surface-container-high' : 'border-outline-variant' }} focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                            <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                <span class="material-symbols-outlined text-outline text-[20px]">badge</span>
+                            </div>
+                            <input type="text" id="pribadi-nik"
+                                   name="{{ $peserta->nik ? '' : 'nik' }}"
+                                   class="flex-1 {{ $peserta->nik ? 'bg-surface-container-high text-on-surface-variant' : 'bg-surface-container-lowest text-on-surface' }} px-4 py-3 text-body-md border-none focus:ring-0 focus:outline-none min-w-0"
+                                   value="{{ $peserta->nik }}"
+                                   placeholder="{{ $peserta->nik ? '' : '16 digit NIK' }}"
+                                   maxlength="16"
+                                   {{ $peserta->nik ? 'readonly' : '' }}>
+                        </div>
                     </div>
 
                     {{-- NISN --}}
-                    <div class="col-md-6">
-                        <label class="form-label d-flex align-items-center gap-2" for="pribadi-nisn">
+                    <div>
+                        <label class="block text-label-md text-on-surface-variant mb-2" for="pribadi-nisn">
                             NISN
                             @if($peserta->nisn)
-                                <span class="badge bg-secondary" data-bs-toggle="tooltip"
-                                        title="Sudah terkunci, hubungi Admin jika ada kesalahan">
-                                    🔒 Hanya Admin
-                                </span>
+                                <span class="ml-1 text-[10px] bg-surface-container-highest text-on-surface-variant px-2 py-0.5 rounded-full">🔒 Hanya Admin</span>
                             @else
-                                <span class="badge bg-info text-dark" data-bs-toggle="tooltip"
-                                        title="Dapat diisi satu kali — pastikan benar">
-                                    🔓 Sekali Isi
-                                </span>
+                                <span class="ml-1 text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full">Sekali Isi</span>
                             @endif
                         </label>
-                        <input type="text" id="pribadi-nisn"
-                                name="{{ $peserta->nisn ? '' : 'nisn' }}"
-                                class="form-control {{ $peserta->nisn ? 'bg-light' : '' }}"
-                                value="{{ $peserta->nisn }}"
-                                placeholder="{{ $peserta->nisn ? '' : '10 digit NISN' }}"
-                                maxlength="10"
-                                {{ $peserta->nisn ? 'readonly' : '' }}>
+                        <div class="flex rounded-lg overflow-hidden border {{ $peserta->nisn ? 'border-outline-variant bg-surface-container-high' : 'border-outline-variant' }} focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                            <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                <span class="material-symbols-outlined text-outline text-[20px]">school</span>
+                            </div>
+                            <input type="text" id="pribadi-nisn"
+                                   name="{{ $peserta->nisn ? '' : 'nisn' }}"
+                                   class="flex-1 {{ $peserta->nisn ? 'bg-surface-container-high text-on-surface-variant' : 'bg-surface-container-lowest text-on-surface' }} px-4 py-3 text-body-md border-none focus:ring-0 focus:outline-none min-w-0"
+                                   value="{{ $peserta->nisn }}"
+                                   placeholder="{{ $peserta->nisn ? '' : '10 digit NISN' }}"
+                                   maxlength="10"
+                                   {{ $peserta->nisn ? 'readonly' : '' }}>
+                        </div>
                     </div>
 
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-success btn-save">
-                            <span class="btn-text"><i class="bi bi-check2 me-1" aria-hidden="true"></i>Simpan Data Pribadi</span>
-                            <span class="btn-spinner d-none" aria-live="polite">
-                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Menyimpan…
-                            </span>
-                        </button>
-                    </div>
+                </div>
+
+                <div class="mt-5 flex justify-end">
+                    <button type="submit"
+                            class="btn-save bg-gradient-to-r from-primary to-primary-container text-on-primary text-label-md py-3 px-6 rounded-[10px] flex items-center gap-2 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none">
+                        <span class="btn-text flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[20px]">save</span>
+                            Simpan Data Pribadi
+                        </span>
+                        <span class="btn-spinner hidden items-center gap-2">
+                            <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            Menyimpan…
+                        </span>
+                    </button>
                 </div>
             </form>
         </div>

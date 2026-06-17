@@ -1,8 +1,13 @@
 <nav class="pc-sidebar">
     <div class="navbar-wrapper">
         <div class="m-header">
-            <a href="{{ route('admin.dashboard') }}" class="b-brand text-primary">
-                <h3 class="m-0 fw-bold text-primary">SIMS Terpadu</h3>
+            <a href="{{ route('admin.dashboard') }}" class="b-brand">
+                <img src="{{ asset('assets/sekolah-refaktor-template/images/logo/logomaarif.png') }}"
+                     alt="Logo LP Ma'arif NU" class="logo-lg">
+                <div>
+                    <span class="brand-name">LP Ma'arif NU</span>
+                    <span class="brand-sub">Kraksaan — SIMS Terpadu</span>
+                </div>
             </a>
         </div>
         <div class="navbar-content">

@@ -172,68 +172,132 @@ class PpdbDemoTestDataSeeder extends Seeder
         $syaratIds = [];
         foreach ($jalurs as $jId) {
             foreach ($syarats as $s) {
-                // Gunakan updateOrInsert atau hapus yg lama untk data syarats agar tidak duplicate jika rerun
-                $sId = DB::table('syarat_pendaftaran')->insertGetId(array_merge($s, [
-                    'jalur_pendaftaran_id' => $jId,
-                    'tahun_pelajaran_id' => $tahunId,
-                    'keterangan' => 'Scan dokumen asli berwarna',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]));
-                $syaratIds[$jId][] = $sId;
+                $existing = DB::table('syarat_pendaftaran')
+                    ->where('jalur_pendaftaran_id', $jId)
+                    ->where('nama', $s['nama'])
+                    ->value('id');
+
+                if ($existing) {
+                    $syaratIds[$jId][] = $existing;
+                } else {
+                    $syaratIds[$jId][] = DB::table('syarat_pendaftaran')->insertGetId(array_merge($s, [
+                        'jalur_pendaftaran_id' => $jId,
+                        'tahun_pelajaran_id' => $tahunId,
+                        'keterangan' => 'Scan dokumen asli berwarna',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]));
+                }
             }
         }
 
         // --- 6. Formulir Pendaftaran & Fields ---
+        $fields = [
+            [
+                'kode_field' => 'asal_sekolah',
+                'label' => 'Asal Sekolah',
+                'tipe_field' => 'text',
+                'is_required' => true,
+                'urutan' => 1,
+                'opsi' => null,
+            ],
+            [
+                'kode_field' => 'peminatan',
+                'label' => 'Peminatan / Hobi',
+                'tipe_field' => 'textarea',
+                'is_required' => false,
+                'urutan' => 2,
+                'opsi' => null,
+            ],
+            [
+                'kode_field' => 'prestasi_tertinggi',
+                'label' => 'Prestasi Tertinggi',
+                'tipe_field' => 'select',
+                'is_required' => false,
+                'urutan' => 3,
+                'opsi' => json_encode([
+                    ['value' => 'internasional', 'label' => 'Internasional'],
+                    ['value' => 'nasional', 'label' => 'Nasional'],
+                    ['value' => 'provinsi', 'label' => 'Provinsi'],
+                    ['value' => 'kabupaten', 'label' => 'Kabupaten/Kota'],
+                ]),
+            ],
+        ];
+
         foreach ($jalurs as $jId) {
-            $formId = DB::table('formulir_pendaftaran')->insertGetId([
-                'jalur_pendaftaran_id' => $jId,
-                'tahun_pelajaran_id' => $tahunId,
-                'nama' => 'Formulir Data Tambahan',
-                'is_aktif' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            $formId = DB::table('formulir_pendaftaran')
+                ->where('jalur_pendaftaran_id', $jId)
+                ->where('tahun_pelajaran_id', $tahunId)
+                ->value('id');
 
-            $fields = [
-                [
-                    'kode_field' => 'asal_sekolah',
-                    'label' => 'Asal Sekolah',
-                    'tipe_field' => 'text',
-                    'is_required' => true,
-                    'urutan' => 1
-                ],
-                [
-                    'kode_field' => 'peminatan',
-                    'label' => 'Peminatan / Hobi',
-                    'tipe_field' => 'textarea',
-                    'is_required' => false,
-                    'urutan' => 2
-                ],
-                [
-                    'kode_field' => 'prestasi_tertinggi',
-                    'label' => 'Prestasi Tertinggi',
-                    'tipe_field' => 'select',
-                    'is_required' => false,
-                    'urutan' => 3,
-                    'opsi' => json_encode([
-                        ['value' => 'internasional', 'label' => 'Internasional'],
-                        ['value' => 'nasional', 'label' => 'Nasional'],
-                        ['value' => 'provinsi', 'label' => 'Provinsi'],
-                        ['value' => 'kabupaten', 'label' => 'Kabupaten/Kota']
-                    ])
-                ]
-            ];
-
-            foreach ($fields as $f) {
-                DB::table('formulir_field')->insert(array_merge($f, [
-                    'formulir_pendaftaran_id' => $formId,
+            if (!$formId) {
+                $formId = DB::table('formulir_pendaftaran')->insertGetId([
+                    'jalur_pendaftaran_id' => $jId,
+                    'tahun_pelajaran_id' => $tahunId,
+                    'nama' => 'Formulir Data Tambahan',
+                    'is_aktif' => true,
                     'created_at' => now(),
                     'updated_at' => now(),
-                ]));
+                ]);
+
+                foreach ($fields as $f) {
+                    DB::table('formulir_field')->insert(array_merge($f, [
+                        'formulir_pendaftaran_id' => $formId,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]));
+                }
             }
         }
 
-        $this->command->info('✅ PPDB Demo Test Data Seeded Successfully with fixed columns!');
+        // --- 7. Biaya Registrasi per Jalur ---
+        $biayaConfig = [
+            $jalurZonasiId   => ['nama' => 'Biaya Pendaftaran Zonasi', 'nominal' => 150000],
+            $jalurPrestasiId => ['nama' => 'Biaya Pendaftaran Prestasi', 'nominal' => 150000],
+            $jalurAfirmasiId => ['nama' => 'Biaya Pendaftaran Afirmasi', 'nominal' => 0],
+        ];
+
+        foreach ($biayaConfig as $jId => $biaya) {
+            DB::table('biaya_registrasi')->updateOrInsert(
+                ['jalur_pendaftaran_id' => $jId, 'tahun_pelajaran_id' => $tahunId],
+                [
+                    'nama' => $biaya['nama'],
+                    'nominal' => $biaya['nominal'],
+                    'deskripsi' => $biaya['nominal'] === 0 ? 'Gratis untuk jalur afirmasi' : 'Biaya administrasi pendaftaran',
+                    'is_aktif' => true,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+        }
+
+        // --- 8. Kuota Jurusan per Jalur ---
+        $jurusanIds = DB::table('jurusan')->where('status', 'aktif')->pluck('id');
+
+        $kuotaConfig = [
+            $jalurZonasiId   => 6,   // 6 per jurusan × 5 jurusan = 30 total (sesuai kuota jalur)
+            $jalurPrestasiId => 12,  // 12 per jurusan × 5 jurusan = 60 total
+            $jalurAfirmasiId => 2,   // 2 per jurusan × 5 jurusan = 10 total
+        ];
+
+        foreach ($kuotaConfig as $jId => $kuotaPerJurusan) {
+            foreach ($jurusanIds as $jurusanId) {
+                DB::table('kuota_jurusan')->updateOrInsert(
+                    [
+                        'tahun_pelajaran_id'   => $tahunId,
+                        'jalur_pendaftaran_id' => $jId,
+                        'jurusan_id'           => $jurusanId,
+                    ],
+                    [
+                        'kuota'      => $kuotaPerJurusan,
+                        'terisi'     => 0,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]
+                );
+            }
+        }
+
+        $this->command->info('✅ PPDB Demo Test Data seeded: jalur, jadwal, syarat, formulir, biaya, kuota jurusan.');
     }
 }

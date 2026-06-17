@@ -1,1659 +1,614 @@
-@extends('layouts.portal')
+@extends('layouts.portal-stitch')
 
 @section('title', 'Pilih Jalur Pendaftaran — PPDB')
 
-@push('styles')
-    <style>
-        /* PILIH JALUR PENDAFTARAN - PAGE STYLES Halaman untuk memilih jalur pendaftaran PPDB Design mengikuti system dari portal & dashboard */
-
-        /* PAGE HEADER CARD - Adopsi style pendaftaran-greeting-card */
-        .pendaftaran-greeting-card {
-            background: linear-gradient(135deg, var(--color-primary-hover) 0%, var(--color-accent-teal) 100%);
-            border-radius: var(--radius-xl);
-            padding: clamp(1.5rem, 3vw, 2.5rem);
-            box-shadow: var(--shadow-primary);
-            position: relative;
-            overflow: hidden;
-            margin-bottom: clamp(1.5rem, 3vw, 2rem);
-        }
-
-        /* Decorative circles */
-        .pendaftaran-greeting-card::before,
-        .pendaftaran-greeting-card::after {
-            content: '';
-            position: absolute;
-            border-radius: var(--radius-full);
-            opacity: 0.08;
-            pointer-events: none;
-            background: #fff;
-        }
-
-        .pendaftaran-greeting-card::before {
-            width: 320px;
-            height: 320px;
-            top: -120px;
-            right: -60px;
-        }
-
-        .pendaftaran-greeting-card::after {
-            width: 200px;
-            height: 200px;
-            bottom: -80px;
-            right: 100px;
-        }
-
-        /* Inner container */
-        .pendaftaran-greeting-inner {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 2rem;
-            flex-wrap: wrap;
-        }
-
-        /* LEFT SECTION - Info Pendaftaran */
-        .pendaftaran-info-section {
-            flex: 1;
-            min-width: 280px;
-        }
-
-        .pendaftaran-header-content {
-            display: flex;
-            align-items: flex-start;
-            gap: 1.25rem;
-        }
-
-        .pendaftaran-header-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: var(--radius-lg);
-            background: rgba(255, 255, 255, 0.18);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.75rem;
-            color: #fff;
-            flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .pendaftaran-header-text {
-            flex: 1;
-        }
-
-        .pendaftaran-page-title {
-            font-size: clamp(1.5rem, 3vw, 2rem);
-            font-weight: 900;
-            color: #fff;
-            margin: 0 0 0.5rem;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            line-height: 1.2;
-        }
-
-        .pendaftaran-page-subtitle {
-            font-size: clamp(0.9rem, 2vw, 1rem);
-            color: rgba(255, 255, 255, 0.88);
-            margin: 0;
-            line-height: 1.5;
-        }
-
-        .pendaftaran-actions {
-            margin-top: 1.25rem;
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-        }
-
-        .btn-pendaftaran-saya {
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(8px);
-            color: #fff !important;
-            border: 1.5px solid rgba(255, 255, 255, 0.3);
-            font-weight: 600;
-            padding: 0.75rem 1.25rem;
-            border-radius: var(--radius-md);
-            transition: all var(--transition-fast);
-        }
-
-        .btn-pendaftaran-saya:hover {
-            background: rgba(255, 255, 255, 0.22);
-            border-color: rgba(255, 255, 255, 0.5);
-            color: #fff !important;
-            transform: translateY(-2px);
-        }
-
-        /* RIGHT SECTION - User Profile Info */
-        .user-profile-section {
-            display: flex;
-            align-items: center;
-            gap: 1.25rem;
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(10px);
-            border: 1.5px solid rgba(255, 255, 255, 0.25);
-            border-radius: var(--radius-lg);
-            padding: 1.25rem 1.5rem;
-            min-width: 280px;
-        }
-
-        .user-foto-wrapper {
-            width: 72px;
-            height: 72px;
-            flex-shrink: 0;
-        }
-
-        .user-foto-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: var(--radius-full);
-            box-shadow: 0 0 0 3px #fff, 0 0 0 5px rgba(255, 255, 255, 0.3);
-        }
-
-        .user-info-text {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .user-name {
-            font-size: 1.125rem;
-            font-weight: 700;
-            color: #fff;
-            margin: 0 0 0.375rem;
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .user-email {
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.85);
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.375rem;
-        }
-
-        .user-status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.375rem;
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 0.375rem 0.75rem;
-            border-radius: var(--radius-full);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .user-status-badge i {
-            font-size: 0.6rem;
-        }
-
-        /* Mobile Adjustments */
-        @media (max-width: 991.98px) {
-            .pendaftaran-greeting-inner {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .pendaftaran-info-section,
-            .user-profile-section {
-                min-width: 0;
-                width: 100%;
-            }
-
-            .user-profile-section {
-                justify-content: center;
-            }
-        }
-
-        @media (max-width: 575.98px) {
-            .pendaftaran-header-content {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
-
-            .pendaftaran-actions {
-                width: 100%;
-            }
-
-            .btn-pendaftaran-saya {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .user-profile-section {
-                flex-direction: column;
-                text-align: center;
-            }
-        }
-
-        /* PROFIL WARNING - Mengadopsi profile-alert dari dashboard Alert untuk profil yang belum lengkap */
-        .profil-warning-card {
-            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-            border: 2px solid #fbbf24;
-            border-left-width: 5px;
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 1rem;
-            box-shadow: var(--shadow-sm);
-            transition: all var(--transition-normal);
-            margin-bottom: clamp(1.5rem, 3vw, 2rem);
-        }
-
-        .profil-warning-card:hover {
-            box-shadow: var(--shadow-md);
-            transform: translateY(-2px);
-        }
-
-        .profil-warning-icon {
-            font-size: 2rem;
-            color: #f59e0b;
-            flex-shrink: 0;
-            line-height: 1;
-            animation: iconPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes iconPulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.08);
-            }
-        }
-
-        .profil-warning-body {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .profil-warning-title {
-            font-weight: 700;
-            color: #92400e;
-            font-size: 1.05rem;
-            margin-bottom: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .profil-warning-desc {
-            font-size: 0.875rem;
-            color: #78350f;
-            margin-bottom: 1rem;
-            line-height: 1.6;
-        }
-
-        .profil-kekurangan-list {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 1rem 0;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .profil-kekurangan-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.625rem 0.875rem;
-            background: rgba(251, 191, 36, 0.15);
-            border-radius: var(--radius-sm);
-            font-size: 0.875rem;
-            color: #78350f;
-            font-weight: 500;
-        }
-
-        .kekurangan-icon {
-            flex-shrink: 0;
-        }
-
-        .btn-lengkapi {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            font-size: 0.9rem;
-            font-weight: 700;
-            border-radius: var(--radius-md);
-            transition: all var(--transition-fast);
-        }
-
-        .btn-lengkapi:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        /* Mobile: Full width button */
-        @media (max-width: 575.98px) {
-            .profil-warning-card {
-                flex-direction: column;
-            }
-
-            .btn-lengkapi {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-
-        /* EMPTY STATE - Tidak ada jalur */
-        .no-jalur-card {
-            padding: clamp(2.5rem, 5vw, 4rem) 1.5rem;
-            text-align: center;
-            max-width: 520px;
-            margin: 0 auto;
-            background: var(--color-surface);
-            border-radius: var(--radius-xl);
-            border: 2px dashed var(--color-border);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .no-jalur-card>div:first-child {
-            animation: emptyFloat 3s ease-in-out infinite;
-        }
-
-        @keyframes emptyFloat {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-8px);
-            }
-        }
-
-        .no-jalur-card h5 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--color-text);
-            margin-bottom: 0.75rem;
-        }
-
-        .no-jalur-card p {
-            font-size: 0.95rem;
-            color: var(--color-text-muted);
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-        }
-
-        /* SECTION HEADING */
-        .section-heading-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .section-heading {
-            font-size: 1.125rem;
-            font-weight: 700;
-            color: var(--color-text);
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .section-heading i {
-            font-size: 1.25rem;
-            color: var(--color-primary);
-        }
-
-        .section-heading .badge {
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 0.375rem 0.75rem;
-        }
-
-        .warning-info-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.375rem;
-            padding: 0.625rem 1rem;
-            background: #fffbeb;
-            color: #92400e;
-            border: 1.5px solid #fde68a;
-            border-radius: var(--radius-md);
-            font-size: 0.8125rem;
-            font-weight: 600;
-        }
-
-        /* JALUR GRID - Card layout untuk jalur pendaftaran */
-        .jalur-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        @media (max-width: 575.98px) {
-            .jalur-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* JALUR CARD - Individual card per jalur */
-        .jalur-card {
-            background: var(--color-surface);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-            border: 2px solid var(--color-border);
-            overflow: hidden;
-            transition: all var(--transition-normal);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .jalur-card:hover {
-            box-shadow: var(--shadow-md);
-            transform: translateY(-4px);
-        }
-
-        .jalur-card--disabled {
-            opacity: 0.7;
-        }
-
-        .jalur-card--disabled:hover {
-            transform: none;
-            box-shadow: var(--shadow-sm);
-        }
-
-        /* Card Header dengan gradient */
-        .jalur-card-header {
-            padding: 1.5rem;
-            position: relative;
-            color: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1rem;
-            min-height: 140px;
-        }
-
-        .jalur-header-content {
-            flex: 1;
-            min-width: 0;
-            position: relative;
-            z-index: 1;
-        }
-
-        .jalur-kode-badge {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.25);
-            border: 1.5px solid rgba(255, 255, 255, 0.35);
-            color: #fff;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 0.375rem 0.75rem;
-            border-radius: var(--radius-sm);
-            margin-bottom: 0.75rem;
-            backdrop-filter: blur(4px);
-        }
-
-        .jalur-nama {
-            font-size: 1.0625rem;
-            font-weight: 800;
-            color: #fff;
-            margin: 0 0 0.5rem;
-            line-height: 1.2;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-        }
-
-        .jalur-tahun {
-            font-size: 0.8125rem;
-            color: rgba(255, 255, 255, 0.9);
-            display: flex;
-            align-items: center;
-            gap: 0.375rem;
-            font-weight: 500;
-        }
-
-        .jalur-status-badge-wrapper {
-            position: relative;
-            z-index: 1;
-            flex-shrink: 0;
-        }
-
-        .jalur-status-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.375rem;
-            padding: 0.5rem 0.875rem;
-            border-radius: var(--radius-md);
-            font-size: 0.75rem;
-            font-weight: 700;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            white-space: nowrap;
-        }
-
-        .chip-tersedia {
-            background: rgba(16, 185, 129, 0.25);
-            color: #ecfdf5;
-            border: 1.5px solid rgba(16, 185, 129, 0.4);
-        }
-
-        .chip-sudah {
-            background: rgba(59, 130, 246, 0.25);
-            color: #dbeafe;
-            border: 1.5px solid rgba(59, 130, 246, 0.4);
-        }
-
-        .chip-penuh {
-            background: rgba(239, 68, 68, 0.25);
-            color: #fee2e2;
-            border: 1.5px solid rgba(239, 68, 68, 0.4);
-        }
-
-        .chip-tutup {
-            background: rgba(156, 163, 175, 0.25);
-            color: #f3f4f6;
-            border: 1.5px solid rgba(156, 163, 175, 0.4);
-        }
-
-        /* Card Body */
-        .jalur-card-body {
-            padding: 1.5rem;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
-        }
-
-        .jalur-desc {
-            font-size: 0.875rem;
-            color: var(--color-text-muted);
-            line-height: 1.6;
-            margin: 0;
-        }
-
-        /* Info Grid - 3 kolom info */
-        .jalur-info-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            padding: 1rem;
-            background: var(--color-bg);
-            border-radius: var(--radius-md);
-            border: 1px solid var(--color-border-light);
-        }
-
-        @media (max-width: 575.98px) {
-            .jalur-info-grid {
-                grid-template-columns: 1fr;
-                gap: 0.75rem;
-            }
-        }
-
-        .jalur-info-item {
-            text-align: center;
-        }
-
-        .jalur-info-label {
-            font-size: 0.68rem;
-            color: var(--color-text-subtle);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 700;
-            margin-bottom: 0.375rem;
-        }
-
-        .jalur-info-val {
-            font-size: 0.85rem;
-            color: var(--color-text);
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .hampir-penuh-text {
-            font-size: 0.7rem;
-            font-weight: 600;
-            margin-top: 0.25rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.25rem;
-        }
-
-        /* Kuota Progress Bar */
-        .kuota-progress-wrapper {
-            margin-top: 0.5rem;
-        }
-
-        .kuota-progress-label {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .kuota-progress-track {
-            height: 8px;
-            background: var(--color-border-light);
-            border-radius: var(--radius-full);
-            overflow: hidden;
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-        }
-
-        .kuota-progress-fill {
-            height: 100%;
-            border-radius: var(--radius-full);
-            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .kuota-progress-fill::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg,
-                    transparent,
-                    rgba(255, 255, 255, 0.3),
-                    transparent);
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            0% {
-                transform: translateX(-100%);
-            }
-
-            100% {
-                transform: translateX(100%);
-            }
-        }
-
-        /* Kuota Jurusan List */
-        .kuota-jurusan-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.625rem;
-        }
-
-        .kuota-jurusan-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.625rem 0.875rem;
-            background: var(--color-bg);
-            border-radius: var(--radius-sm);
-            font-size: 0.8125rem;
-            border: 1px solid var(--color-border-light);
-        }
-
-        .kj-nama {
-            color: var(--color-text);
-            font-weight: 500;
-            flex: 1;
-        }
-
-        .kj-sisa {
-            font-weight: 700;
-            font-size: 0.75rem;
-            padding: 0.25rem 0.625rem;
-            background: var(--color-primary-light);
-            color: var(--color-primary-hover);
-            border-radius: var(--radius-sm);
-        }
-
-        /* Accordion untuk detail tambahan */
-        .jalur-accordion {
-            border: none;
-        }
-
-        .jalur-acc-item {
-            border: 1px solid var(--color-border-light) !important;
-            border-radius: var(--radius-md) !important;
-            overflow: hidden;
-            margin-bottom: 0.5rem;
-        }
-
-        .jalur-acc-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .jalur-acc-btn {
-            font-size: 0.8125rem;
-            font-weight: 600;
-            color: var(--color-text);
-            background: var(--color-bg) !important;
-            padding: 0.75rem 1rem;
-            border: none;
-            transition: all var(--transition-fast);
-        }
-
-        .jalur-acc-btn:not(.collapsed) {
-            color: var(--color-primary-hover);
-            background: var(--color-primary-50) !important;
-        }
-
-        .jalur-acc-btn:hover {
-            background: var(--color-primary-light) !important;
-        }
-
-        .jalur-acc-btn::after {
-            width: 16px;
-            height: 16px;
-            background-size: 16px;
-        }
-
-        .jalur-acc-body {
-            padding: 1rem;
-            background: var(--color-surface);
-            border-top: 1px solid var(--color-border-light);
-        }
-
-        /* Syarat List */
-        .syarat-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .syarat-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.625rem 0;
-            border-bottom: 1px solid var(--color-border-light);
-            font-size: 0.8125rem;
-            color: var(--color-text);
-        }
-
-        .syarat-item:last-child {
-            border-bottom: none;
-        }
-
-        .syarat-item i {
-            color: var(--color-primary);
-        }
-
-        .syarat-item .ms-auto {
-            flex-shrink: 0;
-        }
-
-        /* Jadwal List */
-        .jadwal-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .jadwal-item {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            background: var(--color-bg);
-            border-radius: var(--radius-md);
-            font-size: 0.8125rem;
-            border: 1px solid var(--color-border-light);
-        }
-
-        .jadwal-item--aktif {
-            background: var(--color-primary-50);
-            border: 1.5px solid var(--color-primary-light);
-        }
-
-        .jadwal-tipe-badge {
-            display: inline-block;
-            background: var(--color-border);
-            color: var(--color-text);
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 0.25rem 0.625rem;
-            border-radius: var(--radius-sm);
-            flex-shrink: 0;
-        }
-
-        .jadwal-item--aktif .jadwal-tipe-badge {
-            background: var(--color-primary-light);
-            color: var(--color-primary-hover);
-        }
-
-        .jadwal-tanggal {
-            font-size: 0.78rem;
-            color: var(--color-text-muted);
-            flex: 1;
-            font-weight: 500;
-        }
-
-        /* Card Footer dengan action button */
-        .jalur-card-footer {
-            padding: 1.25rem 1.5rem;
-            background: var(--color-bg);
-            border-top: 1px solid var(--color-border-light);
-        }
-
-        .btn-jalur-action {
-            font-size: 0.875rem;
-            font-weight: 700;
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--radius-md);
-            transition: all var(--transition-fast);
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .btn-jalur-action:not(:disabled):hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .btn-success.btn-jalur-action {
-            background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
-            border: none;
-            box-shadow: var(--shadow-primary);
-        }
-
-        .btn-success.btn-jalur-action:hover {
-            box-shadow: 0 6px 20px rgba(22, 163, 74, 0.35);
-        }
-
-        .btn-outline-secondary.btn-jalur-action {
-            border-width: 1.5px;
-        }
-
-        /* MODAL KONFIRMASI Modal untuk konfirmasi pilihan jalur */
-        .modal-konfirmasi {
-            border: none;
-            border-radius: var(--radius-2xl);
-            overflow: hidden;
-            box-shadow: var(--shadow-xl);
-        }
-
-        .modal-konfirmasi-header {
-            background: linear-gradient(135deg, var(--color-primary-50), var(--color-primary-light));
-            border-bottom: 2px solid var(--color-primary-light);
-            padding: 1.5rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 1rem;
-        }
-
-        .modal-konfirmasi-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: #fff;
-            flex-shrink: 0;
-            box-shadow: var(--shadow-primary);
-        }
-
-        .modal-konfirmasi-header h5 {
-            flex: 1;
-            margin: 0.5rem 0 0;
-            font-weight: 700;
-            color: var(--color-text);
-        }
-
-        .modal-konfirmasi .modal-body {
-            padding: 1.5rem;
-        }
-
-        .modal-jalur-info {
-            background: var(--color-bg);
-            border: 1.5px solid var(--color-border);
-            border-radius: var(--radius-md);
-            padding: 1.25rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.875rem;
-            margin-bottom: 1.25rem;
-        }
-
-        .modal-info-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .modal-info-label {
-            font-size: 0.8125rem;
-            color: var(--color-text-subtle);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            flex-shrink: 0;
-        }
-
-        .modal-info-val {
-            font-size: 0.9375rem;
-            color: var(--color-text);
-            font-weight: 700;
-            text-align: right;
-        }
-
-        .modal-warning-box {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            background: #eff6ff;
-            border: 1.5px solid #bfdbfe;
-            border-radius: var(--radius-md);
-            padding: 1rem;
-            margin-bottom: 1.25rem;
-            font-size: 0.8125rem;
-            color: #1e40af;
-            line-height: 1.6;
-        }
-
-        .modal-warning-box i {
-            flex-shrink: 0;
-            font-size: 1.125rem;
-        }
-
-        .modal-checkbox-wrapper {
-            background: var(--color-surface);
-            border: 2px solid var(--color-border);
-            border-radius: var(--radius-md);
-            padding: 1.25rem;
-        }
-
-        .modal-checkbox-wrapper .form-check-input {
-            width: 1.25rem;
-            height: 1.25rem;
-            border-width: 2px;
-            cursor: pointer;
-        }
-
-        .modal-checkbox-wrapper .form-check-input:checked {
-            background-color: var(--color-primary);
-            border-color: var(--color-primary);
-        }
-
-        .modal-checkbox-wrapper .form-check-label {
-            font-size: 0.9375rem;
-            font-weight: 500;
-            color: var(--color-text);
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .modal-konfirmasi-footer {
-            background: var(--color-bg);
-            border-top: 1px solid var(--color-border);
-            padding: 1.25rem 1.5rem;
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.75rem;
-        }
-
-        .modal-konfirmasi-footer .btn {
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            border-radius: var(--radius-md);
-        }
-
-        /* RESPONSIVE UTILITIES */
-        @media (max-width: 575.98px) {
-            .modal-konfirmasi-footer {
-                flex-direction: column-reverse;
-            }
-
-            .modal-konfirmasi-footer .btn {
-                width: 100%;
-            }
-        }
-
-        /* ACCESSIBILITY ENHANCEMENTS */
-        .btn-jalur-action:focus-visible,
-        .jalur-acc-btn:focus-visible {
-            outline: 2px solid var(--color-primary);
-            outline-offset: 2px;
-        }
-
-        .modal-checkbox-wrapper .form-check-input:focus-visible {
-            box-shadow: 0 0 0 3px var(--color-primary-light);
-        }
-
-        /* Reduced motion support */
-        @media (prefers-reduced-motion: reduce) {
-
-            .jalur-card,
-            .btn-jalur-action,
-            .kuota-progress-fill,
-            .profil-warning-icon {
-                animation: none !important;
-                transition: none !important;
-            }
-        }
-    </style>
-@endpush
+@section('navbar')
+<nav class="bg-gradient-to-r from-primary to-primary-container text-on-primary sticky top-0 border-b-4 border-tertiary-container shadow-md z-50">
+    <div class="flex justify-between items-center w-full px-4 md:px-8 h-20 max-w-[1440px] mx-auto">
+        <div class="flex items-center gap-4">
+            <div class="bg-surface text-primary p-2 rounded-lg font-headline-sm text-headline-sm font-bold shadow-sm select-none">LP</div>
+            <span class="font-headline-md text-headline-md text-on-primary hidden sm:block">LP Ma'arif NU Kraksaan</span>
+        </div>
+
+        <div class="hidden md:flex gap-8 items-center">
+            <a href="{{ route('ppdb.beranda') }}"
+               class="font-label-md text-label-md text-on-primary/80 hover:text-tertiary-fixed transition-colors duration-200">Beranda</a>
+            <a href="{{ route('ppdb.pendaftaran.index') }}"
+               class="font-label-md text-label-md text-on-primary border-b-2 border-tertiary-fixed-dim pb-1">Pendaftaran</a>
+            <a href="{{ route('ppdb.profil.index') }}"
+               class="font-label-md text-label-md text-on-primary/80 hover:text-tertiary-fixed transition-colors duration-200">Profil</a>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a href="{{ route('ppdb.profil.index') }}"
+               class="bg-surface text-primary px-4 md:px-6 py-2 rounded-lg font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-colors duration-200 flex items-center gap-2">
+                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">account_circle</span>
+                <span class="hidden sm:inline">Akun Saya</span>
+            </a>
+            <form action="{{ route('ppdb.logout') }}" method="POST">
+                @csrf
+                <button type="submit"
+                        class="bg-white/10 hover:bg-white/20 text-on-primary px-3 py-2 rounded-lg text-body-sm transition-colors flex items-center gap-1.5"
+                        title="Keluar">
+                    <span class="material-symbols-outlined text-[18px]">logout</span>
+                    <span class="hidden md:inline">Keluar</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</nav>
+@endsection
 
 @section('content')
+@php
+    $jalurList    = $jalur['data'] ?? [];
+    $profilCukup  = $cekProfil['cukup'] ?? false;
+    $kekurangan   = $cekProfil['kekurangan'] ?? [];
 
-    @php
-        $jalurList = $jalur['data'] ?? [];
-        $profilCukup = $cekProfil['cukup'] ?? false;
-        $kekurangan = $cekProfil['kekurangan'] ?? [];
+    $cardColors = [
+        ['bg' => '#15803d', 'ring' => '#86efac'],
+        ['bg' => '#0369a1', 'ring' => '#93c5fd'],
+        ['bg' => '#7c3aed', 'ring' => '#c4b5fd'],
+        ['bg' => '#b45309', 'ring' => '#fcd34d'],
+        ['bg' => '#be185d', 'ring' => '#f9a8d4'],
+        ['bg' => '#0f766e', 'ring' => '#5eead4'],
+    ];
 
-        /**
-         * Warna header card per index (siklus 6 warna)
-         */
-        $cardColors = [
-            ['bg' => '#15803d', 'light' => '#dcfce7', 'border' => '#86efac'],
-            ['bg' => '#0369a1', 'light' => '#dbeafe', 'border' => '#93c5fd'],
-            ['bg' => '#7c3aed', 'light' => '#ede9fe', 'border' => '#c4b5fd'],
-            ['bg' => '#b45309', 'light' => '#fef3c7', 'border' => '#fcd34d'],
-            ['bg' => '#be185d', 'light' => '#fce7f3', 'border' => '#f9a8d4'],
-            ['bg' => '#0f766e', 'light' => '#ccfbf1', 'border' => '#5eead4'],
-        ];
+    $bulanIndo = [1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'Mei',6=>'Jun',
+                  7=>'Jul',8=>'Agt',9=>'Sep',10=>'Okt',11=>'Nov',12=>'Des'];
+    $fmtDate   = function ($d) use ($bulanIndo) {
+        if (!$d) return '—';
+        $dt = $d instanceof \Carbon\Carbon ? $d : \Carbon\Carbon::parse($d);
+        return $dt->day . ' ' . $bulanIndo[$dt->month] . ' ' . $dt->year;
+    };
+    $fmtRupiah = fn($n) => 'Rp ' . number_format($n ?? 0, 0, ',', '.');
+    $user      = auth()->user();
+@endphp
 
-        $bulanIndo = [
-            1 => 'Jan',
-            2 => 'Feb',
-            3 => 'Mar',
-            4 => 'Apr',
-            5 => 'Mei',
-            6 => 'Jun',
-            7 => 'Jul',
-            8 => 'Agt',
-            9 => 'Sep',
-            10 => 'Okt',
-            11 => 'Nov',
-            12 => 'Des'
-        ];
-        $fmtDate = function ($d) use ($bulanIndo) {
-            if (!$d)
-                return '—';
-            $dt = $d instanceof \Carbon\Carbon ? $d : \Carbon\Carbon::parse($d);
-            return $dt->day . ' ' . $bulanIndo[$dt->month] . ' ' . $dt->year;
-        };
-        $fmtRupiah = fn($n) => 'Rp ' . number_format($n ?? 0, 0, ',', '.');
-    @endphp
+<div class="w-full max-w-[1440px] mx-auto px-4 md:px-8 py-6 flex flex-col gap-6">
 
-    {{-- PAGE HEADER - Mengadopsi greeting-card dari dashboard Sisi kiri: Info halaman | Sisi kanan: Info profil user --}}
-    <div class="pendaftaran-greeting-card">
-        <div class="pendaftaran-greeting-inner">
+    {{-- Page Header --}}
+    <div class="bg-gradient-to-r from-primary to-primary-container rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden shadow-lg border-b-4 border-tertiary-container">
+        <div class="absolute inset-0 opacity-[0.06]"
+             style="background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M30 0l5.8 24.2L60 30l-24.2 5.8L30 60l-5.8-24.2L0 30l24.2-5.8Z' fill='none' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E\")"></div>
 
-            {{-- LEFT SECTION: Header Info --}}
-            <div class="pendaftaran-info-section">
-                <div class="pendaftaran-header-content">
-                    <div class="pendaftaran-header-icon" aria-hidden="true">
-                        <i class="bi bi-signpost-2-fill"></i>
-                    </div>
-
-                    <div class="pendaftaran-header-text">
-                        <h1 class="pendaftaran-page-title">Pilih Jalur Pendaftaran</h1>
-                        <p class="pendaftaran-page-subtitle">
-                            Pilih jalur yang sesuai dengan kelayakan Anda
-                        </p>
-                    </div>
-                </div>
-
-                <div class="pendaftaran-actions">
-                    <a href="{{ route('ppdb.pendaftaran.index') }}" class="btn btn-pendaftaran-saya">
-                        <i class="bi bi-arrow-left me-2"></i>
+        <div class="relative z-10 flex items-start gap-5 flex-1 min-w-0">
+            <div class="w-16 h-16 rounded-2xl bg-white/20 border-2 border-white/30 flex items-center justify-center flex-shrink-0 shadow">
+                <span class="material-symbols-outlined text-[32px] text-on-primary" style="font-variation-settings:'FILL' 1">signpost</span>
+            </div>
+            <div>
+                <h1 class="text-display-sm font-bold text-on-primary mb-1">Pilih Jalur Pendaftaran</h1>
+                <p class="text-body-md text-on-primary/80">Pilih jalur yang sesuai dengan kelayakan Anda</p>
+                <div class="mt-4">
+                    <a href="{{ route('ppdb.pendaftaran.index') }}"
+                       class="bg-white/15 hover:bg-white/25 text-on-primary px-5 py-2.5 rounded-xl font-label-md text-label-md transition flex items-center gap-2 w-fit">
+                        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
                         Pendaftaran Saya
                     </a>
                 </div>
             </div>
+        </div>
 
-            {{-- RIGHT SECTION: User Profile --}}
-            @php $user = auth()->user(); @endphp
-            <div class="user-profile-section">
-                <div class="user-foto-wrapper">
-                    <img src="{{ $user->peserta?->foto
-        ? asset('storage/' . $user->peserta->foto)
-        : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&size=80&background=16a34a&color=fff&bold=true&rounded=true' }}"
-                        alt="Foto {{ $user->name }}">
-                </div>
-
-                <div class="user-info-text">
-                    <div class="user-name">{{ $user->name }}</div>
-
-                    <div class="user-email">
-                        <i class="bi bi-envelope-fill me-1"></i>
-                        <span>{{ $user->email }}</span>
-                    </div>
-
-                    <span class="user-status-badge">
-                        <i class="bi bi-circle-fill"></i>
-                        Akun Aktif
-                    </span>
-                </div>
+        <div class="relative z-10 flex items-center gap-4 flex-shrink-0">
+            <img src="{{ $user->peserta?->foto
+                ? asset('storage/' . $user->peserta->foto)
+                : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&size=80&background=00843d&color=fff&bold=true&rounded=true' }}"
+                 alt="Foto {{ $user->name }}"
+                 class="w-16 h-16 rounded-2xl object-cover ring-4 ring-white/30 shadow">
+            <div>
+                <div class="text-headline-sm font-bold text-on-primary">{{ $user->name }}</div>
+                <span class="inline-flex items-center gap-1.5 mt-2 bg-white/15 rounded-full px-3 py-1 text-body-sm text-on-primary">
+                    <span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim flex-shrink-0"></span>
+                    Akun Aktif
+                </span>
             </div>
-
         </div>
     </div>
 
-    {{-- Flash Messages --}}
+    {{-- Flash message --}}
     @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
-            <span>{{ session('error') }}</span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close notification"></button>
+        <div class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 rounded-xl px-5 py-3 text-body-md">
+            <span class="material-symbols-outlined text-[20px] text-red-500 flex-shrink-0">error</span>
+            {{ session('error') }}
         </div>
     @endif
 
-    {{-- ⚠️ PROFIL BELUM CUKUP - Warning alert Muncul jika profil belum lengkap untuk mendaftar --}}
+    {{-- Profil Warning --}}
     @if(!$profilCukup)
-        <div class="profil-warning-card" role="alert">
-            <div class="profil-warning-icon" aria-hidden="true">
-                <i class="bi bi-shield-exclamation"></i>
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex items-start gap-5">
+            <div class="w-14 h-14 rounded-2xl bg-amber-400 flex items-center justify-center flex-shrink-0 shadow">
+                <span class="material-symbols-outlined text-[28px] text-white" style="font-variation-settings:'FILL' 1">shield_person</span>
             </div>
-            <div class="profil-warning-body">
-                <h2 class="profil-warning-title">
-                    <i class="bi bi-exclamation-triangle-fill text-warning" aria-hidden="true"></i>
+            <div class="flex-1 min-w-0">
+                <h2 class="text-headline-sm font-bold text-amber-900 mb-1 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px] text-amber-600">warning</span>
                     Lengkapi Data Profil Sebelum Mendaftar
                 </h2>
-                <p class="profil-warning-desc">
-                    Sistem membutuhkan data profil yang lengkap untuk memastikan pendaftaran Anda
-                    valid dan sesuai standar Dapodik. Harap lengkapi data berikut terlebih dahulu:
+                <p class="text-body-md text-amber-800 mb-3">
+                    Sistem membutuhkan data profil yang lengkap. Harap lengkapi data berikut terlebih dahulu:
                 </p>
-                <ul class="profil-kekurangan-list">
+                <ul class="flex flex-col gap-1.5 mb-4">
                     @foreach($kekurangan as $item)
-                        <li class="profil-kekurangan-item">
-                            <span class="kekurangan-icon">
-                                <i class="bi bi-x-circle-fill text-danger" aria-hidden="true"></i>
-                            </span>
-                            <span>{{ $item }}</span>
+                        <li class="flex items-center gap-2 text-body-sm text-amber-800">
+                            <span class="material-symbols-outlined text-[16px] text-red-500">cancel</span>
+                            {{ $item }}
                         </li>
                     @endforeach
                 </ul>
-                <a href="{{ route('ppdb.profil.index') }}" class="btn btn-warning btn-lengkapi">
-                    <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                <a href="{{ route('ppdb.profil.index') }}"
+                   class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-xl font-label-md text-label-md transition-colors shadow">
+                    <span class="material-symbols-outlined text-[18px]">edit_note</span>
                     Lengkapi Profil Sekarang
                 </a>
             </div>
         </div>
     @endif
 
-    {{-- KONTEN JALUR PENDAFTARAN Grid card untuk setiap jalur yang tersedia --}}
+    {{-- Empty state --}}
     @if(empty($jalurList))
-        {{-- Empty state - Tidak ada jalur tersedia --}}
-        <div class="no-jalur-card">
-            <div aria-hidden="true">📋</div>
-            <h2>Belum Ada Jalur Pendaftaran Aktif</h2>
-            <p>
-                Saat ini belum ada jalur pendaftaran yang terbuka.<br>
-                Pantau terus informasi pembukaan PPDB.
-            </p>
-            <a href="{{ route('ppdb.dashboard') }}" class="btn btn-outline-success">
-                <i class="bi bi-house" aria-hidden="true"></i>
-                Kembali ke Dashboard
-            </a>
+        <div class="flex justify-center py-10">
+            <div class="bg-surface-container-lowest rounded-2xl soft-shadow border-t-[3px] border-tertiary-fixed-dim p-10 flex flex-col items-center text-center max-w-md w-full">
+                <div class="w-24 h-24 bg-primary/8 rounded-full flex items-center justify-center mb-5">
+                    <span class="material-symbols-outlined text-[48px] text-primary" style="font-variation-settings:'FILL' 1">assignment</span>
+                </div>
+                <h2 class="text-headline-md font-bold text-on-surface mb-2">Belum Ada Jalur Aktif</h2>
+                <p class="text-body-md text-on-surface-variant mb-6">Saat ini belum ada jalur pendaftaran yang terbuka. Pantau terus informasi pembukaan PPDB.</p>
+                <a href="{{ route('ppdb.dashboard') }}"
+                   class="bg-gradient-to-r from-primary to-primary-container text-on-primary px-8 py-3 rounded-xl font-label-md text-label-md shadow flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">home</span>
+                    Kembali ke Dashboard
+                </a>
+            </div>
         </div>
+
     @else
         {{-- Section heading --}}
-        <div class="section-heading-row">
-            <h2 class="section-heading">
-                <i class="bi bi-grid-3x3-gap" aria-hidden="true"></i>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-headline-md font-bold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[24px]">grid_view</span>
                 Pilih Jalur yang Sesuai
-                <span class="badge bg-success-subtle text-success">
-                    {{ count($jalurList) }} Jalur
-                </span>
+                <span class="bg-secondary-container text-on-secondary-container text-label-sm font-semibold px-3 py-1 rounded-full">{{ count($jalurList) }} Jalur</span>
             </h2>
             @if(!$profilCukup)
-                <div class="warning-info-badge">
-                    <i class="bi bi-lock" aria-hidden="true"></i>
+                <div class="flex items-center gap-2 text-body-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-4 py-2">
+                    <span class="material-symbols-outlined text-[16px]">lock</span>
                     Lengkapi profil untuk dapat mendaftar
                 </div>
             @endif
         </div>
 
-        {{-- Grid jalur --}}
-        <div class="jalur-grid">
+        {{-- Jalur Grid --}}
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             @foreach($jalurList as $idx => $item)
-                @php
-                    $jalur = $item['jalur'];
-                    $pembukaan = $item['pembukaan'];
-                    $tahun = $item['tahun_pelajaran'];
-                    $jadwalList = $item['jadwal'] ?? collect();
-                    $syaratList = $item['syarat'] ?? collect();
-                    $kuotaJurusan = $item['kuota_jurusan'] ?? collect();
-                    $biayaList = $item['biaya'] ?? collect();
-                    $kuotaTersedia = $item['kuota_tersedia'] ?? 0;
-                    $sudahDaftar = $item['sudah_daftar'] ?? false;
-                    $bisaDaftar = $item['bisa_daftar'] ?? false;
-                    $jadwalAktif = $item['jadwal_aktif'] ?? null;
-                    $pendAktif = $item['pendaftaran_aktif'] ?? null;
+            @php
+                $jalurItem    = $item['jalur'];
+                $pembukaan    = $item['pembukaan'];
+                $tahun        = $item['tahun_pelajaran'];
+                $jadwalList   = $item['jadwal'] ?? collect();
+                $syaratList   = $item['syarat'] ?? collect();
+                $kuotaJurusan = $item['kuota_jurusan'] ?? collect();
+                $biayaList    = $item['biaya'] ?? collect();
+                $kuotaTersedia = $item['kuota_tersedia'] ?? 0;
+                $sudahDaftar  = $item['sudah_daftar'] ?? false;
+                $bisaDaftar   = $item['bisa_daftar'] ?? false;
+                $jadwalAktif  = $item['jadwal_aktif'] ?? null;
+                $pendAktif    = $item['pendaftaran_aktif'] ?? null;
 
-                    // Total kuota dari kuota jurusan
-                    $totalKuota = $kuotaJurusan->sum('kuota');
-                    $totalTerisi = $kuotaJurusan->sum('terisi');
-                    $pctTerisi = $totalKuota > 0 ? round(($totalTerisi / $totalKuota) * 100) : 0;
-                    $hampirPenuh = $kuotaTersedia > 0 && $kuotaTersedia < 10;
+                $totalKuota   = $kuotaJurusan->sum('kuota');
+                $totalTerisi  = $kuotaJurusan->sum('terisi');
+                $pctTerisi    = $totalKuota > 0 ? round(($totalTerisi / $totalKuota) * 100) : 0;
+                $hampirPenuh  = $kuotaTersedia > 0 && $kuotaTersedia < 10;
 
-                    // Biaya utama (ambil pertama jika ada)
-                    $biayaUtama = $biayaList->first();
-                    $biayaNominal = $biayaUtama?->nominal ?? 0;
+                $biayaUtama   = $biayaList->first();
+                $biayaNominal = $biayaUtama?->nominal ?? 0;
 
-                    // Warna kartu
-                    $color = $cardColors[$idx % count($cardColors)];
-                    $cardId = 'jalur-' . $jalur->id;
+                $color    = $cardColors[$idx % count($cardColors)];
+                $canSelect = $bisaDaftar && $profilCukup;
+                $isDisabled = !$bisaDaftar || !$profilCukup;
+                $accId = 'acc-j' . $jalurItem->id;
+            @endphp
 
-                    // State tombol
-                    $canSelect = $bisaDaftar && $profilCukup;
-                    $isDisabled = !$bisaDaftar || !$profilCukup;
-                @endphp
+            <article class="bg-surface-container-lowest rounded-2xl overflow-hidden soft-shadow flex flex-col {{ $isDisabled && !$sudahDaftar ? 'opacity-80' : '' }}">
 
-                <article class="jalur-card {{ $isDisabled && !$sudahDaftar ? 'jalur-card--disabled' : '' }}" id="{{ $cardId }}"
-                    aria-labelledby="{{ $cardId }}-title">
-
-                    {{-- Card Header --}}
-                    <div class="jalur-card-header" style="background: {{ $color['bg'] }};">
-                        <div class="jalur-header-content">
-                            <div class="jalur-kode-badge">{{ $jalur->kode_jalur }}</div>
-                            <h3 class="jalur-nama" id="{{ $cardId }}-title">{{ $jalur->nama }}</h3>
-                            <div class="jalur-tahun">
-                                <i class="bi bi-calendar3" aria-hidden="true"></i>
-                                {{ $tahun?->nama ?? $pembukaan?->nama }}
-                            </div>
-                        </div>
-                        <div class="jalur-status-badge-wrapper">
+                {{-- Card Header --}}
+                <div class="p-5 relative overflow-hidden" style="background: {{ $color['bg'] }}">
+                    <div class="absolute inset-0 opacity-[0.08]"
+                         style="background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='16' fill='none' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E\")"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-start justify-between gap-2 mb-3">
+                            <span class="inline-block bg-white/25 text-white text-label-sm font-bold px-3 py-1 rounded-full">{{ $jalurItem->kode_jalur }}</span>
+                            {{-- Status chip --}}
                             @if($sudahDaftar)
-                                <span class="jalur-status-chip chip-sudah">
-                                    <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-                                    Sudah Daftar
+                                <span class="inline-flex items-center gap-1 bg-white text-green-700 text-label-sm font-bold px-3 py-1 rounded-full shadow-sm">
+                                    <span class="material-symbols-outlined text-[14px]">check_circle</span>Sudah Daftar
                                 </span>
                             @elseif($kuotaTersedia <= 0)
-                                <span class="jalur-status-chip chip-penuh">
-                                    <i class="bi bi-x-circle-fill" aria-hidden="true"></i>
-                                    Kuota Penuh
+                                <span class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-label-sm font-bold px-3 py-1 rounded-full">
+                                    <span class="material-symbols-outlined text-[14px]">cancel</span>Kuota Penuh
                                 </span>
                             @elseif(!$jadwalAktif)
-                                <span class="jalur-status-chip chip-tutup">
-                                    <i class="bi bi-clock" aria-hidden="true"></i>
-                                    Di Luar Jadwal
+                                <span class="inline-flex items-center gap-1 bg-white/25 text-white text-label-sm font-bold px-3 py-1 rounded-full">
+                                    <span class="material-symbols-outlined text-[14px]">schedule</span>Di Luar Jadwal
                                 </span>
                             @else
-                                <span class="jalur-status-chip chip-tersedia">
-                                    <i class="bi bi-circle-fill" aria-hidden="true" style="font-size:0.5rem;"></i>
-                                    Tersedia
+                                <span class="inline-flex items-center gap-1.5 bg-white/25 text-white text-label-sm font-bold px-3 py-1 rounded-full">
+                                    <span class="w-2 h-2 rounded-full bg-green-300 animate-pulse"></span>Tersedia
                                 </span>
                             @endif
                         </div>
+                        <h3 class="text-headline-sm font-bold text-white mb-1">{{ $jalurItem->nama }}</h3>
+                        <div class="flex items-center gap-1.5 text-white/80 text-body-sm">
+                            <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                            {{ $tahun?->nama ?? $pembukaan?->nama }}
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Card Body --}}
+                <div class="p-5 flex-1 flex flex-col gap-4">
+
+                    {{-- Deskripsi --}}
+                    @if($jalurItem->deskripsi)
+                        <p class="text-body-sm text-on-surface-variant leading-relaxed">{{ Str::limit($jalurItem->deskripsi, 120) }}</p>
+                    @endif
+
+                    {{-- Info Grid --}}
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-surface-container-low rounded-xl p-3 flex flex-col gap-1 text-center">
+                            <span class="text-body-xs text-on-surface-variant">Total Kuota</span>
+                            <span class="text-label-md font-bold text-on-surface">{{ number_format($totalKuota) }}</span>
+                            <span class="text-body-xs text-on-surface-variant">siswa</span>
+                        </div>
+                        <div class="bg-surface-container-low rounded-xl p-3 flex flex-col gap-1 text-center">
+                            <span class="text-body-xs text-on-surface-variant">Sisa</span>
+                            <span class="text-label-md font-bold {{ $kuotaTersedia <= 0 ? 'text-red-600' : ($hampirPenuh ? 'text-amber-600' : 'text-green-700') }}">{{ number_format($kuotaTersedia) }}</span>
+                            @if($hampirPenuh && $kuotaTersedia > 0)
+                                <span class="text-[10px] text-amber-600 font-semibold">Hampir penuh!</span>
+                            @else
+                                <span class="text-body-xs text-on-surface-variant">tersedia</span>
+                            @endif
+                        </div>
+                        <div class="bg-surface-container-low rounded-xl p-3 flex flex-col gap-1 text-center">
+                            <span class="text-body-xs text-on-surface-variant">Biaya</span>
+                            @if($biayaNominal > 0)
+                                <span class="text-label-sm font-bold text-primary">{{ $fmtRupiah($biayaNominal) }}</span>
+                            @else
+                                <span class="text-label-md font-bold text-green-700">Gratis</span>
+                            @endif
+                        </div>
                     </div>
 
-                    {{-- Card Body --}}
-                    <div class="jalur-card-body">
+                    {{-- Progress Kuota --}}
+                    <div>
+                        <div class="flex justify-between text-body-xs text-on-surface-variant mb-1.5">
+                            <span>Kuota Terisi</span>
+                            <span class="font-semibold">{{ $pctTerisi }}%</span>
+                        </div>
+                        <div class="h-2 bg-surface-container-high rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-700"
+                                 style="width:{{ $pctTerisi }}%; background:{{ $color['bg'] }};"></div>
+                        </div>
+                    </div>
 
-                        {{-- Deskripsi --}}
-                        @if($jalur->deskripsi)
-                            <p class="jalur-desc">{{ Str::limit($jalur->deskripsi, 120) }}</p>
+                    {{-- Custom Accordion --}}
+                    <div class="flex flex-col gap-1 border border-outline-variant rounded-xl overflow-hidden" id="{{ $accId }}">
+
+                        {{-- Kuota Jurusan --}}
+                        @if($kuotaJurusan->isNotEmpty())
+                        <div class="{{ !$syaratList->isEmpty() || !$jadwalList->isEmpty() || !$biayaList->isEmpty() ? 'border-b border-outline-variant' : '' }}">
+                            <button type="button"
+                                    class="jalur-acc-toggle w-full flex items-center justify-between px-4 py-3 hover:bg-surface-container transition-colors text-left"
+                                    data-acc-target="kuota-{{ $jalurItem->id }}" aria-expanded="false">
+                                <span class="flex items-center gap-2 text-label-md font-semibold text-on-surface">
+                                    <span class="material-symbols-outlined text-primary text-[18px]">account_tree</span>
+                                    Kuota Per Jurusan
+                                </span>
+                                <span class="material-symbols-outlined text-outline text-[20px] jalur-acc-chevron transition-transform duration-200">expand_more</span>
+                            </button>
+                            <div id="kuota-{{ $jalurItem->id }}" class="hidden px-4 pb-4">
+                                <div class="flex flex-col gap-2">
+                                    @foreach($kuotaJurusan as $kj)
+                                    <div class="flex items-center justify-between text-body-sm">
+                                        <span class="text-on-surface">{{ $kj->jurusan?->nama ?? '—' }}</span>
+                                        <span class="text-on-surface-variant">Sisa {{ number_format($kj->kuota - $kj->terisi) }} / {{ number_format($kj->kuota) }}</span>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
                         @endif
 
-                        {{-- Info Grid: Kuota | Sisa | Biaya --}}
-                        <div class="jalur-info-grid">
-                            <div class="jalur-info-item">
-                                <div class="jalur-info-label">Total Kuota</div>
-                                <div class="jalur-info-val">{{ number_format($totalKuota) }} siswa</div>
-                            </div>
-                            <div class="jalur-info-item">
-                                <div class="jalur-info-label">Sisa Kuota</div>
-                                <div
-                                    class="jalur-info-val {{ $kuotaTersedia <= 0 ? 'text-danger' : ($hampirPenuh ? 'text-warning' : 'text-success') }}">
-                                    {{ number_format($kuotaTersedia) }} siswa
-                                    @if($hampirPenuh && $kuotaTersedia > 0)
-                                        <div class="hampir-penuh-text">
-                                            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
-                                            Hampir penuh!
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="jalur-info-item">
-                                <div class="jalur-info-label">Biaya</div>
-                                <div class="jalur-info-val text-primary">
-                                    @if($biayaNominal > 0)
-                                        {{ $fmtRupiah($biayaNominal) }}
-                                    @else
-                                        <span class="text-success">Gratis</span>
-                                    @endif
+                        {{-- Syarat --}}
+                        @if($syaratList->isNotEmpty())
+                        <div class="{{ !$jadwalList->isEmpty() || !$biayaList->isEmpty() ? 'border-b border-outline-variant' : '' }}">
+                            <button type="button"
+                                    class="jalur-acc-toggle w-full flex items-center justify-between px-4 py-3 hover:bg-surface-container transition-colors text-left"
+                                    data-acc-target="syarat-{{ $jalurItem->id }}" aria-expanded="false">
+                                <span class="flex items-center gap-2 text-label-md font-semibold text-on-surface">
+                                    <span class="material-symbols-outlined text-primary text-[18px]">task_alt</span>
+                                    Syarat ({{ $syaratList->count() }})
+                                </span>
+                                <span class="material-symbols-outlined text-outline text-[20px] jalur-acc-chevron transition-transform duration-200">expand_more</span>
+                            </button>
+                            <div id="syarat-{{ $jalurItem->id }}" class="hidden px-4 pb-4">
+                                <div class="flex flex-col gap-2">
+                                    @foreach($syaratList as $srt)
+                                    <div class="flex items-center gap-2 text-body-sm">
+                                        <span class="material-symbols-outlined text-green-600 text-[16px] flex-shrink-0">check_circle</span>
+                                        <span class="flex-1 text-on-surface">{{ $srt->nama }}</span>
+                                        @if($srt->wajib)
+                                            <span class="text-[10px] bg-red-50 text-red-600 border border-red-200 px-2 py-0.5 rounded-full font-semibold">Wajib</span>
+                                        @else
+                                            <span class="text-[10px] bg-surface-container text-on-surface-variant px-2 py-0.5 rounded-full">Opsional</span>
+                                        @endif
+                                    </div>
+                                    @endforeach
                                 </div>
                             </div>
                         </div>
+                        @endif
 
-                        {{-- Progress Bar Kuota Terisi --}}
-                        <div class="kuota-progress-wrapper">
-                            <div class="kuota-progress-label">
-                                <span class="text-muted" style="font-size:0.75rem;">Kuota Terisi</span>
-                                <span class="text-muted fw-bold" style="font-size:0.75rem;">{{ $pctTerisi }}%</span>
-                            </div>
-                            <div class="kuota-progress-track">
-                                <div class="kuota-progress-fill"
-                                    style="width: {{ $pctTerisi }}%; background: linear-gradient(90deg, {{ $color['bg'] }}, {{ $color['border'] }});"
-                                    role="progressbar" aria-valuenow="{{ $pctTerisi }}" aria-valuemin="0" aria-valuemax="100"
-                                    aria-label="Kuota terisi {{ $pctTerisi }}%">
+                        {{-- Jadwal --}}
+                        @if($jadwalList->isNotEmpty())
+                        <div class="{{ !$biayaList->isEmpty() ? 'border-b border-outline-variant' : '' }}">
+                            <button type="button"
+                                    class="jalur-acc-toggle w-full flex items-center justify-between px-4 py-3 hover:bg-surface-container transition-colors text-left"
+                                    data-acc-target="jadwal-{{ $jalurItem->id }}" aria-expanded="false">
+                                <span class="flex items-center gap-2 text-label-md font-semibold text-on-surface">
+                                    <span class="material-symbols-outlined text-primary text-[18px]">date_range</span>
+                                    Jadwal Pelaksanaan
+                                </span>
+                                <span class="material-symbols-outlined text-outline text-[20px] jalur-acc-chevron transition-transform duration-200">expand_more</span>
+                            </button>
+                            <div id="jadwal-{{ $jalurItem->id }}" class="hidden px-4 pb-4">
+                                <div class="flex flex-col gap-2">
+                                    @foreach($jadwalList as $jdw)
+                                    @php $isAktif = $jadwalAktif && $jadwalAktif->id == $jdw->id; @endphp
+                                    <div class="flex items-center gap-2 text-body-sm {{ $isAktif ? 'text-green-700 font-semibold' : 'text-on-surface' }}">
+                                        <span class="bg-surface-container-high text-on-surface-variant text-[11px] font-semibold px-2 py-0.5 rounded">{{ ucfirst($jdw->tipe) }}</span>
+                                        <span class="flex-1">{{ $fmtDate($jdw->mulai) }} — {{ $fmtDate($jdw->selesai) }}</span>
+                                        @if($isAktif)
+                                            <span class="text-[10px] bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 rounded-full font-semibold">Aktif</span>
+                                        @endif
+                                    </div>
+                                    @endforeach
                                 </div>
                             </div>
                         </div>
+                        @endif
 
-                        {{-- Accordion: Detail tambahan (Kuota Jurusan, Syarat, Jadwal, Biaya) --}}
-                        <div class="accordion jalur-accordion" id="acc-{{ $cardId }}">
-
-                            {{-- Kuota Jurusan --}}
-                            @if($kuotaJurusan->isNotEmpty())
-                                <div class="accordion-item jalur-acc-item">
-                                    <h4 class="accordion-header">
-                                        <button class="accordion-button collapsed jalur-acc-btn" type="button" data-bs-toggle="collapse"
-                                            data-bs-target="#kuota-{{ $cardId }}" aria-expanded="false"
-                                            aria-controls="kuota-{{ $cardId }}">
-                                            <i class="bi bi-diagram-3 me-2" aria-hidden="true"></i>
-                                            Kuota Per Jurusan
-                                        </button>
-                                    </h4>
-                                    <div id="kuota-{{ $cardId }}" class="accordion-collapse collapse"
-                                        data-bs-parent="#acc-{{ $cardId }}">
-                                        <div class="accordion-body jalur-acc-body">
-                                            <div class="kuota-jurusan-list">
-                                                @foreach($kuotaJurusan as $kj)
-                                                    <div class="kuota-jurusan-item">
-                                                        <div class="kj-nama">{{ $kj->jurusan?->nama ?? '—' }}</div>
-                                                        <div class="kj-sisa">
-                                                            Sisa {{ number_format($kj->kuota - $kj->terisi) }} /
-                                                            {{ number_format($kj->kuota) }}
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
+                        {{-- Biaya --}}
+                        @if($biayaList->isNotEmpty())
+                        <div>
+                            <button type="button"
+                                    class="jalur-acc-toggle w-full flex items-center justify-between px-4 py-3 hover:bg-surface-container transition-colors text-left"
+                                    data-acc-target="biaya-{{ $jalurItem->id }}" aria-expanded="false">
+                                <span class="flex items-center gap-2 text-label-md font-semibold text-on-surface">
+                                    <span class="material-symbols-outlined text-primary text-[18px]">payments</span>
+                                    Rincian Biaya
+                                </span>
+                                <span class="material-symbols-outlined text-outline text-[20px] jalur-acc-chevron transition-transform duration-200">expand_more</span>
+                            </button>
+                            <div id="biaya-{{ $jalurItem->id }}" class="hidden px-4 pb-4">
+                                <div class="flex flex-col gap-2">
+                                    @foreach($biayaList as $by)
+                                    <div class="flex items-center gap-2 text-body-sm">
+                                        <span class="material-symbols-outlined text-primary text-[16px]">attach_money</span>
+                                        <span class="flex-1 text-on-surface">{{ $by->nama }}</span>
+                                        <span class="font-bold text-primary">{{ $fmtRupiah($by->nominal) }}</span>
                                     </div>
+                                    @endforeach
                                 </div>
-                            @endif
-
-                            {{-- Syarat --}}
-                            @if($syaratList->isNotEmpty())
-                                <div class="accordion-item jalur-acc-item">
-                                    <h4 class="accordion-header">
-                                        <button class="accordion-button collapsed jalur-acc-btn" type="button" data-bs-toggle="collapse"
-                                            data-bs-target="#syarat-{{ $cardId }}" aria-expanded="false"
-                                            aria-controls="syarat-{{ $cardId }}">
-                                            <i class="bi bi-file-earmark-check me-2" aria-hidden="true"></i>
-                                            Syarat Pendaftaran ({{ $syaratList->count() }})
-                                        </button>
-                                    </h4>
-                                    <div id="syarat-{{ $cardId }}" class="accordion-collapse collapse"
-                                        data-bs-parent="#acc-{{ $cardId }}">
-                                        <div class="accordion-body jalur-acc-body">
-                                            <ul class="syarat-list">
-                                                @foreach($syaratList as $srt)
-                                                    <li class="syarat-item">
-                                                        <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i>
-                                                        <span>{{ $srt->nama }}</span>
-                                                        @if($srt->wajib)
-                                                            <span class="badge bg-danger-subtle text-danger ms-auto">Wajib</span>
-                                                        @else
-                                                            <span class="badge bg-secondary-subtle text-secondary ms-auto">Opsional</span>
-                                                        @endif
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-
-                            {{-- Jadwal --}}
-                            @if($jadwalList->isNotEmpty())
-                                <div class="accordion-item jalur-acc-item">
-                                    <h4 class="accordion-header">
-                                        <button class="accordion-button collapsed jalur-acc-btn" type="button" data-bs-toggle="collapse"
-                                            data-bs-target="#jadwal-{{ $cardId }}" aria-expanded="false"
-                                            aria-controls="jadwal-{{ $cardId }}">
-                                            <i class="bi bi-calendar-range me-2" aria-hidden="true"></i>
-                                            Jadwal Pelaksanaan
-                                        </button>
-                                    </h4>
-                                    <div id="jadwal-{{ $cardId }}" class="accordion-collapse collapse"
-                                        data-bs-parent="#acc-{{ $cardId }}">
-                                        <div class="accordion-body jalur-acc-body">
-                                            <div class="jadwal-list">
-                                                @foreach($jadwalList as $jdw)
-                                                    @php
-                                                        $isAktif = $jadwalAktif && $jadwalAktif->id == $jdw->id;
-                                                    @endphp
-                                                    <div class="jadwal-item {{ $isAktif ? 'jadwal-item--aktif' : '' }}">
-                                                        <span class="jadwal-tipe-badge">{{ ucfirst($jdw->tipe) }}</span>
-                                                        <span class="jadwal-tanggal">
-                                                            {{ $fmtDate($jdw->mulai) }} — {{ $fmtDate($jdw->selesai) }}
-                                                        </span>
-                                                        @if($isAktif)
-                                                            <span class="badge bg-success-subtle text-success">Aktif</span>
-                                                        @endif
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-
-                            {{-- Biaya --}}
-                            @if($biayaList->isNotEmpty())
-                                <div class="accordion-item jalur-acc-item">
-                                    <h4 class="accordion-header">
-                                        <button class="accordion-button collapsed jalur-acc-btn" type="button" data-bs-toggle="collapse"
-                                            data-bs-target="#biaya-{{ $cardId }}" aria-expanded="false"
-                                            aria-controls="biaya-{{ $cardId }}">
-                                            <i class="bi bi-cash-stack me-2" aria-hidden="true"></i>
-                                            Rincian Biaya
-                                        </button>
-                                    </h4>
-                                    <div id="biaya-{{ $cardId }}" class="accordion-collapse collapse"
-                                        data-bs-parent="#acc-{{ $cardId }}">
-                                        <div class="accordion-body jalur-acc-body">
-                                            <ul class="syarat-list">
-                                                @foreach($biayaList as $by)
-                                                    <li class="syarat-item">
-                                                        <i class="bi bi-currency-dollar text-primary" aria-hidden="true"></i>
-                                                        <span>{{ $by->nama }}</span>
-                                                        <span class="ms-auto fw-bold text-primary">{{ $fmtRupiah($by->nominal) }}</span>
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-
+                            </div>
                         </div>
+                        @endif
+
                     </div>
 
-                    {{-- Card Footer --}}
-                    <div class="jalur-card-footer">
-                        @if($sudahDaftar)
-                            <a href="{{ route('ppdb.pendaftaran.show', $pendAktif?->id) }}"
-                                class="btn btn-outline-secondary btn-jalur-action">
-                                <i class="bi bi-eye" aria-hidden="true"></i>
-                                Lihat Pendaftaran
-                            </a>
-                        @elseif($canSelect)
-                            <button type="button" class="btn btn-success btn-jalur-action" onclick="bukaModalKonfirmasi(this)"
-                                data-jalur-id="{{ $jalur->id }}" data-jalur-nama="{{ $jalur->nama }}"
+                </div>
+
+                {{-- Card Footer --}}
+                <div class="px-5 py-4 bg-surface-container-low border-t border-outline-variant">
+                    @if($sudahDaftar)
+                        <a href="{{ route('ppdb.pendaftaran.show', $pendAktif?->id) }}"
+                           class="w-full border border-outline text-on-surface-variant text-label-md font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">visibility</span>
+                            Lihat Pendaftaran
+                        </a>
+                    @elseif($canSelect)
+                        <button type="button"
+                                class="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary text-label-md font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:shadow-md hover:-translate-y-0.5 transition-all"
+                                onclick="bukaModalKonfirmasi(this)"
+                                data-jalur-id="{{ $jalurItem->id }}"
+                                data-jalur-nama="{{ $jalurItem->nama }}"
                                 data-biaya="{{ $biayaNominal > 0 ? $fmtRupiah($biayaNominal) : 'Gratis' }}"
                                 data-syarat-count="{{ $syaratList->count() }}">
-                                <i class="bi bi-check-circle" aria-hidden="true"></i>
-                                Pilih Jalur Ini
-                            </button>
-                        @else
-                            <button type="button" class="btn btn-outline-secondary btn-jalur-action" disabled>
-                                @if(!$profilCukup)
-                                    <i class="bi bi-lock" aria-hidden="true"></i>
-                                    Lengkapi Profil Dulu
-                                @elseif($kuotaTersedia <= 0)
-                                    <i class="bi bi-x-circle" aria-hidden="true"></i>
-                                    Kuota Penuh
-                                @else
-                                    <i class="bi bi-clock" aria-hidden="true"></i>
-                                    Di Luar Jadwal
-                                @endif
-                            </button>
-                        @endif
-                    </div>
+                            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                            Pilih Jalur Ini
+                        </button>
+                    @else
+                        <button type="button" disabled
+                                class="w-full bg-surface-container-high text-on-surface-variant text-label-md font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 cursor-not-allowed opacity-70">
+                            @if(!$profilCukup)
+                                <span class="material-symbols-outlined text-[18px]">lock</span>
+                                Lengkapi Profil Dulu
+                            @elseif($kuotaTersedia <= 0)
+                                <span class="material-symbols-outlined text-[18px]">cancel</span>
+                                Kuota Penuh
+                            @else
+                                <span class="material-symbols-outlined text-[18px]">schedule</span>
+                                Di Luar Jadwal
+                            @endif
+                        </button>
+                    @endif
+                </div>
 
-                </article>
+            </article>
             @endforeach
         </div>
+
     @endif
 
-    {{-- MODAL KONFIRMASI PILIHAN JALUR Modal untuk konfirmasi sebelum submit pilihan jalur --}}
-    <div class="modal fade" id="modalKonfirmasiJalur" tabindex="-1" aria-labelledby="modalKonfirmasiLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content modal-konfirmasi">
+</div>
 
-                {{-- Modal Header --}}
-                <div class="modal-konfirmasi-header">
-                    <div class="modal-konfirmasi-icon" aria-hidden="true">
-                        <i class="bi bi-check-circle"></i>
-                    </div>
-                    <div>
-                        <h5 class="modal-title" id="modalKonfirmasiLabel">Konfirmasi Pilihan Jalur</h5>
-                        <p class="text-muted mb-0" style="font-size:0.8125rem;">
-                            Pastikan pilihan Anda sudah sesuai
-                        </p>
-                    </div>
-                </div>
+{{-- ══ MODAL KONFIRMASI (Custom Tailwind) ══ --}}
+<div id="modalKonfirmasiJalur"
+     class="fixed inset-0 z-[9000] hidden items-center justify-center p-4"
+     role="dialog" aria-modal="true" aria-labelledby="modal-konfirmasi-title">
 
-                {{-- Modal Body --}}
-                <div class="modal-body">
+    {{-- Backdrop --}}
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="tutupModalKonfirmasi()"></div>
 
-                    {{-- Info Jalur --}}
-                    <div class="modal-jalur-info">
-                        <div class="modal-info-row">
-                            <span class="modal-info-label">Jalur</span>
-                            <span class="modal-info-val" id="modal-jalur-nama">—</span>
-                        </div>
-                        <div class="modal-info-row">
-                            <span class="modal-info-label">Biaya</span>
-                            <span class="modal-info-val" id="modal-biaya">—</span>
-                        </div>
-                        <div class="modal-info-row">
-                            <span class="modal-info-label">Syarat</span>
-                            <span class="modal-info-val" id="modal-syarat-count">—</span>
-                        </div>
-                    </div>
+    {{-- Modal Card --}}
+    <div class="relative z-10 bg-surface-container-lowest rounded-2xl soft-shadow overflow-hidden w-full max-w-md">
 
-                    {{-- Warning Box --}}
-                    <div class="modal-warning-box">
-                        <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
-                        <div>
-                            Setelah memilih jalur ini, Anda akan diarahkan untuk melengkapi
-                            formulir pendaftaran. Pastikan data yang Anda isi sudah benar.
-                        </div>
-                    </div>
-
-                    {{-- Checkbox Konfirmasi --}}
-                    <div class="modal-checkbox-wrapper">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="checkKonfirmasi"
-                                onchange="toggleSubmitBtn(this)">
-                            <label class="form-check-label" for="checkKonfirmasi">
-                                Saya sudah yakin dengan pilihan jalur ini dan siap melanjutkan
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Modal Footer --}}
-                <div class="modal-konfirmasi-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        Batal
-                    </button>
-                    <form action="{{ route('ppdb.pendaftaran.store') }}" method="POST" style="display:inline;">
-                        @csrf
-                        <input type="hidden" name="jalur_pendaftaran_id" id="hidden-jalur-id" value="">
-                        <button type="submit" class="btn btn-success" id="btnSubmitKonfirmasi" disabled>
-                            <i class="bi bi-check-lg" aria-hidden="true"></i>
-                            Ya, Lanjutkan
-                        </button>
-                    </form>
-                </div>
-
+        {{-- Header --}}
+        <div class="flex items-start gap-4 p-6 bg-green-50 border-b-2 border-green-200">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-container flex items-center justify-center flex-shrink-0 shadow">
+                <span class="material-symbols-outlined text-[24px] text-on-primary" style="font-variation-settings:'FILL' 1">check_circle</span>
             </div>
+            <div class="flex-1 min-w-0">
+                <h5 id="modal-konfirmasi-title" class="text-headline-sm font-bold text-on-surface">Konfirmasi Pilihan Jalur</h5>
+                <p class="text-body-sm text-on-surface-variant mt-0.5">Pastikan pilihan Anda sudah sesuai</p>
+            </div>
+            <button type="button" onclick="tutupModalKonfirmasi()"
+                    class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-colors">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
         </div>
+
+        {{-- Body --}}
+        <div class="p-6 flex flex-col gap-4">
+
+            {{-- Info Jalur --}}
+            <div class="bg-surface-container-low border border-outline-variant rounded-xl p-4 flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-label-sm font-semibold text-on-surface-variant uppercase tracking-wide">Jalur</span>
+                    <span id="modal-jalur-nama" class="text-label-md font-bold text-on-surface text-right">—</span>
+                </div>
+                <div class="h-px bg-outline-variant"></div>
+                <div class="flex items-center justify-between">
+                    <span class="text-label-sm font-semibold text-on-surface-variant uppercase tracking-wide">Biaya</span>
+                    <span id="modal-biaya" class="text-label-md font-bold text-primary text-right">—</span>
+                </div>
+                <div class="h-px bg-outline-variant"></div>
+                <div class="flex items-center justify-between">
+                    <span class="text-label-sm font-semibold text-on-surface-variant uppercase tracking-wide">Syarat</span>
+                    <span id="modal-syarat-count" class="text-label-md font-bold text-on-surface text-right">—</span>
+                </div>
+            </div>
+
+            {{-- Info Box --}}
+            <div class="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <span class="material-symbols-outlined text-blue-600 text-[20px] flex-shrink-0 mt-0.5">info</span>
+                <p class="text-body-sm text-blue-800">
+                    Setelah memilih jalur ini, Anda akan diarahkan untuk melengkapi formulir pendaftaran. Pastikan data yang Anda isi sudah benar.
+                </p>
+            </div>
+
+            {{-- Checkbox Konfirmasi --}}
+            <label class="flex items-start gap-3 bg-surface-container-low border-2 border-outline-variant rounded-xl p-4 cursor-pointer hover:border-primary transition-colors">
+                <input type="checkbox" id="checkKonfirmasi" onchange="toggleSubmitBtn(this)"
+                       class="w-5 h-5 mt-0.5 rounded accent-primary flex-shrink-0">
+                <span class="text-body-md text-on-surface">
+                    Saya sudah yakin dengan pilihan jalur ini dan siap melanjutkan
+                </span>
+            </label>
+
+        </div>
+
+        {{-- Footer --}}
+        <div class="flex gap-3 px-6 py-4 bg-surface-container-low border-t border-outline-variant">
+            <button type="button" onclick="tutupModalKonfirmasi()"
+                    class="flex-1 border border-outline text-on-surface-variant text-label-md font-semibold py-3 px-4 rounded-xl hover:bg-surface-container transition-colors">
+                Batal
+            </button>
+            <form action="{{ route('ppdb.pendaftaran.store') }}" method="POST" class="flex-1">
+                @csrf
+                <input type="hidden" name="jalur_pendaftaran_id" id="hidden-jalur-id" value="">
+                <button type="submit" id="btnSubmitKonfirmasi" disabled
+                        class="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary text-label-md font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:shadow-md hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+                    <span class="material-symbols-outlined text-[18px]">check</span>
+                    Ya, Lanjutkan
+                </button>
+            </form>
+        </div>
+
     </div>
+</div>
 
 @endsection
 
 @push('scripts')
-    <script>
-        /**
-         * Buka Modal Konfirmasi — isi data dari atribut tombol yang diklik
-         */
-        function bukaModalKonfirmasi(btn) {
-            const jalurId = btn.dataset.jalurId;
-            const jalurNama = btn.dataset.jalurNama;
-            const biaya = btn.dataset.biaya;
-            const syaratCount = btn.dataset.syaratCount;
+<script>
+(function () {
+    // ── Accordion --
+    document.querySelectorAll('.jalur-acc-toggle').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const targetId = this.dataset.accTarget;
+            const body     = document.getElementById(targetId);
+            const chevron  = this.querySelector('.jalur-acc-chevron');
+            if (!body) return;
+            const isOpen = !body.classList.contains('hidden');
 
-            // Isi data modal
-            document.getElementById('modal-jalur-nama').textContent = jalurNama;
-            document.getElementById('modal-biaya').textContent = biaya;
-            document.getElementById('modal-syarat-count').textContent =
-                syaratCount + ' dokumen wajib';
+            // Close all within same card
+            const card = this.closest('[id^="acc-j"]') || this.closest('article');
+            if (card) {
+                card.querySelectorAll('[id^="kuota-"],[id^="syarat-"],[id^="jadwal-"],[id^="biaya-"]').forEach(b => b.classList.add('hidden'));
+                card.querySelectorAll('.jalur-acc-chevron').forEach(c => c.classList.remove('rotate-180'));
+                card.querySelectorAll('.jalur-acc-toggle').forEach(b => b.setAttribute('aria-expanded', 'false'));
+            }
 
-            // Set hidden input
-            document.getElementById('hidden-jalur-id').value = jalurId;
+            if (!isOpen) {
+                body.classList.remove('hidden');
+                chevron.classList.add('rotate-180');
+                this.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
 
-            // Reset checkbox & tombol submit
-            const checkbox = document.getElementById('checkKonfirmasi');
-            checkbox.checked = false;
-            document.getElementById('btnSubmitKonfirmasi').disabled = true;
+    // ── Modal --
+    window.bukaModalKonfirmasi = function (btn) {
+        document.getElementById('modal-jalur-nama').textContent    = btn.dataset.jalurNama;
+        document.getElementById('modal-biaya').textContent          = btn.dataset.biaya;
+        document.getElementById('modal-syarat-count').textContent   = btn.dataset.syaratCount + ' dokumen';
+        document.getElementById('hidden-jalur-id').value            = btn.dataset.jalurId;
+        const cb = document.getElementById('checkKonfirmasi');
+        cb.checked = false;
+        document.getElementById('btnSubmitKonfirmasi').disabled = true;
+        const modal = document.getElementById('modalKonfirmasiJalur');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    };
 
-            // Tampilkan modal
-            const modal = new bootstrap.Modal(document.getElementById('modalKonfirmasiJalur'));
-            modal.show();
-        }
+    window.tutupModalKonfirmasi = function () {
+        const modal = document.getElementById('modalKonfirmasiJalur');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = '';
+    };
 
-        /**
-         * Toggle tombol submit berdasarkan state checkbox konfirmasi
-         */
-        function toggleSubmitBtn(checkbox) {
-            document.getElementById('btnSubmitKonfirmasi').disabled = !checkbox.checked;
-        }
+    window.toggleSubmitBtn = function (checkbox) {
+        document.getElementById('btnSubmitKonfirmasi').disabled = !checkbox.checked;
+    };
 
-        /**
-         * Animate kuota progress bars saat halaman load
-         */
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.kuota-progress-fill').forEach(function (bar) {
+    // Animate kuota progress bars on load
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('[data-jalur-id]').forEach(el => {
+            const bar = el.closest('article')?.querySelector('.h-2 div');
+            if (bar) {
                 const w = bar.style.width;
                 bar.style.width = '0%';
-                setTimeout(function () { bar.style.width = w; }, 300);
-            });
-
-            // Initialize Bootstrap tooltips if any
-            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-            [...tooltipTriggerList].map(el => new bootstrap.Tooltip(el));
+                setTimeout(() => { bar.style.width = w; }, 300);
+            }
         });
-    </script>
+    });
+
+    // Close modal on Escape
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') tutupModalKonfirmasi();
+    });
+})();
+</script>
 @endpush

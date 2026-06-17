@@ -1,99 +1,152 @@
- {{-- TAB 1 — Akun & Keamanan --}}
-        <div class="tab-pane-profil" id="pane-akun">
+{{-- TAB: Akun & Keamanan --}}
+<div class="tab-pane-profil hidden flex flex-col gap-5" id="pane-akun">
 
-            {{-- Informasi Akun --}}
-            <div class="profil-card mb-4">
-                <div class="profil-card-header">
-                    <i class="bi bi-person-gear" aria-hidden="true"></i>Informasi Akun
-                </div>
-                <div class="profil-card-body">
-                    <form id="form-akun" novalidate>
-                        @csrf
-                        @method('PUT')
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label" for="akun-nama">Nama Lengkap <span class="text-danger" aria-label="wajib">*</span></label>
-                                <input type="text" id="akun-nama" name="nama_lengkap" class="form-control"
-                                       value="{{ $user->name }}" required minlength="3">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label" for="akun-email">Email <span class="text-danger" aria-label="wajib">*</span></label>
-                                <input type="email" id="akun-email" name="email" class="form-control"
-                                       value="{{ $user->email }}" required>
-                            </div>
-                            <div class="col-12">
-                                {{-- [DIUBAH] Info box diperhalus dengan ikon yang lebih relevan --}}
-                                <div class="info-box">
-                                    <i class="bi bi-info-circle" aria-hidden="true"></i>
-                                    <span>Terdaftar sejak <strong>{{ $user->created_at?->translatedFormat('d F Y') ?? '—' }}</strong>
-                                    &nbsp;·&nbsp; Status:
-                                    <span class="badge {{ $user->status === 'active' ? 'bg-success' : 'bg-warning text-dark' }}">
-                                        {{ ucfirst($user->status) }}
-                                    </span></span>
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <button type="submit" class="btn btn-success btn-save" id="btn-save-akun">
-                                    <span class="btn-text"><i class="bi bi-check2 me-1" aria-hidden="true"></i>Simpan Perubahan</span>
-                                    <span class="btn-spinner d-none" aria-live="polite">
-                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Menyimpan…
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            {{-- Ubah Password --}}
-            <div class="profil-card">
-                <div class="profil-card-header">
-                    <i class="bi bi-shield-lock" aria-hidden="true"></i>Ubah Password
-                </div>
-                <div class="profil-card-body">
-                    <form id="form-password" novalidate>
-                        @csrf
-                        @method('PUT')
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <label class="form-label" for="inp-pw-lama">Password Lama <span class="text-danger" aria-label="wajib">*</span></label>
-                                <div class="input-group">
-                                    <input type="password" name="password_lama" id="inp-pw-lama" class="form-control" autocomplete="current-password">
-                                    <button class="btn btn-outline-secondary toggle-pw" type="button" data-target="inp-pw-lama" aria-label="Lihat/sembunyikan password">
-                                        <i class="bi bi-eye" aria-hidden="true"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label" for="inp-pw-baru">Password Baru <span class="text-danger" aria-label="wajib">*</span></label>
-                                <div class="input-group">
-                                    <input type="password" name="password" id="inp-pw-baru" class="form-control" minlength="8" autocomplete="new-password">
-                                    <button class="btn btn-outline-secondary toggle-pw" type="button" data-target="inp-pw-baru" aria-label="Lihat/sembunyikan password">
-                                        <i class="bi bi-eye" aria-hidden="true"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label" for="inp-pw-conf">Konfirmasi <span class="text-danger" aria-label="wajib">*</span></label>
-                                <div class="input-group">
-                                    <input type="password" name="password_confirmation" id="inp-pw-conf" class="form-control" autocomplete="new-password">
-                                    <button class="btn btn-outline-secondary toggle-pw" type="button" data-target="inp-pw-conf" aria-label="Lihat/sembunyikan password">
-                                        <i class="bi bi-eye" aria-hidden="true"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <button type="submit" class="btn btn-warning fw-semibold btn-save" id="btn-save-pw">
-                                    <span class="btn-text"><i class="bi bi-key me-1" aria-hidden="true"></i>Ubah Password</span>
-                                    <span class="btn-spinner d-none" aria-live="polite">
-                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Menyimpan…
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
+    {{-- Informasi Akun --}}
+    <div class="bg-surface-container-lowest rounded-xl border-t-[3px] border-tertiary-fixed-dim soft-shadow overflow-hidden">
+        <div class="flex items-center gap-3 px-6 py-4 bg-surface-container-low border-b border-outline-variant">
+            <span class="material-symbols-outlined text-primary text-[22px]">manage_accounts</span>
+            <h2 class="text-headline-sm text-on-surface">Informasi Akun</h2>
         </div>
-        {{-- /pane-akun --}}
+        <div class="p-6">
+            <form id="form-akun" novalidate>
+                @csrf
+                @method('PUT')
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    {{-- Nama --}}
+                    <div>
+                        <label class="block text-label-md text-on-surface-variant mb-2" for="akun-nama">
+                            Nama Wali Murid <span class="text-error">*</span>
+                        </label>
+                        <div class="flex rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                            <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                <span class="material-symbols-outlined text-outline text-[20px]">person</span>
+                            </div>
+                            <input type="text" id="akun-nama" name="nama_lengkap"
+                                   class="flex-1 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0"
+                                   value="{{ $user->name }}" required minlength="3">
+                        </div>
+                    </div>
+
+                    {{-- Email --}}
+                    <div>
+                        <label class="block text-label-md text-on-surface-variant mb-2" for="akun-email">
+                            Email Wali Murid <span class="text-error">*</span>
+                        </label>
+                        <div class="flex rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                            <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                <span class="material-symbols-outlined text-outline text-[20px]">mail</span>
+                            </div>
+                            <input type="email" id="akun-email" name="email"
+                                   class="flex-1 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0"
+                                   value="{{ $user->email }}" required>
+                        </div>
+                    </div>
+
+                    {{-- No HP --}}
+                    <div>
+                        <label class="block text-label-md text-on-surface-variant mb-2" for="akun-no-hp">
+                            No HP Wali Murid <span class="text-error">*</span>
+                        </label>
+                        <div class="flex rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                            <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                <span class="material-symbols-outlined text-outline text-[20px]">phone_iphone</span>
+                            </div>
+                            <input type="tel" id="akun-no-hp" name="no_hp"
+                                   class="flex-1 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0 input-phone"
+                                   value="{{ $user->no_hp }}" required inputmode="numeric" placeholder="08xxxxxxxxxx">
+                        </div>
+                    </div>
+
+                    {{-- Info Box --}}
+                    <div class="flex items-start gap-3 bg-surface-container-low border border-outline-variant rounded-xl p-3 self-end">
+                        <span class="material-symbols-outlined text-primary text-[18px] flex-shrink-0 mt-0.5">info</span>
+                        <p class="text-body-sm text-on-surface-variant">
+                            Terdaftar sejak <strong>{{ $user->created_at?->translatedFormat('d F Y') ?? '—' }}</strong>
+                            · Status: <span class="{{ $user->status === 'active' ? 'text-secondary font-semibold' : 'text-tertiary font-semibold' }}">{{ ucfirst($user->status) }}</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-5 flex justify-end">
+                    <button type="submit" id="btn-save-akun"
+                            class="btn-save bg-gradient-to-r from-primary to-primary-container text-on-primary text-label-md py-3 px-6 rounded-[10px] flex items-center gap-2 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none">
+                        <span class="btn-text flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[20px]">save</span>
+                            Simpan Perubahan
+                        </span>
+                        <span class="btn-spinner hidden items-center gap-2">
+                            <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            Menyimpan…
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Ubah Password --}}
+    <div class="bg-surface-container-lowest rounded-xl border-t-[3px] border-tertiary-fixed-dim soft-shadow overflow-hidden">
+        <div class="flex items-center gap-3 px-6 py-4 bg-surface-container-low border-b border-outline-variant">
+            <span class="material-symbols-outlined text-primary text-[22px]">lock</span>
+            <h2 class="text-headline-sm text-on-surface">Ubah Password</h2>
+        </div>
+        <div class="p-6">
+            <form id="form-password" novalidate>
+                @csrf
+                @method('PUT')
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                    @foreach([
+                        ['inp-pw-lama',  'password_lama',          'Password Lama',   'current-password'],
+                        ['inp-pw-baru',  'password',               'Password Baru',   'new-password'],
+                        ['inp-pw-conf',  'password_confirmation',  'Konfirmasi',      'new-password'],
+                    ] as $pw)
+                    <div>
+                        <label class="block text-label-md text-on-surface-variant mb-2" for="{{ $pw[0] }}">
+                            {{ $pw[2] }} <span class="text-error">*</span>
+                        </label>
+                        <div class="flex rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                            <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                <span class="material-symbols-outlined text-outline text-[20px]">lock</span>
+                            </div>
+                            <input type="password" id="{{ $pw[0] }}" name="{{ $pw[1] }}"
+                                   class="flex-1 bg-surface-container-lowest px-3 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0"
+                                   autocomplete="{{ $pw[3] }}"
+                                   @if($pw[0] === 'inp-pw-baru') minlength="8" @endif>
+                            <button type="button"
+                                    class="toggle-pw w-11 bg-surface-container-high flex items-center justify-center border-l border-outline-variant hover:bg-surface-container transition-colors flex-shrink-0"
+                                    data-target="{{ $pw[0] }}"
+                                    aria-label="Lihat/sembunyikan password">
+                                <span class="material-symbols-outlined text-outline text-[20px]">visibility</span>
+                            </button>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+
+                <div class="mt-5 flex justify-end">
+                    <button type="submit" id="btn-save-pw"
+                            class="btn-save bg-gradient-to-r from-tertiary to-tertiary-container text-on-tertiary text-label-md py-3 px-6 rounded-[10px] flex items-center gap-2 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none">
+                        <span class="btn-text flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[20px]">key</span>
+                            Ubah Password
+                        </span>
+                        <span class="btn-spinner hidden items-center gap-2">
+                            <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            Menyimpan…
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{{-- /pane-akun --}}

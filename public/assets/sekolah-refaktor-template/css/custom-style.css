@@ -1,68 +1,192 @@
 /**
- * GMNI Organization Template Custom CSS
- * Theme Color: GMNI Red (#d32f2f)
+ * LP Ma'arif NU Kraksaan — Admin Panel Theme
+ * Primary: NU Green #00843D  |  Accent: Gold #C8952A
+ * Replaces default template preset with Ma'arif NU brand identity.
  */
 
+/* ── BOOTSTRAP & PRESET TOKEN OVERRIDES ─────────────────────────────────── */
 :root {
-  --bs-primary: #d32f2f;
-  --bs-primary-rgb: 211, 47, 47;
-  --bs-secondary: #424242;
-  --bs-secondary-rgb: 66, 66, 66;
+    --bs-primary:          #00843D;
+    --bs-primary-rgb:      0, 132, 61;
+    --bs-secondary:        #004E24;
+    --bs-secondary-rgb:    0, 78, 36;
+    --maarif-gold:         #C8952A;
+    --maarif-gold-light:   #FDF3DC;
+    --maarif-green-dark:   #004E24;
+    --maarif-green:        #00843D;
+    --maarif-green-light:  #E8F5EE;
 }
 
-/* Override default primary buttons and elements */
+/* ── BUTTONS ─────────────────────────────────────────────────────────────── */
 .btn-primary {
-  background-color: var(--bs-primary);
-  border-color: var(--bs-primary);
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
 }
 
-.btn-primary:hover {
-  background-color: #b71c1c;
-  border-color: #b71c1c;
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: #006B31;
+    border-color: #006B31;
 }
 
-.text-primary {
-  color: var(--bs-primary) !important;
+.btn-primary:focus,
+.btn-primary:focus-visible {
+    box-shadow: 0 0 0 3px rgba(0,132,61,.25);
 }
 
-.bg-primary {
-  background-color: var(--bs-primary) !important;
+/* ── TEXT & BACKGROUND UTILITIES ────────────────────────────────────────── */
+.text-primary { color: var(--bs-primary) !important; }
+.bg-primary   { background-color: var(--bs-primary) !important; }
+
+/* Gold accent utilities */
+.text-gold    { color: var(--maarif-gold) !important; }
+.bg-gold      { background-color: var(--maarif-gold) !important; }
+.border-gold  { border-color: var(--maarif-gold) !important; }
+
+/* ── SIDEBAR ─────────────────────────────────────────────────────────────── */
+
+/* Sidebar header (logo area) */
+.pc-sidebar .m-header {
+    border-bottom: 1px solid rgba(255,255,255,.08);
 }
 
-/* Sidebar Active State */
+.pc-sidebar .m-header .b-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+/* Logo image in sidebar header */
+.b-brand .logo-lg {
+    max-height: 36px;
+    width: auto;
+    object-fit: contain;
+}
+
+.b-brand .brand-name {
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--bs-primary);
+    line-height: 1.15;
+}
+
+.b-brand .brand-sub {
+    font-size: 0.6rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    display: block;
+}
+
+/* Sidebar item active / hover states */
 .pc-sidebar .pc-navbar > .pc-item.active > .pc-link,
 .pc-sidebar .pc-navbar > .pc-item:focus > .pc-link,
 .pc-sidebar .pc-navbar > .pc-item:hover > .pc-link {
-  color: var(--bs-primary);
-  background: rgba(211, 47, 47, 0.1);
+    color: var(--bs-primary);
+    background: rgba(0,132,61,.08);
 }
 
 .pc-sidebar .pc-navbar > .pc-item.active > .pc-link .pc-micon,
 .pc-sidebar .pc-navbar > .pc-item:focus > .pc-link .pc-micon,
 .pc-sidebar .pc-navbar > .pc-item:hover > .pc-link .pc-micon {
-  color: var(--bs-primary);
+    color: var(--bs-primary);
 }
 
-/* Custom Card Styling */
-.card-gmni-stat {
+/* Active submenu item */
+.pc-sidebar .pc-navbar .pc-submenu .pc-item.active > .pc-link {
+    color: var(--bs-primary);
+    font-weight: 600;
+}
+
+/* Sidebar caption labels */
+.pc-sidebar .pc-navbar .pc-caption label {
+    color: var(--bs-primary);
+    font-weight: 700;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+/* Gold accent left border on active items */
+.pc-sidebar .pc-navbar > .pc-item.active > .pc-link {
+    border-left: 3px solid var(--maarif-gold);
+    padding-left: calc(1rem - 3px);
+}
+
+/* ── HEADER / TOPBAR ─────────────────────────────────────────────────────── */
+.pc-header .pc-head-link.head-link-primary {
+    background: rgba(0,132,61,.08);
+    color: var(--bs-primary);
+}
+
+.pc-header .pc-head-link.head-link-primary:hover {
+    background: rgba(0,132,61,.15);
+}
+
+/* ── CARD STATS ──────────────────────────────────────────────────────────── */
+.card-maarif-stat {
     border-left: 4px solid var(--bs-primary);
 }
 
-/* Logo Adjustment */
-.b-brand .logo-lg {
-    max-height: 40px; 
-    /* Adjust as needed for the GMNI logo */
+.card-maarif-stat-gold {
+    border-left: 4px solid var(--maarif-gold);
 }
 
-/* Remove Buy Now Badge if distinct class exists or generic hiding */
-.buy-now-badge {
-    display: none !important;
-}
-/* Fix SweetAlert2 overlapping with Bootstrap Modals */
-.swal2-container {
-    z-index: 99999 !important;
-}
-.swal2-backdrop {
-    z-index: 99998 !important;
+/* Keep old class name working */
+.card-gmni-stat { border-left: 4px solid var(--bs-primary); }
+
+/* ── LINKS ───────────────────────────────────────────────────────────────── */
+a.link-primary,
+.link-primary {
+    color: var(--bs-primary) !important;
 }
 
+a.link-primary:hover { color: #006B31 !important; }
+
+/* ── FORM FOCUS RINGS ────────────────────────────────────────────────────── */
+.form-control:focus,
+.form-select:focus {
+    border-color: rgba(0,132,61,.5);
+    box-shadow: 0 0 0 3px rgba(0,132,61,.15);
+}
+
+.form-check-input:checked {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+/* ── BADGES ──────────────────────────────────────────────────────────────── */
+.badge.bg-primary { background-color: var(--bs-primary) !important; }
+
+/* ── PAGINATION ──────────────────────────────────────────────────────────── */
+.page-item.active .page-link {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.page-link { color: var(--bs-primary); }
+.page-link:hover { color: #006B31; }
+
+/* ── LOADER / PRELOADER ──────────────────────────────────────────────────── */
+.loader-fill { background: var(--bs-primary); }
+
+/* ── SWEETALERT2 / MODAL Z-INDEX FIX ────────────────────────────────────── */
+.swal2-container { z-index: 99999 !important; }
+.swal2-backdrop  { z-index: 99998 !important; }
+
+/* ── PURCHASE BADGE — HIDE ───────────────────────────────────────────────── */
+.buy-now-badge { display: none !important; }
+
+/* ── ISLAMIC ORNAMENT — SIDEBAR FOOTER ──────────────────────────────────── */
+.pc-sidebar::after {
+    content: '✦ Ma\'arif NU ✦';
+    display: block;
+    text-align: center;
+    font-size: 0.6rem;
+    color: rgba(0,132,61,.3);
+    letter-spacing: 3px;
+    padding: 12px 0 8px;
+    border-top: 1px solid rgba(0,132,61,.08);
+}

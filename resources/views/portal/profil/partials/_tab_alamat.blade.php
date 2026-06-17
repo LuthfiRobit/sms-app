@@ -1,12 +1,11 @@
-{{-- ─────────────────────────────────────
-TAB 3 — Alamat
-───────────────────────────────────── --}}
-<div class="tab-pane-profil d-none" id="pane-alamat">
-    <div class="profil-card">
-        <div class="profil-card-header">
-            <i class="bi bi-geo-alt" aria-hidden="true"></i>Data Alamat
+{{-- TAB: Alamat --}}
+<div class="tab-pane-profil hidden" id="pane-alamat">
+    <div class="bg-surface-container-lowest rounded-xl border-t-[3px] border-tertiary-fixed-dim soft-shadow overflow-hidden">
+        <div class="flex items-center gap-3 px-6 py-4 bg-surface-container-low border-b border-outline-variant">
+            <span class="material-symbols-outlined text-primary text-[22px]">location_on</span>
+            <h2 class="text-headline-sm text-on-surface">Data Alamat</h2>
         </div>
-        <div class="profil-card-body">
+        <div class="p-6">
             <form id="form-alamat" novalidate>
                 @csrf
                 @method('PUT')
@@ -14,72 +13,114 @@ TAB 3 — Alamat
                 <input type="hidden" name="lintang" id="inp-lintang" value="{{ $alamat?->lintang }}">
                 <input type="hidden" name="bujur" id="inp-bujur" value="{{ $alamat?->bujur }}">
 
-                <div class="row g-3">
-                    <div class="col-12">
-                        <label class="form-label" for="alamat-lengkap">Alamat Lengkap <span class="text-danger"
-                                aria-label="wajib">*</span></label>
-                        <textarea id="alamat-lengkap" name="alamat" class="form-control" rows="2" required
-                            placeholder="Jl. nama jalan, nomor rumah">{{ $alamat?->alamat }}</textarea>
+                <div class="flex flex-col gap-4">
+
+                    {{-- Alamat Lengkap --}}
+                    <div>
+                        <label class="block text-label-md text-on-surface-variant mb-2" for="alamat-lengkap">
+                            Alamat Lengkap <span class="text-error">*</span>
+                        </label>
+                        <div class="flex rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                            <div class="w-12 bg-surface-container-high flex items-start pt-3 justify-center border-r border-outline-variant flex-shrink-0">
+                                <span class="material-symbols-outlined text-outline text-[20px]">home</span>
+                            </div>
+                            <textarea id="alamat-lengkap" name="alamat" rows="3" required
+                                      class="flex-1 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0 resize-y"
+                                      placeholder="Jl. nama jalan, nomor rumah">{{ $alamat?->alamat }}</textarea>
+                        </div>
                     </div>
-                    <div class="col-6 col-md-2">
-                        <label class="form-label" for="alamat-rt">RT</label>
-                        <input type="text" id="alamat-rt" name="rt" class="form-control" value="{{ $alamat?->rt }}"
-                            placeholder="001">
+
+                    {{-- RT RW Desa Kecamatan --}}
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        @foreach([
+                            ['alamat-rt',   'rt',            'RT',            '001'],
+                            ['alamat-rw',   'rw',            'RW',            '002'],
+                            ['alamat-desa', 'desa_kelurahan','Desa/Kelurahan',''],
+                            ['alamat-kec',  'kecamatan',     'Kecamatan',     ''],
+                        ] as $f)
+                        <div class="{{ $loop->index >= 2 ? 'col-span-2 md:col-span-1' : '' }}">
+                            <label class="block text-label-md text-on-surface-variant mb-2" for="{{ $f[0] }}">{{ $f[2] }}</label>
+                            <div class="flex rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                                <input type="text" id="{{ $f[0] }}" name="{{ $f[1] }}"
+                                       class="flex-1 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0"
+                                       value="{{ $alamat?->{$f[1]} }}"
+                                       @if($f[3]) placeholder="{{ $f[3] }}" @endif>
+                            </div>
+                        </div>
+                        @endforeach
                     </div>
-                    <div class="col-6 col-md-2">
-                        <label class="form-label" for="alamat-rw">RW</label>
-                        <input type="text" id="alamat-rw" name="rw" class="form-control" value="{{ $alamat?->rw }}"
-                            placeholder="002">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label" for="alamat-desa">Desa/Kelurahan</label>
-                        <input type="text" id="alamat-desa" name="desa_kelurahan" class="form-control"
-                            value="{{ $alamat?->desa_kelurahan }}">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label" for="alamat-kec">Kecamatan</label>
-                        <input type="text" id="alamat-kec" name="kecamatan" class="form-control"
-                            value="{{ $alamat?->kecamatan }}">
-                    </div>
-                    <div class="col-md-5">
-                        <label class="form-label" for="alamat-kab">Kabupaten/Kota <span class="text-danger"
-                                aria-label="wajib">*</span></label>
-                        <input type="text" id="alamat-kab" name="kabupaten_kota" class="form-control"
-                            value="{{ $alamat?->kabupaten_kota }}" required>
-                    </div>
-                    <div class="col-md-5">
-                        <label class="form-label" for="alamat-prov">Provinsi <span class="text-danger"
-                                aria-label="wajib">*</span></label>
-                        <input type="text" id="alamat-prov" name="provinsi" class="form-control"
-                            value="{{ $alamat?->provinsi }}" required>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label" for="alamat-pos">Kode Pos</label>
-                        <input type="text" id="alamat-pos" name="kode_pos" class="form-control"
-                            value="{{ $alamat?->kode_pos }}" maxlength="10">
+
+                    {{-- Kabupaten Provinsi Kode Pos --}}
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-label-md text-on-surface-variant mb-2" for="alamat-kab">
+                                Kabupaten/Kota <span class="text-error">*</span>
+                            </label>
+                            <div class="flex rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                                <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                    <span class="material-symbols-outlined text-outline text-[20px]">location_city</span>
+                                </div>
+                                <input type="text" id="alamat-kab" name="kabupaten_kota" required
+                                       class="flex-1 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0"
+                                       value="{{ $alamat?->kabupaten_kota }}">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-label-md text-on-surface-variant mb-2" for="alamat-prov">
+                                Provinsi <span class="text-error">*</span>
+                            </label>
+                            <div class="flex rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                                <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                    <span class="material-symbols-outlined text-outline text-[20px]">map</span>
+                                </div>
+                                <input type="text" id="alamat-prov" name="provinsi" required
+                                       class="flex-1 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0"
+                                       value="{{ $alamat?->provinsi }}">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-label-md text-on-surface-variant mb-2" for="alamat-pos">Kode Pos</label>
+                            <div class="flex rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                                <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                    <span class="material-symbols-outlined text-outline text-[20px]">markunread_mailbox</span>
+                                </div>
+                                <input type="text" id="alamat-pos" name="kode_pos" maxlength="10"
+                                       class="flex-1 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0"
+                                       value="{{ $alamat?->kode_pos }}">
+                            </div>
+                        </div>
                     </div>
 
                     {{-- GPS Helper --}}
-                    <div class="col-12">
-                        <div class="d-flex flex-wrap align-items-center gap-2">
-                            <button type="button" id="btn-gps" class="btn btn-outline-info btn-sm">
-                                <i class="bi bi-geo me-1" aria-hidden="true"></i>Gunakan GPS
-                            </button>
-                            <span id="gps-status" class="text-muted" style="font-size:.78rem" aria-live="polite"></span>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-success btn-save">
-                            <span class="btn-text"><i class="bi bi-check2 me-1" aria-hidden="true"></i>Simpan
-                                Alamat</span>
-                            <span class="btn-spinner d-none" aria-live="polite">
-                                <span class="spinner-border spinner-border-sm me-1" role="status"
-                                    aria-hidden="true"></span>Menyimpan…
-                            </span>
+                    <div class="flex items-center gap-3">
+                        <button type="button" id="btn-gps"
+                                class="flex items-center gap-2 px-4 py-2 border border-primary text-primary text-label-md rounded-lg hover:bg-surface-container transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">my_location</span>
+                            Gunakan GPS
                         </button>
+                        <span id="gps-status" class="text-body-sm text-on-surface-variant" aria-live="polite"></span>
                     </div>
+
+                </div>
+
+                <div class="mt-5 flex justify-end">
+                    <button type="submit"
+                            class="btn-save bg-gradient-to-r from-primary to-primary-container text-on-primary text-label-md py-3 px-6 rounded-[10px] flex items-center gap-2 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none">
+                        <span class="btn-text flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[20px]">save</span>
+                            Simpan Alamat
+                        </span>
+                        <span class="btn-spinner hidden items-center gap-2">
+                            <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            Menyimpan…
+                        </span>
+                    </button>
                 </div>
             </form>
         </div>
     </div>
-</div>{{-- /pane-alamat --}}
+</div>
+{{-- /pane-alamat --}}

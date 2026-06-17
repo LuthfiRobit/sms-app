@@ -21,10 +21,13 @@ class JurusanSeeder extends Seeder
         ];
 
         foreach ($jurusan as $data) {
-            DB::table('jurusan')->insert(array_merge($data, [
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+            DB::table('jurusan')->updateOrInsert(
+                ['kode' => $data['kode']],
+                array_merge($data, [
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ])
+            );
         }
     }
 }

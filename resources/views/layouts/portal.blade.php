@@ -5,14 +5,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="Portal PPDB 2026/2027 - Penerimaan Peserta Didik Baru">
-    <title>@yield('title', 'Portal PPDB') — PPDB 2026/2027</title>
+    <meta name="description" content="Portal PPDB LP Ma'arif NU Kraksaan — Penerimaan Peserta Didik Baru">
+    <title>@yield('title', 'Portal PPDB') — LP Ma'arif NU Kraksaan</title>
 
-    {{-- Typography: Plus Jakarta Sans untuk body, Instrument Serif untuk aksen premium --}}
+    {{-- Typography: Plus Jakarta Sans --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Instrument+Serif:ital@0;1&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
         rel="stylesheet">
 
     {{-- Bootstrap 5 + Icons + SweetAlert2 --}}
@@ -21,29 +21,29 @@
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
     @include('layouts.partials._style')
-    {{-- Stack untuk CSS tambahan dari child pages --}}
     @stack('styles')
 </head>
 
 <body>
 
-    {{-- Skip to content link untuk screen readers dan keyboard navigation --}}
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
 
-    {{-- NAVIGATION BAR
-    Navbar sticky dengan branding, menu, dan user authentication --}}
+    {{-- NAVIGATION BAR --}}
     <nav class="navbar navbar-expand-md navbar-portal" role="navigation" aria-label="Main navigation">
         <div class="container">
-            {{-- Brand/Logo --}}
-            <a class="navbar-brand" href="{{ route('ppdb.dashboard') }}" aria-label="PPDB 2026/2027 - Homepage">
-                <div class="brand-icon" aria-hidden="true">🎓</div>
+            {{-- Brand / Logo --}}
+            <a class="navbar-brand" href="{{ route('ppdb.dashboard') }}" aria-label="Portal PPDB LP Ma'arif NU Kraksaan">
+                <div class="brand-logo-wrap" aria-hidden="true">
+                    <img src="{{ asset('assets/sekolah-refaktor-template/images/logo/logomaarif.png') }}"
+                         alt="Logo LP Ma'arif NU" class="brand-logo">
+                </div>
                 <div class="brand-text">
                     <div class="brand-text-primary">PPDB Online</div>
-                    <div class="brand-text-sub">TA 2026/2027</div>
+                    <div class="brand-text-sub">LP Ma'arif NU Kraksaan</div>
                 </div>
             </a>
 
-            {{-- Hamburger button untuk mobile --}}
+            {{-- Hamburger button --}}
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarPortal"
                 aria-controls="navbarPortal" aria-expanded="false" aria-label="Toggle navigation menu">
                 <span class="navbar-toggler-icon"></span>
@@ -52,7 +52,7 @@
             {{-- Collapsible menu --}}
             <div class="collapse navbar-collapse" id="navbarPortal">
 
-                {{-- Left menu: Dashboard & Pendaftaran (hanya untuk peserta yang sudah login) --}}
+                {{-- Left menu --}}
                 <ul class="navbar-nav me-auto mb-2 mb-md-0">
                     @auth
                         @if(isset($isPeserta) && $isPeserta || auth()->user()->status !== null)
@@ -65,7 +65,6 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                {{-- TODO: Ganti href="#" dengan route pendaftaran yang sebenarnya --}}
                                 <a class="nav-link {{ request()->routeIs('ppdb.pendaftaran.*') ? 'active' : '' }}" href="#"
                                     aria-current="{{ request()->routeIs('ppdb.pendaftaran.*') ? 'page' : 'false' }}">
                                     <i class="bi bi-file-earmark-text me-1" aria-hidden="true"></i>
@@ -76,33 +75,27 @@
                     @endauth
                 </ul>
 
-                {{-- Right menu: User dropdown atau Login/Register --}}
+                {{-- Right menu --}}
                 <ul class="navbar-nav ms-auto align-items-md-center">
                     @auth
-                        {{-- User dropdown menu --}}
                         <li class="nav-item dropdown">
                             <a class="user-toggle dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                                 aria-expanded="false" aria-haspopup="true" aria-label="User menu">
                                 <div class="user-avatar" aria-hidden="true">
                                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                                 </div>
-                                {{-- Show name only on desktop untuk space efficiency --}}
                                 <span class="d-none d-md-inline">{{ Str::limit(auth()->user()->name, 20) }}</span>
                                 <i class="bi bi-chevron-down user-caret" aria-hidden="true"></i>
                             </a>
 
                             <ul class="dropdown-menu dropdown-menu-end">
-                                {{-- Email header --}}
                                 <li>
                                     <span class="dropdown-email" aria-label="Current user email">
                                         {{ auth()->user()->email }}
                                     </span>
                                 </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
+                                <li><hr class="dropdown-divider"></li>
 
-                                {{-- Profile link --}}
                                 <li>
                                     <a class="dropdown-item" href="#">
                                         <i class="bi bi-person" aria-hidden="true"></i>
@@ -110,7 +103,6 @@
                                     </a>
                                 </li>
 
-                                {{-- Pendaftaran link --}}
                                 <li>
                                     <a class="dropdown-item" href="#">
                                         <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
@@ -118,11 +110,8 @@
                                     </a>
                                 </li>
 
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
+                                <li><hr class="dropdown-divider"></li>
 
-                                {{-- Logout button (tetap menggunakan POST form untuk security) --}}
                                 <li>
                                     <form action="{{ route('ppdb.logout') }}" method="POST" class="m-0">
                                         @csrf
@@ -135,7 +124,6 @@
                             </ul>
                         </li>
                     @else
-                        {{-- Login link --}}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('ppdb.login') }}">
                                 <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i>
@@ -143,7 +131,6 @@
                             </a>
                         </li>
 
-                        {{-- Register CTA button --}}
                         <li class="nav-item">
                             <a class="btn-nav-register" href="{{ route('ppdb.register') }}">
                                 Daftar Sekarang
@@ -156,9 +143,7 @@
         </div>
     </nav>
 
-    {{-- FLASH MESSAGES
-    Alert notifications dari session (success, error, warning, info)
-    Otomatis muncul setelah redirect dengan flash message --}}
+    {{-- FLASH MESSAGES --}}
     @if(session()->hasAny(['success', 'error', 'info', 'warning']))
         <div class="container mt-3">
             @foreach(['success', 'error' => 'danger', 'info', 'warning'] as $type => $bsType)
@@ -178,107 +163,90 @@
         </div>
     @endif
 
-    {{-- MAIN CONTENT
-    Area konten utama - diisi oleh child pages via @yield('content') --}}
+    {{-- MAIN CONTENT --}}
     <main class="portal-main" id="main-content" role="main">
         <div class="container">
             @yield('content')
         </div>
     </main>
 
-    {{-- FOOTER
-    Footer dengan branding, info kontak, dan copyright --}}
+    {{-- FOOTER --}}
     <footer class="portal-footer" role="contentinfo">
         <div class="container">
-            <div class="row g-4 align-items-center">
-                {{-- Left column: Branding & description --}}
-                <div class="col-sm-6">
+            <div class="footer-ornam" aria-hidden="true">✦ &nbsp; ✦ &nbsp; ✦</div>
+            <div class="row g-4 align-items-start">
+                {{-- Left: Branding --}}
+                <div class="col-sm-7">
                     <div class="footer-brand">
-                        <span aria-hidden="true">🎓</span>
-                        PPDB 2026/2027
+                        <img src="{{ asset('assets/sekolah-refaktor-template/images/logo/logomaarif.png') }}"
+                             alt="Logo LP Ma'arif NU" width="32" height="32">
+                        <span>LP Ma'arif NU Kraksaan</span>
                     </div>
                     <p class="mb-0">
-                        Portal Penerimaan Peserta Didik Baru<br>
-                        Sistem Informasi Sekolah
+                        Lembaga Pendidikan Ma'arif Nahdlatul Ulama<br>
+                        Portal Penerimaan Peserta Didik Baru (PPDB) Online
                     </p>
                 </div>
 
-                {{-- Right column: Contact info --}}
-                <div class="col-sm-6">
+                {{-- Right: Contact --}}
+                <div class="col-sm-5">
                     <div class="footer-contact text-sm-end">
-                        <a href="tel:0xxxxxxxxx" aria-label="Phone number">
+                        <a href="tel:03358410xx" aria-label="Nomor telepon sekolah">
                             <i class="bi bi-telephone-fill" aria-hidden="true"></i>
-                            (0xxx) xxx-xxxx
+                            (0335) 841-xxx
                         </a>
-                        <a href="mailto:ppdb@sekolah.sch.id" aria-label="Email address">
+                        <a href="mailto:ppdb@maarif-kraksaan.sch.id" aria-label="Alamat email PPDB">
                             <i class="bi bi-envelope-fill" aria-hidden="true"></i>
-                            ppdb@sekolah.sch.id
+                            ppdb@maarif-kraksaan.sch.id
                         </a>
-                        <span class="d-block mt-2">&copy; {{ date('Y') }} Hak Cipta Dilindungi</span>
+                        <a href="#" aria-label="Alamat sekolah">
+                            <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+                            Kraksaan, Probolinggo, Jawa Timur
+                        </a>
+                        <span class="d-block mt-2">&copy; {{ date('Y') }} LP Ma'arif NU Kraksaan</span>
                     </div>
                 </div>
             </div>
         </div>
     </footer>
 
-    {{-- JAVASCRIPT LIBRARIES
-    ════════════════════════════════════════════════════════════════════════ --}}
+    {{-- JAVASCRIPT --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    {{-- CUSTOM SCRIPTS
-    Navbar scroll effect dan Bootstrap tooltip initialization --}}
     <script>
         (function () {
             'use strict';
 
-            // 1️⃣ Navbar shadow enhancement on scroll
+            // Navbar shadow on scroll
             const navbar = document.querySelector('.navbar-portal');
-            const handleScroll = () => {
-                if (window.scrollY > 10) {
-                    navbar.classList.add('scrolled');
-                } else {
-                    navbar.classList.remove('scrolled');
-                }
-            };
-
+            const handleScroll = () => navbar.classList.toggle('scrolled', window.scrollY > 10);
             window.addEventListener('scroll', handleScroll, { passive: true });
-            handleScroll(); // Initial check
+            handleScroll();
 
-            // 2️⃣ Initialize Bootstrap tooltips globally
-            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-            const tooltipList = [...tooltipTriggerList].map(el => new bootstrap.Tooltip(el, {
-                trigger: 'hover focus',
-                delay: { show: 300, hide: 100 }
-            }));
+            // Initialize Bootstrap tooltips
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+                new bootstrap.Tooltip(el, { trigger: 'hover focus', delay: { show: 300, hide: 100 } });
+            });
 
-            // 3️⃣ Auto-close mobile menu after clicking a link
-            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+            // Auto-close mobile menu after link click
             const navbarCollapse = document.getElementById('navbarPortal');
-
-            navLinks.forEach(link => {
+            document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
                 link.addEventListener('click', () => {
                     if (window.innerWidth < 768) {
                         const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
-                        if (bsCollapse) {
-                            bsCollapse.hide();
-                        }
+                        if (bsCollapse) bsCollapse.hide();
                     }
                 });
             });
 
-            // 4️⃣ Auto-dismiss alerts after 5 seconds
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                setTimeout(() => {
-                    const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
-                    bsAlert.close();
-                }, 5000);
+            // Auto-dismiss alerts after 5 seconds
+            document.querySelectorAll('.alert').forEach(alert => {
+                setTimeout(() => bootstrap.Alert.getOrCreateInstance(alert).close(), 5000);
             });
         })();
     </script>
 
-    {{-- Stack untuk JavaScript tambahan dari child pages --}}
     @stack('scripts')
 
 </body>

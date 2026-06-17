@@ -48,42 +48,58 @@ class AuthPesertaController extends Controller
         $request->validate([
             'nama_lengkap'  => ['required', 'string', 'min:3', 'max:100'],
             'email'         => ['required', 'email', 'max:100', 'unique:users,email'],
+            'no_hp'         => ['required', 'regex:/^[0-9]{10,15}$/'],
             'password'      => ['required', 'min:8', 'confirmed'],
             'setuju_syarat' => ['required', 'accepted'],
         ], [
-            'nama_lengkap.required'  => 'Nama lengkap wajib diisi.',
+            'nama_lengkap.required'  => 'Nama wali murid wajib diisi.',
             'nama_lengkap.min'       => 'Nama minimal 3 karakter.',
+            'email.required'         => 'Email wali murid wajib diisi.',
             'email.unique'           => 'Email sudah terdaftar. Silakan login.',
+            'no_hp.required'         => 'Nomor HP wali murid wajib diisi.',
+            'no_hp.regex'            => 'Nomor HP harus 10-15 digit angka.',
             'password.confirmed'     => 'Konfirmasi password tidak cocok.',
             'password.min'           => 'Password minimal 8 karakter.',
             'setuju_syarat.accepted' => 'Anda harus menyetujui syarat dan ketentuan.',
         ]);
 
         try {
+            $otpEnabled = env('PPDB_OTP_ENABLED', true);
+            $status = $otpEnabled ? 'pending' : 'active';
+
             $user = $this->pesertaAccountService->createPesertaAccount(
                 namaLengkap: $request->nama_lengkap,
                 email:        $request->email,
                 password:     $request->password,
-                status:       'pending',
+                status:       $status,
+                noHp:         $request->no_hp,
             );
 
             // Login otomatis setelah registrasi
             auth()->login($user);
 
-            // Generate OTP 6 digit dengan zero-padding
-            $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            if ($otpEnabled) {
+                // Generate OTP 6 digit dengan zero-padding
+                $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-            // Simpan OTP ke cache, expire 10 menit
-            Cache::put('otp_' . $user->id_user, $otp, now()->addMinutes(10));
+                // Simpan OTP ke cache, expire 10 menit
+                Cache::put('otp_' . $user->id_user, $otp, now()->addMinutes(10));
 
-            // Kirim email OTP via queue
-            Mail::to($user->email)->queue(new OtpVerifikasiMail($otp, $user->name));
+                // Kirim email OTP via queue
+                Mail::to($user->email)->queue(new OtpVerifikasiMail($otp, $user->name));
 
-            // Log aktivitas
-            $this->logActivity->log('Registrasi akun peserta PPDB', 'Email: ' . $user->email);
+                // Log aktivitas
+                $this->logActivity->log('Registrasi akun peserta PPDB (Dengan OTP)', 'Email: ' . $user->email);
 
-            return redirect()->route('ppdb.verify-email')
-                ->with('success', 'Akun berhasil dibuat! Kode OTP sudah dikirim ke email Anda.');
+                return redirect()->route('ppdb.verify-email')
+                    ->with('success', 'Akun berhasil dibuat! Kode OTP sudah dikirim ke email wali murid.');
+            } else {
+                // Log aktivitas tanpa OTP
+                $this->logActivity->log('Registrasi akun peserta PPDB (Tanpa OTP)', 'Email: ' . $user->email);
+
+                return redirect()->route('ppdb.dashboard')
+                    ->with('success', 'Registrasi berhasil! Akun Anda telah aktif.');
+            }
         } catch (Exception $e) {
             return redirect()->back()
                 ->withInput($request->except('password', 'password_confirmation'))

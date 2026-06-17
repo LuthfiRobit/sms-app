@@ -73,16 +73,18 @@ class ProfilPesertaController extends Controller
             'email'        => [
                 'required',
                 'email',
-                // Unik kecuali untuk user sekarang (gunakan PK id_user)
                 \Illuminate\Validation\Rule::unique('users', 'email')
                     ->ignore($user->id_user, 'id_user'),
             ],
+            'no_hp'        => ['required', 'regex:/^[0-9]{10,15}$/'],
         ], [
-            'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
-            'nama_lengkap.min'      => 'Nama lengkap minimal 3 karakter.',
-            'email.required'        => 'Email wajib diisi.',
+            'nama_lengkap.required' => 'Nama wali murid wajib diisi.',
+            'nama_lengkap.min'      => 'Nama wali murid minimal 3 karakter.',
+            'email.required'        => 'Email wali murid wajib diisi.',
             'email.email'           => 'Format email tidak valid.',
             'email.unique'          => 'Email sudah digunakan akun lain.',
+            'no_hp.required'        => 'Nomor HP wali murid wajib diisi.',
+            'no_hp.regex'           => 'Nomor HP harus 10-15 digit angka.',
         ]);
 
         try {
@@ -90,6 +92,7 @@ class ProfilPesertaController extends Controller
                 $user,
                 $request->input('nama_lengkap'),
                 $request->input('email'),
+                $request->input('no_hp'),
             );
 
             return response()->json([

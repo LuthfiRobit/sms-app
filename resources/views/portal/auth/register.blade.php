@@ -1,239 +1,255 @@
-@extends('layouts.portal')
+@extends('layouts.portal-stitch')
 
-@section('title', 'Daftar Akun Peserta')
+@section('title', 'Daftar Akun PPDB')
 
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-12 col-sm-10 col-md-8 col-lg-5" style="max-width:480px">
+<div class="min-h-screen pattern-bg-auth flex items-center justify-center p-4 py-10">
+    <div class="w-full max-w-[960px]">
 
         {{-- Flash Messages --}}
         @if(session('error'))
-            <div class="alert alert-danger d-flex align-items-center gap-2 mb-3" role="alert">
-                <i class="bi bi-exclamation-circle-fill flex-shrink-0"></i>
-                <span>{{ session('error') }}</span>
-            </div>
+        <div class="mb-4 flex items-center gap-3 bg-error-container text-on-error-container px-4 py-3 rounded-xl border border-error/20">
+            <span class="material-symbols-outlined text-[20px] flex-shrink-0">error</span>
+            <span class="text-body-sm">{{ session('error') }}</span>
+        </div>
         @endif
         @if(session('success'))
-            <div class="alert alert-success d-flex align-items-center gap-2 mb-3" role="alert">
-                <i class="bi bi-check-circle-fill flex-shrink-0"></i>
-                <span>{{ session('success') }}</span>
-            </div>
+        <div class="mb-4 flex items-center gap-3 bg-secondary-container text-on-secondary-container px-4 py-3 rounded-xl border border-secondary/20">
+            <span class="material-symbols-outlined text-[20px] flex-shrink-0">check_circle</span>
+            <span class="text-body-sm">{{ session('success') }}</span>
+        </div>
         @endif
 
-        <div class="portal-card">
-            {{-- Card Header --}}
-            <div class="card-header border-0 rounded-top-4 py-4 px-4"
-                 style="background:linear-gradient(135deg,#16a34a 0%,#059669 100%)">
-                <div class="text-center text-white">
-                    <div class="mb-2" style="font-size:2.5rem">🎓</div>
-                    <h1 class="fs-5 fw-bold mb-1">Daftar Akun Peserta</h1>
-                    <p class="mb-0 opacity-75" style="font-size:0.8125rem">
-                        PPDB 2026/2027 — Portal Pendaftaran Online
+        {{-- Split Card --}}
+        <div class="flex flex-col md:flex-row bg-surface-container-lowest rounded-2xl soft-shadow border-t-[3px] border-tertiary-fixed-dim overflow-hidden">
+
+            {{-- Left Panel: Branding --}}
+            <div class="md:w-[340px] bg-gradient-to-br from-primary to-primary-container p-10 flex flex-col justify-between relative overflow-hidden">
+                <div class="absolute inset-0 opacity-[0.07]"
+                     style="background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40' fill='none' stroke='%23ffffff' stroke-width='1.5'/%3E%3C/svg%3E\")"></div>
+
+                <div class="relative z-10">
+                    {{-- Logo --}}
+                    <div class="flex items-center gap-4 mb-10">
+                        <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm flex-shrink-0">
+                            <img src="{{ asset('assets/sekolah-refaktor-template/images/logo/logomaarif.png') }}"
+                                 alt="Logo LP Ma'arif NU" class="w-9 h-9 object-contain" style="filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))">
+                        </div>
+                        <div>
+                            <p class="text-on-primary font-bold leading-tight text-[15px]">LP Ma'arif NU</p>
+                            <p class="text-on-primary/70 text-[12px]">Kraksaan</p>
+                        </div>
+                    </div>
+
+                    <p class="text-tertiary-fixed-dim text-[10px] tracking-[0.5em] font-semibold mb-3" aria-hidden="true">✦ &nbsp; ✦ &nbsp; ✦</p>
+                    <h1 class="text-headline-lg text-on-primary mb-3 leading-tight">Daftar<br>Akun PPDB</h1>
+                    <p class="text-on-primary/75 text-body-md mb-10">
+                        Buat akun untuk mendaftarkan putra-putri Anda ke LP Ma'arif NU Kraksaan.
                     </p>
+
+                    {{-- Steps Overview --}}
+                    <div class="space-y-3">
+                        @foreach([
+                            ['1', 'Buat akun wali murid'],
+                            ['2', 'Verifikasi email'],
+                            ['3', 'Lengkapi profil peserta'],
+                            ['4', 'Pilih jalur pendaftaran'],
+                        ] as $step)
+                        <div class="flex items-center gap-3">
+                            <div class="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 text-on-primary font-bold text-[12px]">
+                                {{ $step[0] }}
+                            </div>
+                            <span class="text-on-primary/85 text-body-sm">{{ $step[1] }}</span>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="relative z-10 mt-10">
+                    <p class="text-on-primary/40 text-[11px]">&copy; {{ date('Y') }} LP Ma'arif NU Kraksaan</p>
                 </div>
             </div>
 
-            {{-- Card Body --}}
-            <div class="card-body px-4 py-4">
+            {{-- Right Panel: Form --}}
+            <div class="flex-1 p-8 md:p-10 overflow-y-auto">
+                <h2 class="text-headline-md text-on-surface mb-1">Buat Akun Baru</h2>
+                <p class="text-body-sm text-on-surface-variant mb-7">Isi data wali murid untuk mendaftar.</p>
+
                 <form id="form-register" action="{{ route('ppdb.register') }}" method="POST" novalidate>
                     @csrf
 
-                    {{-- Nama Lengkap --}}
-                    <div class="mb-3">
-                        <label for="nama_lengkap" class="form-label fw-semibold" style="font-size:0.875rem">
-                            Nama Lengkap
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0">
-                                <i class="bi bi-person text-muted"></i>
-                            </span>
-                            <input
-                                type="text"
-                                id="nama_lengkap"
-                                name="nama_lengkap"
-                                class="form-control border-start-0 ps-0 @error('nama_lengkap') is-invalid @enderror"
-                                placeholder="Masukkan nama lengkap Anda"
-                                value="{{ old('nama_lengkap') }}"
-                                autocomplete="name"
-                                autofocus
-                            >
-                            @error('nama_lengkap')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                    {{-- Nama --}}
+                    <div class="mb-4">
+                        <label for="nama_lengkap" class="block text-label-md text-on-surface-variant mb-2">Nama Wali Murid</label>
+                        <div class="flex rounded-lg overflow-hidden border @error('nama_lengkap') border-error ring-2 ring-error/20 @else border-outline-variant @enderror focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                            <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                <span class="material-symbols-outlined text-outline text-[20px]">person</span>
+                            </div>
+                            <input type="text" id="nama_lengkap" name="nama_lengkap" value="{{ old('nama_lengkap') }}"
+                                   placeholder="Nama lengkap ayah/ibu/wali" autocomplete="name" autofocus
+                                   class="flex-1 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0">
                         </div>
+                        @error('nama_lengkap')
+                        <p class="mt-1.5 text-body-sm text-error flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[16px]">error</span>{{ $message }}
+                        </p>
+                        @enderror
                     </div>
 
                     {{-- Email --}}
-                    <div class="mb-3">
-                        <label for="email" class="form-label fw-semibold" style="font-size:0.875rem">
-                            Alamat Email
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0">
-                                <i class="bi bi-envelope text-muted"></i>
-                            </span>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                class="form-control border-start-0 ps-0 @error('email') is-invalid @enderror"
-                                placeholder="nama@email.com"
-                                value="{{ old('email') }}"
-                                autocomplete="email"
-                            >
-                            @error('email')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="form-text" style="font-size:0.75rem">
-                            <i class="bi bi-info-circle me-1"></i>
-                            Email ini akan digunakan sebagai username login Anda.
-                        </div>
-                    </div>
-
-                    {{-- Password --}}
-                    <div class="mb-3">
-                        <label for="password" class="form-label fw-semibold" style="font-size:0.875rem">
-                            Password
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0">
-                                <i class="bi bi-lock text-muted"></i>
-                            </span>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                class="form-control border-start-0 border-end-0 ps-0 @error('password') is-invalid @enderror"
-                                placeholder="Minimal 8 karakter"
-                                autocomplete="new-password"
-                            >
-                            <button class="btn btn-light border toggle-password" type="button"
-                                    data-target="#password" title="Tampilkan/Sembunyikan">
-                                <i class="bi bi-eye text-muted" id="icon-password"></i>
-                            </button>
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    {{-- Konfirmasi Password --}}
-                    <div class="mb-3">
-                        <label for="password_confirmation" class="form-label fw-semibold" style="font-size:0.875rem">
-                            Konfirmasi Password
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0">
-                                <i class="bi bi-lock-fill text-muted"></i>
-                            </span>
-                            <input
-                                type="password"
-                                id="password_confirmation"
-                                name="password_confirmation"
-                                class="form-control border-start-0 border-end-0 ps-0"
-                                placeholder="Ulangi password Anda"
-                                autocomplete="new-password"
-                            >
-                            <button class="btn btn-light border toggle-password" type="button"
-                                    data-target="#password_confirmation" title="Tampilkan/Sembunyikan">
-                                <i class="bi bi-eye text-muted" id="icon-password-confirm"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    {{-- Syarat & Ketentuan --}}
                     <div class="mb-4">
-                        <div class="form-check">
-                            <input
-                                class="form-check-input @error('setuju_syarat') is-invalid @enderror"
-                                type="checkbox"
-                                id="setuju_syarat"
-                                name="setuju_syarat"
-                                value="1"
-                                {{ old('setuju_syarat') ? 'checked' : '' }}
-                            >
-                            <label class="form-check-label" for="setuju_syarat" style="font-size:0.8125rem">
-                                Saya menyetujui
-                                <a href="#" class="text-success fw-semibold">syarat dan ketentuan</a>
-                                pendaftaran PPDB 2026/2027
-                            </label>
-                            @error('setuju_syarat')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                        <label for="email" class="block text-label-md text-on-surface-variant mb-2">Email Wali Murid</label>
+                        <div class="flex rounded-lg overflow-hidden border @error('email') border-error ring-2 ring-error/20 @else border-outline-variant @enderror focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                            <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                <span class="material-symbols-outlined text-outline text-[20px]">mail</span>
+                            </div>
+                            <input type="email" id="email" name="email" value="{{ old('email') }}"
+                                   placeholder="email@wali.com" autocomplete="email"
+                                   class="flex-1 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0">
+                        </div>
+                        @error('email')
+                        <p class="mt-1.5 text-body-sm text-error flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[16px]">error</span>{{ $message }}
+                        </p>
+                        @enderror
+                        <p class="mt-1 text-body-sm text-on-surface-variant">Digunakan untuk login dan notifikasi PPDB.</p>
+                    </div>
+
+                    {{-- No HP --}}
+                    <div class="mb-4">
+                        <label for="no_hp" class="block text-label-md text-on-surface-variant mb-2">No HP Wali Murid</label>
+                        <div class="flex rounded-lg overflow-hidden border @error('no_hp') border-error ring-2 ring-error/20 @else border-outline-variant @enderror focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                            <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                <span class="material-symbols-outlined text-outline text-[20px]">phone_iphone</span>
+                            </div>
+                            <input type="tel" id="no_hp" name="no_hp" value="{{ old('no_hp') }}"
+                                   placeholder="08xxxxxxxxxx" autocomplete="tel" inputmode="numeric"
+                                   class="flex-1 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0">
+                        </div>
+                        @error('no_hp')
+                        <p class="mt-1.5 text-body-sm text-error flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[16px]">error</span>{{ $message }}
+                        </p>
+                        @enderror
+                    </div>
+
+                    {{-- Password row --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+
+                        {{-- Password --}}
+                        <div>
+                            <label for="password" class="block text-label-md text-on-surface-variant mb-2">Password</label>
+                            <div class="flex rounded-lg overflow-hidden border @error('password') border-error ring-2 ring-error/20 @else border-outline-variant @enderror focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                                <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                    <span class="material-symbols-outlined text-outline text-[20px]">lock</span>
+                                </div>
+                                <input type="password" id="password" name="password"
+                                       placeholder="Min. 8 karakter" autocomplete="new-password"
+                                       class="flex-1 bg-surface-container-lowest px-3 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0">
+                                <button type="button" class="toggle-pw w-11 bg-surface-container-high flex items-center justify-center border-l border-outline-variant hover:bg-surface-container transition-colors flex-shrink-0" data-target="password">
+                                    <span class="material-symbols-outlined text-outline text-[20px]">visibility</span>
+                                </button>
+                            </div>
+                            @error('password')
+                            <p class="mt-1.5 text-body-sm text-error flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[16px]">error</span>{{ $message }}
+                            </p>
                             @enderror
                         </div>
+
+                        {{-- Konfirmasi --}}
+                        <div>
+                            <label for="password_confirmation" class="block text-label-md text-on-surface-variant mb-2">Konfirmasi</label>
+                            <div class="flex rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                                <div class="w-12 bg-surface-container-high flex items-center justify-center border-r border-outline-variant flex-shrink-0">
+                                    <span class="material-symbols-outlined text-outline text-[20px]">lock_reset</span>
+                                </div>
+                                <input type="password" id="password_confirmation" name="password_confirmation"
+                                       placeholder="Ulangi password" autocomplete="new-password"
+                                       class="flex-1 bg-surface-container-lowest px-3 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none min-w-0">
+                                <button type="button" class="toggle-pw w-11 bg-surface-container-high flex items-center justify-center border-l border-outline-variant hover:bg-surface-container transition-colors flex-shrink-0" data-target="password_confirmation">
+                                    <span class="material-symbols-outlined text-outline text-[20px]">visibility</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {{-- Setuju Syarat --}}
+                    <div class="mb-6">
+                        <div class="flex items-start gap-3">
+                            <input type="checkbox" id="setuju_syarat" name="setuju_syarat" value="1"
+                                   {{ old('setuju_syarat') ? 'checked' : '' }}
+                                   class="mt-0.5 w-4 h-4 rounded border-2 border-outline-variant text-primary focus:ring-primary/20 cursor-pointer flex-shrink-0">
+                            <label for="setuju_syarat" class="text-body-sm text-on-surface-variant leading-relaxed cursor-pointer">
+                                Saya menyetujui
+                                <a href="#" class="font-semibold text-primary hover:text-primary-container transition-colors">syarat dan ketentuan</a>
+                                pendaftaran PPDB LP Ma'arif NU Kraksaan
+                            </label>
+                        </div>
+                        @error('setuju_syarat')
+                        <p class="mt-1.5 text-body-sm text-error flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[16px]">error</span>{{ $message }}
+                        </p>
+                        @enderror
                     </div>
 
                     {{-- Submit --}}
-                    <div class="d-grid mb-3">
-                        <button type="submit" id="btn-register"
-                                class="btn btn-success btn-lg fw-semibold"
-                                style="border-radius:10px;background:linear-gradient(135deg,#16a34a,#059669);border:none;letter-spacing:0.3px">
-                            <span id="btn-register-text">
-                                <i class="bi bi-person-plus me-2"></i>Daftar Sekarang
-                            </span>
-                            <span id="btn-register-loading" class="d-none">
-                                <span class="spinner-border spinner-border-sm me-2"></span>Memproses...
-                            </span>
-                        </button>
-                    </div>
+                    <button type="submit" id="btn-register"
+                            class="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary text-label-md py-4 px-6 rounded-[10px] flex items-center justify-center gap-2 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none mb-5">
+                        <span id="btn-register-text" class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[20px]">person_add</span>
+                            Daftar Sekarang
+                        </span>
+                        <span id="btn-register-loading" class="hidden items-center gap-2">
+                            <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            Memproses...
+                        </span>
+                    </button>
                 </form>
 
-                {{-- Link Login --}}
                 <div class="text-center">
-                    <span class="text-muted" style="font-size:0.875rem">Sudah punya akun?</span>
-                    <a href="{{ route('ppdb.login') }}" class="ms-1 fw-semibold text-success text-decoration-none">
-                        Login di sini <i class="bi bi-arrow-right"></i>
+                    <span class="text-body-sm text-on-surface-variant">Sudah punya akun?</span>
+                    <a href="{{ route('ppdb.login') }}"
+                       class="ml-1 text-body-sm font-semibold text-primary hover:text-primary-container transition-colors">
+                        Login di sini <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
                     </a>
                 </div>
             </div>
-        </div>
 
-        {{-- Info --}}
-        <div class="text-center mt-3">
-            <small class="text-muted">
-                <i class="bi bi-shield-check me-1 text-success"></i>
-                Data Anda aman dan terenkripsi
-            </small>
         </div>
-
     </div>
 </div>
 @endsection
 
-@push('styles')
-<style>
-    .portal-main { background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%); }
-    .form-control:focus, .input-group-text { border-color: #86efac; }
-    .form-control:focus { box-shadow: 0 0 0 3px rgba(22,163,74,0.15); }
-    .form-check-input:checked { background-color: #16a34a; border-color: #16a34a; }
-    .input-group .form-control.is-invalid { z-index: 0; }
-    .btn-success:hover { opacity: 0.92; transform: translateY(-1px); transition: all 0.2s; }
-</style>
-@endpush
-
 @push('scripts')
 <script>
-    // Toggle show/hide password
-    document.querySelectorAll('.toggle-password').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            const target  = document.querySelector(this.dataset.target);
-            const icon    = this.querySelector('i');
-            const isPass  = target.type === 'password';
-            target.type   = isPass ? 'text' : 'password';
-            icon.classList.toggle('bi-eye',      !isPass);
-            icon.classList.toggle('bi-eye-slash', isPass);
+(function () {
+    'use strict';
+    document.querySelectorAll('.toggle-pw').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const input = document.getElementById(this.dataset.target);
+            const icon  = this.querySelector('.material-symbols-outlined');
+            const isPass = input.type === 'password';
+            input.type        = isPass ? 'text' : 'password';
+            icon.textContent  = isPass ? 'visibility_off' : 'visibility';
         });
     });
-
-    // Loading state on submit
-    document.getElementById('form-register').addEventListener('submit', function() {
-        const btn     = document.getElementById('btn-register');
-        const text    = document.getElementById('btn-register-text');
-        const loading = document.getElementById('btn-register-loading');
-        btn.disabled  = true;
-        text.classList.add('d-none');
-        loading.classList.remove('d-none');
-    });
+    const form    = document.getElementById('form-register');
+    const btn     = document.getElementById('btn-register');
+    const btnText = document.getElementById('btn-register-text');
+    const btnLoad = document.getElementById('btn-register-loading');
+    if (form) {
+        form.addEventListener('submit', function () {
+            btn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoad.classList.remove('hidden');
+            btnLoad.classList.add('flex');
+        });
+    }
+})();
 </script>
 @endpush

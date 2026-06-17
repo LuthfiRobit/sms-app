@@ -40,8 +40,9 @@ class User extends Authenticatable
         'name',
         'username',
         'email',
+        'no_hp',
         'password',
-        'status', // Added status to fillable, assuming it's managed via the application
+        'status',
     ];
 
     /**

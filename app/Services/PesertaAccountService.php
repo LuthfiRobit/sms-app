@@ -23,7 +23,8 @@ class PesertaAccountService
         string $namaLengkap,
         string $email,
         string $password,
-        string $status = 'pending'
+        string $status = 'pending',
+        string $noHp = '',
     ): User {
         if (User::where('email', $email)->exists()) {
             throw new Exception('Email sudah terdaftar. Gunakan email lain atau login.');
@@ -32,7 +33,8 @@ class PesertaAccountService
         $user = User::create([
             'name'     => $namaLengkap,
             'email'    => $email,
-            'username' => $email, // Username = email untuk peserta
+            'username' => $email,
+            'no_hp'    => $noHp,
             'password' => Hash::make($password),
             'status'   => $status,
         ]);
@@ -87,7 +89,7 @@ class PesertaAccountService
      * Validasi email unik mengecualikan user yang sedang diupdate
      * via primary key id_user.
      */
-    public function updateBasicProfile(User $user, string $namaLengkap, string $email): User
+    public function updateBasicProfile(User $user, string $namaLengkap, string $email, ?string $noHp = null): User
     {
         if (
             $email !== $user->email &&
@@ -98,10 +100,12 @@ class PesertaAccountService
             throw new Exception('Email sudah digunakan akun lain.');
         }
 
-        $user->update([
-            'name'  => $namaLengkap,
-            'email' => $email,
-        ]);
+        $data = ['name' => $namaLengkap, 'email' => $email];
+        if ($noHp !== null) {
+            $data['no_hp'] = $noHp;
+        }
+
+        $user->update($data);
 
         return $user->fresh();
     }
