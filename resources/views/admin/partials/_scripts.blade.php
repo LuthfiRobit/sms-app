@@ -23,6 +23,33 @@
 <!-- Page Scripts -->
 @stack('scripts')
 
+<script>
+function switchLembaga(lembagaId) {
+    $.post('{{ route('admin.switch-lembaga') }}', {
+        _token: '{{ csrf_token() }}',
+        lembaga_id: lembagaId,
+    }, function (res) {
+        if (res.status) {
+            window.location.reload();
+        } else {
+            toastr.error(res.message ?? 'Gagal mengganti lembaga');
+        }
+    });
+}
+</script>
+
+<!-- Coming-soon badge: inject into placeholder menu items (href="#") -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.pc-navbar a.pc-link[href="#"]').forEach(function(link) {
+        var badge = document.createElement('span');
+        badge.style.cssText = 'font-size:0.6em;font-weight:600;color:#6c757d;background:#f1f3f4;border:1px solid #d1d5db;border-radius:20px;padding:1px 7px;position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;';
+        badge.textContent = 'Segera';
+        link.appendChild(badge);
+    });
+});
+</script>
+
 <!-- Layout Settings -->
 <script>layout_change('light');</script>
 <script>layout_caption_change('true');</script>

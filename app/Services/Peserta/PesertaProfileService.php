@@ -543,8 +543,11 @@ class PesertaProfileService
         }
 
         // ── Kontak (15%) ───────────────────────────────────────────────────
+        // Dianggap lengkap jika: (a) kontak siswa diisi, ATAU (b) no HP wali di akun sudah terisi.
+        // Kontak siswa (peserta_kontak) bersifat opsional — wali murid punya HP sendiri di tabel users.
         $kontak = $peserta->kontak;
-        if ($kontak && !empty($kontak->no_hp)) {
+        $adaKontak = (!empty($kontak?->no_hp)) || (!empty($peserta->user?->no_hp));
+        if ($adaKontak) {
             $persenTotal += 15;
         } else {
             $itemKurang[] = 'Nomor HP';
@@ -599,6 +602,8 @@ class PesertaProfileService
             ];
         }
 
+        $peserta->loadMissing(['alamat', 'kontak', 'orangTua', 'user']);
+
         $kekurangan = [];
 
         // Cek data pribadi minimum
@@ -617,9 +622,10 @@ class PesertaProfileService
             $kekurangan[] = 'Kabupaten/Kota pada data alamat belum diisi';
         }
 
-        // Cek kontak (no_hp)
-        if (!$peserta->kontak || empty($peserta->kontak->no_hp)) {
-            $kekurangan[] = 'Nomor HP belum diisi';
+        // Cek kontak: no_hp siswa ATAU no_hp wali murid di akun — keduanya diterima
+        $adaNoHp = !empty($peserta->kontak?->no_hp) || !empty($peserta->user?->no_hp);
+        if (!$adaNoHp) {
+            $kekurangan[] = 'Nomor HP belum diisi (isi di tab Akun atau tab Kontak)';
         }
 
         // Cek minimal 1 orang tua dengan nama terisi
@@ -672,6 +678,7 @@ class PesertaProfileService
             'periodik',
             'kontak',
             'dokumenPribadi',
+            'user',
         ]);
 
         return $peserta;

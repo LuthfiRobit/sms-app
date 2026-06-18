@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->call([
+            LembagaSeeder::class,
             RbacSeeder::class,
             TahunPelajaranSeeder::class,
             KurikulumSeeder::class,

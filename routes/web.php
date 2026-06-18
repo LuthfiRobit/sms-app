@@ -24,7 +24,7 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });
 
-Route::middleware(['auth', 'permission'])->group(function () {
+Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', function () {
             return view('admin.dashboard');
@@ -67,8 +67,17 @@ Route::middleware(['auth', 'permission'])->group(function () {
             Route::post('/mark-all-read', [\App\Http\Controllers\NotifikasiController::class, 'markAllRead'])->name('mark-all-read');
         });
 
+        // Switch Lembaga Aktif (super admin)
+        Route::post('switch-lembaga', \App\Http\Controllers\Master\SwitchLembagaController::class)->name('switch-lembaga');
+
         // Master Data
         Route::prefix('master')->name('master.')->group(function () {
+            // Lembaga (multi-tenant root)
+            Route::get('lembaga/list', [\App\Http\Controllers\Master\LembagaController::class, 'list'])->name('lembaga.list');
+            Route::post('lembaga/{id}/toggle-status', [\App\Http\Controllers\Master\LembagaController::class, 'toggleStatus'])->name('lembaga.toggle');
+            Route::post('lembaga/{id}/set-admin', [\App\Http\Controllers\Master\LembagaController::class, 'setAdmin'])->name('lembaga.set-admin');
+            Route::resource('lembaga', \App\Http\Controllers\Master\LembagaController::class)->except(['create', 'edit']);
+
             // Profil Sekolah
             Route::get('profil-sekolah', [\App\Http\Controllers\Master\ProfilSekolahController::class, 'index'])->name('profil-sekolah.index');
             Route::post('profil-sekolah', [\App\Http\Controllers\Master\ProfilSekolahController::class, 'store'])->name('profil-sekolah.store');

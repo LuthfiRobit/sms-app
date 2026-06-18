@@ -177,9 +177,39 @@
             @endif
         </div>
 
-        {{-- Jalur Grid --}}
+        {{-- Jalur dikelompokkan per Lembaga --}}
+        @php
+            $jalurGrouped = collect($jalurList)->groupBy(fn($item) =>
+                $item['lembaga']?->id ?? 0
+            );
+            $jenisColors = ['MI'=>'bg-green-100 text-green-800','MTs'=>'bg-blue-100 text-blue-800',
+                            'SMP'=>'bg-indigo-100 text-indigo-800','MA'=>'bg-purple-100 text-purple-800',
+                            'SMK'=>'bg-orange-100 text-orange-800'];
+        @endphp
+        @foreach($jalurGrouped as $lembagaId => $lembagaItems)
+        @php $lembagaData = $lembagaItems->first()['lembaga']; @endphp
+
+        {{-- Lembaga Section Header --}}
+        @if($lembagaData)
+        <div class="flex items-center gap-4 mt-2">
+            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-primary text-[22px]" style="font-variation-settings:'FILL' 1">school</span>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="text-headline-sm font-bold text-on-surface">{{ $lembagaData->nama }}</h3>
+                    <span class="text-label-sm font-semibold px-2 py-0.5 rounded-full {{ $jenisColors[$lembagaData->jenis] ?? 'bg-surface-container text-on-surface-variant' }}">
+                        {{ $lembagaData->jenis }}
+                    </span>
+                    <span class="text-label-sm text-on-surface-variant">{{ $lembagaItems->count() }} jalur tersedia</span>
+                </div>
+            </div>
+            <div class="h-px flex-1 bg-outline-variant hidden sm:block"></div>
+        </div>
+        @endif
+
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            @foreach($jalurList as $idx => $item)
+            @foreach($lembagaItems as $idx => $item)
             @php
                 $jalurItem    = $item['jalur'];
                 $pembukaan    = $item['pembukaan'];
@@ -446,6 +476,7 @@
             </article>
             @endforeach
         </div>
+        @endforeach
 
     @endif
 

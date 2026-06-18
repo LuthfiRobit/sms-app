@@ -14,6 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             // Admin panel — route-based permission check
             'permission'    => \App\Http\Middleware\CheckPermission::class,
+            // Multi-tenant lembaga scope
+            'lembaga.scope' => \App\Http\Middleware\LembagaScope::class,
             // Portal peserta PPDB — role & status check
             'peserta.auth'  => \App\Http\Middleware\PesertaAuth::class,
             'peserta.aktif' => \App\Http\Middleware\PesertaAktif::class,

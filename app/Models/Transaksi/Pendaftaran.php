@@ -2,6 +2,7 @@
 
 namespace App\Models\Transaksi;
 
+use App\Models\Master\Lembaga;
 use App\Models\Master\TahunPelajaran;
 use App\Models\Peserta\Peserta;
 use App\Models\Ppdb\JalurPendaftaran;
@@ -29,6 +30,7 @@ class Pendaftaran extends Model
 
     protected $fillable = [
         'no_pendaftaran',
+        'lembaga_id',
         'peserta_id',
         'jalur_pendaftaran_id',
         'tahun_pelajaran_id',
@@ -43,6 +45,11 @@ class Pendaftaran extends Model
         'tanggal_daftar' => 'datetime',
         'verified_at' => 'datetime',
     ];
+
+    public function lembaga(): BelongsTo
+    {
+        return $this->belongsTo(Lembaga::class, 'lembaga_id');
+    }
 
     public function peserta(): BelongsTo
     {

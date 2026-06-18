@@ -237,6 +237,16 @@
                 {{-- Card Body --}}
                 <div class="px-5 py-4 flex-1 flex flex-col gap-3">
 
+                    {{-- Lembaga --}}
+                    @php $lembagaDaftar = $daftar->lembaga ?? $daftar->jalurPendaftaran?->pembukaan?->lembaga; @endphp
+                    @if($lembagaDaftar)
+                    <div class="flex items-center gap-2 -mt-1 mb-1">
+                        <span class="material-symbols-outlined text-[15px] text-on-surface-variant">apartment</span>
+                        <span class="text-body-sm text-on-surface-variant font-medium">{{ $lembagaDaftar->nama }}</span>
+                        <span class="text-label-sm px-1.5 py-0.5 rounded-full bg-secondary-container/50 text-on-secondary-container">{{ $lembagaDaftar->jenis }}</span>
+                    </div>
+                    @endif
+
                     {{-- Jalur & Gelombang --}}
                     <div class="flex items-start gap-3">
                         <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">

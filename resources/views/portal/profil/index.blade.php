@@ -58,7 +58,7 @@
         'alamat'  => !empty($alamat?->alamat) && !empty($alamat?->kabupaten_kota),
         'ortu'    => !empty($ortu['ayah']?->nama) || !empty($ortu['ibu']?->nama),
         'periodik'=> !empty($periodik?->tinggi_badan) && !empty($periodik?->berat_badan),
-        'kontak'  => !empty($kontak?->no_hp),
+        'kontak'  => !empty($kontak?->no_hp) || !empty($user->no_hp),
         'dokumen' => !empty($dokumen?->no_kip) || !empty($dokumen?->no_pkh),
     ];
 

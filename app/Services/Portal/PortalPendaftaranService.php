@@ -114,6 +114,7 @@ class PortalPendaftaranService
             // Q2+Q3+Q4+Q5: Ambil semua pembukaan aktif beserta jalur dan eager loads
             $pembukaanAktif = PembukaanPpdb::aktif()
                 ->with([
+                    'lembaga',
                     'jalurPendaftaran' => function ($q) {
                         $q->where('status', 'aktif')
                           ->with([
@@ -185,6 +186,7 @@ class PortalPendaftaranService
                     $result[] = [
                         'jalur'           => $jalur,
                         'pembukaan'       => $pembukaan,
+                        'lembaga'         => $pembukaan->lembaga,
                         'tahun_pelajaran' => $pembukaan->tahunPelajaran,
                         'jadwal'          => $jalur->jadwalPendaftaran,
                         'jadwal_aktif'    => $jadwalAktif,
@@ -377,7 +379,8 @@ class PortalPendaftaranService
                 ->datatable()
                 ->where('peserta_id', $peserta->id)
                 ->with([
-                    'jalurPendaftaran',
+                    'lembaga',
+                    'jalurPendaftaran.pembukaanPpdb.lembaga',
                     'tahunPelajaran',
                 ])
                 ->latest('created_at')

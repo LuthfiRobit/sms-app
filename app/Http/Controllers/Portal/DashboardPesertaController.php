@@ -82,7 +82,7 @@ class DashboardPesertaController extends Controller
         }
 
         // Load semua relasi sekaligus untuk performa
-        $peserta->loadMissing(['alamat', 'orangTua', 'periodik', 'kontak', 'dokumenPribadi']);
+        $peserta->loadMissing(['alamat', 'orangTua', 'periodik', 'kontak', 'dokumenPribadi', 'user']);
 
         $aspek = [
             // Data pribadi: kolom wajib minimal harus terisi
@@ -104,7 +104,8 @@ class DashboardPesertaController extends Controller
             'periodik'  => filled($peserta->periodik?->tinggi_badan)
                         && filled($peserta->periodik?->berat_badan),
 
-            'kontak'    => filled($peserta->kontak?->no_hp),
+            // Opsional: HP siswa sendiri ATAU fallback ke HP wali murid di akun
+            'kontak'    => filled($peserta->kontak?->no_hp) || filled($peserta->user?->no_hp),
 
             'dokumen'   => filled($peserta->dokumenPribadi),
         ];

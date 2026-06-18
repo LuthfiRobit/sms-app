@@ -57,16 +57,19 @@ class PpdbDemoTestDataSeeder extends Seeder
         }
 
         // --- 2. Pastikan Pembukaan PPDB Ada ---
+        // Demo PPDB diasosiasikan ke SMK Ma'arif Gending
+        $smkLembagaId = DB::table('lembaga')->where('kode', 'SMK-GDG')->value('id');
         $pembukaanId = DB::table('pembukaan_ppdb')->where('tahun_pelajaran_id', $tahunId)->value('id');
         if (!$pembukaanId) {
             $pembukaanId = DB::table('pembukaan_ppdb')->insertGetId([
+                'lembaga_id'         => $smkLembagaId,
                 'tahun_pelajaran_id' => $tahunId,
-                'nama' => 'Gelombang Utama 2026',
-                'mulai' => now()->startOfMonth()->toDateString(),
-                'selesai' => now()->addMonths(3)->toDateString(),
-                'status' => 'buka',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'nama'               => 'Gelombang Utama 2026',
+                'mulai'              => now()->startOfMonth()->toDateString(),
+                'selesai'            => now()->addMonths(3)->toDateString(),
+                'status'             => 'buka',
+                'created_at'         => now(),
+                'updated_at'         => now(),
             ]);
         }
 

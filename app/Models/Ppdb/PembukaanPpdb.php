@@ -2,6 +2,7 @@
 
 namespace App\Models\Ppdb;
 
+use App\Models\Master\Lembaga;
 use App\Models\Master\TahunPelajaran;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,6 +18,7 @@ class PembukaanPpdb extends Model
     protected $table = 'pembukaan_ppdb';
 
     protected $fillable = [
+        'lembaga_id',
         'tahun_pelajaran_id',
         'nama',
         'deskripsi',
@@ -29,6 +31,11 @@ class PembukaanPpdb extends Model
         'mulai' => 'date',
         'selesai' => 'date',
     ];
+
+    public function lembaga(): BelongsTo
+    {
+        return $this->belongsTo(Lembaga::class, 'lembaga_id');
+    }
 
     public function tahunPelajaran(): BelongsTo
     {

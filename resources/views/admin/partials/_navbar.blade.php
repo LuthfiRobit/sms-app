@@ -18,6 +18,42 @@
         </div>
         <div class="ms-auto">
             <ul class="list-unstyled">
+                <!-- Lembaga Selector -->
+                <li class="pc-h-item dropdown me-2">
+                    @php
+                        $allLembaga = \App\Models\Master\Lembaga::orderBy('urutan')->orderBy('nama')->get();
+                    @endphp
+                    @if($isSuperAdmin ?? false)
+                        <a class="pc-head-link head-link-secondary dropdown-toggle arrow-none"
+                           data-bs-toggle="dropdown" href="#" role="button">
+                            <i class="bi bi-building me-1"></i>
+                            <span class="d-none d-md-inline">
+                                {{ $activeLembaga?->nama ?? 'Semua Lembaga' }}
+                            </span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <h6 class="dropdown-header">Pilih Lembaga Aktif</h6>
+                            <a class="dropdown-item {{ !($activeLembaga ?? null) ? 'active' : '' }}"
+                               href="#" onclick="switchLembaga(null)">
+                                <i class="bi bi-grid me-2"></i> Semua Lembaga
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            @foreach($allLembaga as $lem)
+                                <a class="dropdown-item {{ ($activeLembaga?->id ?? null) == $lem->id ? 'active' : '' }}"
+                                   href="#" onclick="switchLembaga({{ $lem->id }})">
+                                    <span class="badge bg-light-primary me-1">{{ $lem->jenis }}</span>
+                                    {{ $lem->nama }}
+                                </a>
+                            @endforeach
+                        </div>
+                    @elseif($activeLembaga ?? false)
+                        <span class="pc-head-link head-link-secondary">
+                            <i class="bi bi-building me-1"></i>
+                            <span class="d-none d-md-inline">{{ $activeLembaga->nama }}</span>
+                        </span>
+                    @endif
+                </li>
+
                 <!-- Notification Dropdown -->
                 <li class="dropdown pc-h-item">
                     <a class="pc-head-link head-link-secondary dropdown-toggle arrow-none me-0"

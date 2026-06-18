@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Master\Lembaga;
 use App\Traits\HasRolesAndPermissions;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -60,6 +62,21 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+    public function lembaga(): BelongsToMany
+    {
+        return $this->belongsToMany(Lembaga::class, 'user_lembaga', 'user_id', 'lembaga_id', 'id_user', 'id');
+    }
+
+    public function getLembagaIds(): array
+    {
+        return $this->lembaga()->pluck('lembaga.id')->toArray();
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->lembaga()->count() === 0;
+    }
+
     protected function casts(): array
     {
         return [

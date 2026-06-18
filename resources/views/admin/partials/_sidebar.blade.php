@@ -46,6 +46,13 @@
                             class="pc-mtext">Identitas & Wilayah</span><span class="pc-arrow"><i
                                 class="bi bi-chevron-right"></i></span></a>
                     <ul class="pc-submenu">
+                        @if(auth()->user()->hasPermissionTo('admin.master.lembaga.index'))
+                            <li class="pc-item {{ request()->routeIs('admin.master.lembaga.*') ? 'active' : '' }}">
+                                <a class="pc-link" href="{{ route('admin.master.lembaga.index') }}">
+                                    <i class="bi bi-buildings me-1"></i> Data Lembaga
+                                </a>
+                            </li>
+                        @endif
                         @if(auth()->user()->hasPermissionTo('admin.master.profil-sekolah.index'))
                             <li class="pc-item {{ request()->routeIs('admin.master.profil-sekolah.*') ? 'active' : '' }}">
                                 <a class="pc-link" href="{{ route('admin.master.profil-sekolah.index') }}">Profil
