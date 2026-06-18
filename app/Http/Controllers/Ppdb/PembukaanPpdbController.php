@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Ppdb;
 
 use App\Http\Controllers\Controller;
+use App\Models\Master\Lembaga;
 use App\Models\Master\TahunPelajaran;
 use App\Services\LogActivityService;
 use App\Services\Ppdb\PembukaanPpdbService;
@@ -33,15 +34,21 @@ class PembukaanPpdbController extends Controller
     {
         $this->logActivity->log('View Pembukaan PPDB', 'Membuka halaman Pembukaan PPDB');
         $tahunPelajaran = TahunPelajaran::orderBy('nama', 'desc')->get();
-        return view('admin.ppdb.pembukaan-ppdb.index', compact('tahunPelajaran'));
+        $lembaga        = Lembaga::orderBy('urutan')->orderBy('nama')->get();
+        return view('admin.ppdb.pembukaan-ppdb.index', compact('tahunPelajaran', 'lembaga'));
     }
 
     public function list(Request $request)
     {
-        $result = $this->pembukaanService->index();
+        $lembagaId = app('active_lembaga_id');
+        $filters   = $lembagaId ? ['lembaga_id' => $lembagaId] : [];
+        $result    = $this->pembukaanService->index($filters);
 
-        return DataTables::of($result['data'])
+        return DataTables::of($result['data']->with('lembaga'))
             ->addIndexColumn()
+            ->addColumn('lembaga', function ($row) {
+                return $row->lembaga ? $row->lembaga->nama : '<span class="text-muted">—</span>';
+            })
             ->addColumn('tahun_pelajaran', function ($row) {
                 return $row->tahunPelajaran ? $row->tahunPelajaran->nama : '-';
             })
@@ -77,6 +84,16 @@ class PembukaanPpdbController extends Controller
                     $btn .= '<button type="button" class="btn btn-sm btn-primary btn-edit" data-id="' . $row->id . '" title="Edit"><i class="bi bi-pencil"></i></button>';
                 }
 
+                if (auth()->user()->hasPermissionTo('admin.ppdb.pembukaan.store')) {
+                    $btn .= '<button type="button" class="btn btn-sm btn-secondary btn-duplikasi"'
+                        . ' data-id="' . $row->id . '"'
+                        . ' data-nama="' . e($row->nama) . '"'
+                        . ' data-mulai="' . $row->mulai . '"'
+                        . ' data-selesai="' . $row->selesai . '"'
+                        . ' data-ta="' . $row->tahun_pelajaran_id . '"'
+                        . ' title="Duplikasi ke lembaga lain"><i class="bi bi-copy"></i></button>';
+                }
+
                 if (auth()->user()->hasPermissionTo('admin.ppdb.pembukaan.destroy')) {
                     $btn .= '<button type="button" class="btn btn-sm btn-danger btn-delete" data-id="' . $row->id . '" title="Hapus"><i class="bi bi-trash"></i></button>';
                 }
@@ -84,19 +101,20 @@ class PembukaanPpdbController extends Controller
                 $btn .= '</div>';
                 return $btn;
             })
-            ->rawColumns(['status', 'action'])
+            ->rawColumns(['lembaga', 'status', 'action'])
             ->make(true);
     }
 
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'nama' => 'required|string|max:255',
+            'lembaga_id'         => 'required|exists:lembaga,id',
+            'nama'               => 'required|string|max:255',
             'tahun_pelajaran_id' => 'required|exists:tahun_pelajaran,id',
-            'mulai' => 'required|date',
-            'selesai' => 'required|date|after_or_equal:mulai',
-            'deskripsi' => 'nullable|string',
-            'status' => 'nullable|in:buka,tutup,draft',
+            'mulai'              => 'required|date',
+            'selesai'            => 'required|date|after_or_equal:mulai',
+            'deskripsi'          => 'nullable|string',
+            'status'             => 'nullable|in:buka,tutup,draft',
         ]);
 
         $userId = auth()->id() ?? 0;
@@ -171,6 +189,27 @@ class PembukaanPpdbController extends Controller
     {
         $userId = auth()->id() ?? 0;
         $result = $this->pembukaanService->toggleStatus($id, $userId);
+
+        if ($result['success']) {
+            return $this->responseService->success($result['data'], $result['message']);
+        }
+
+        return $this->responseService->error($result['message']);
+    }
+
+    public function duplikasi(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'lembaga_id'         => 'required|exists:lembaga,id',
+            'tahun_pelajaran_id' => 'required|exists:tahun_pelajaran,id',
+            'nama'               => 'required|string|max:255',
+            'mulai'              => 'required|date',
+            'selesai'            => 'required|date|after_or_equal:mulai',
+            'status'             => 'nullable|in:buka,tutup,draft',
+        ]);
+
+        $userId = auth()->id() ?? 0;
+        $result = $this->pembukaanService->duplikasi((int) $id, $validatedData, $userId);
 
         if ($result['success']) {
             return $this->responseService->success($result['data'], $result['message']);

@@ -37,7 +37,9 @@ class FormulirPendaftaranController extends Controller
     {
         $this->logActivity->log('View Formulir Pendaftaran', 'Membuka halaman Formulir Pendaftaran PPDB');
 
+        $activeLembagaId  = app('active_lembaga_id');
         $jalurPendaftaran = JalurPendaftaran::with('pembukaanPpdb')
+            ->when($activeLembagaId, fn ($q) => $q->whereHas('pembukaanPpdb', fn ($q2) => $q2->where('lembaga_id', $activeLembagaId)))
             ->orderBy('id', 'desc')
             ->get();
 

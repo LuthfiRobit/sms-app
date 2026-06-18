@@ -141,6 +141,11 @@ class PendaftaranService
                 $query->where('tahun_pelajaran_id', $filters['tahun_id']);
             }
 
+            // Filter: lembaga_id
+            if (!empty($filters['lembaga_id'])) {
+                $query->where('pendaftaran.lembaga_id', $filters['lembaga_id']);
+            }
+
             // Filter: nama_peserta — join ke tabel peserta (hati-hati ambiguitas kolom)
             if (!empty($filters['nama_peserta'])) {
                 $query->whereHas('peserta', function ($q) use ($filters) {

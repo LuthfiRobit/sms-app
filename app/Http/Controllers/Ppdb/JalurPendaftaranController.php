@@ -31,7 +31,9 @@ class JalurPendaftaranController extends Controller
     public function index()
     {
         $this->logActivity->log('View Jalur Pendaftaran', 'Membuka halaman Jalur Pendaftaran PPDB');
-        $pembukaanPpdb = PembukaanPpdb::orderBy('mulai', 'desc')->get();
+        $activeLembagaId = app('active_lembaga_id');
+        $pembukaanPpdb   = PembukaanPpdb::when($activeLembagaId, fn ($q) => $q->where('lembaga_id', $activeLembagaId))
+            ->orderBy('mulai', 'desc')->get();
         return view('admin.ppdb.jalur-pendaftaran.index', compact('pembukaanPpdb'));
     }
 

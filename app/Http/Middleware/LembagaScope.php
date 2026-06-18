@@ -37,7 +37,9 @@ class LembagaScope
         }
 
         // Bind ke container agar bisa di-inject via app('active_lembaga_id')
-        app()->instance('active_lembaga_id', $activeLembagaId);
+        app()->bind('active_lembaga_id', function () use ($activeLembagaId) {
+            return $activeLembagaId;
+        });
 
         // Share ke semua views
         if ($activeLembagaId) {

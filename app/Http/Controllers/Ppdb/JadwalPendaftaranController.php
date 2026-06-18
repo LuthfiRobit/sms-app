@@ -30,7 +30,10 @@ class JadwalPendaftaranController extends Controller
     public function index()
     {
         $this->logActivity->log('View Jadwal Pendaftaran', 'Membuka halaman Jadwal Pendaftaran PPDB');
-        $jalurPendaftaran = JalurPendaftaran::with('pembukaanPpdb')->get();
+        $activeLembagaId  = app('active_lembaga_id');
+        $jalurPendaftaran = JalurPendaftaran::with('pembukaanPpdb')
+            ->when($activeLembagaId, fn ($q) => $q->whereHas('pembukaanPpdb', fn ($q2) => $q2->where('lembaga_id', $activeLembagaId)))
+            ->get();
         return view('admin.ppdb.jadwal.index', compact('jalurPendaftaran'));
     }
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\Transaksi\PendaftaranService;
 use App\Services\LogActivityService;
+use App\Models\Ppdb\JalurPendaftaran;
 use App\Repositories\Ppdb\JalurPendaftaranRepositoryInterface;
 use App\Repositories\Master\TahunPelajaranRepositoryInterface;
 use App\Repositories\Transaksi\DokumenPesertaRepositoryInterface;
@@ -25,7 +26,8 @@ class PendaftaranController extends Controller
 
     public function index()
     {
-        $jalur = $this->jalurRepo->all();
+        $activeLembagaId = app('active_lembaga_id');
+        $jalur           = JalurPendaftaran::when($activeLembagaId, fn ($q) => $q->whereHas('pembukaanPpdb', fn ($q2) => $q2->where('lembaga_id', $activeLembagaId)))->get();
         $tahunPelajaran = $this->tahunRepo->getAll();
 
         return view('admin.pendaftaran.index', compact('jalur', 'tahunPelajaran'));
@@ -38,6 +40,7 @@ class PendaftaranController extends Controller
             'jalur_id' => $request->jalur_id,
             'tahun_id' => $request->tahun_id,
             'nama_peserta' => $request->nama_peserta,
+            'lembaga_id' => app('active_lembaga_id'),
         ];
 
         $result = $this->pendaftaranService->index(array_filter($filters));

@@ -102,6 +102,7 @@ Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
         Route::prefix('ppdb')->name('ppdb.')->group(function () {
             Route::get('pembukaan/list', [App\Http\Controllers\Ppdb\PembukaanPpdbController::class, 'list'])->name('pembukaan.list');
             Route::post('pembukaan/{id}/toggle-status', [App\Http\Controllers\Ppdb\PembukaanPpdbController::class, 'toggleStatus'])->name('pembukaan.toggle');
+            Route::post('pembukaan/{id}/duplikasi', [App\Http\Controllers\Ppdb\PembukaanPpdbController::class, 'duplikasi'])->name('pembukaan.duplikasi');
             Route::resource('pembukaan', App\Http\Controllers\Ppdb\PembukaanPpdbController::class)->except(['create', 'edit']);
 
             Route::get('jalur/list', [App\Http\Controllers\Ppdb\JalurPendaftaranController::class, 'list'])->name('jalur.list');

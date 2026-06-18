@@ -110,6 +110,11 @@ class AppServiceProvider extends ServiceProvider
 
         // Cluster Master
         $this->app->bind(JurusanRepositoryInterface::class, JurusanRepository::class);
+
+        // Default binding untuk active_lembaga_id agar tidak throw BindingResolutionException
+        $this->app->bind('active_lembaga_id', function () {
+            return session('active_lembaga_id');
+        });
     }
 
     /**

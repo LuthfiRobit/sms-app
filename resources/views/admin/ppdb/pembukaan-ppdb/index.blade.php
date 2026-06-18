@@ -32,6 +32,7 @@
                                 <th width="5%">No</th>
                                 <th width="15%">Aksi</th>
                                 <th>Nama</th>
+                                <th>Lembaga</th>
                                 <th>Tahun Pelajaran</th>
                                 <th>Periode</th>
                                 <th width="10%">Status</th>
@@ -55,6 +56,15 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Lembaga <span class="text-danger">*</span></label>
+                        <select class="form-control selectpicker" name="lembaga_id" data-live-search="true" required>
+                            <option value="">Pilih Lembaga</option>
+                            @foreach($lembaga as $lb)
+                                <option value="{{ $lb->id }}">{{ $lb->nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Nama <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" name="nama" placeholder="Contoh: Gelombang 1" required>
@@ -85,7 +95,7 @@
                             <option value="tutup" selected>Tutup</option>
                             <option value="buka">Buka</option>
                         </select>
-                        <small class="text-muted text-warning d-block mt-1">Hanya boleh ada 1 pembukaan berstatus "Buka" per tahun pelajaran.</small>
+                        <small class="text-muted text-warning d-block mt-1">Hanya boleh ada 1 pembukaan berstatus "Buka" per lembaga per tahun pelajaran.</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Deskripsi</label>
@@ -113,6 +123,12 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Lembaga</label>
+                        <input type="text" class="form-control" id="edit-lembaga-display" readonly disabled
+                               style="background:#f8f9fa;cursor:default">
+                        <small class="text-muted">Lembaga tidak dapat diubah setelah pembukaan dibuat.</small>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Nama <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" name="nama" id="edit-nama" required>
@@ -162,7 +178,11 @@
             <div class="modal-body p-0">
                 <table class="table table-striped mb-0">
                     <tr>
-                        <th width="40%" class="ps-3">Nama</th>
+                        <th width="40%" class="ps-3">Lembaga</th>
+                        <td id="show-lembaga"></td>
+                    </tr>
+                    <tr>
+                        <th class="ps-3">Nama</th>
                         <td id="show-nama"></td>
                     </tr>
                     <tr>
@@ -189,6 +209,82 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Duplikasi -->
+<div class="modal fade" id="modal-duplikasi" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="form-duplikasi" method="POST">
+                @csrf
+                <div class="modal-header bg-secondary text-white">
+                    <h5 class="modal-title text-white"><i class="bi bi-copy me-1"></i> Duplikasi Pembukaan PPDB</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+
+                    {{-- Info sumber --}}
+                    <div class="alert alert-info d-flex align-items-start gap-2 py-2 mb-4">
+                        <i class="bi bi-info-circle-fill mt-1 flex-shrink-0"></i>
+                        <div>
+                            <strong>Sumber:</strong> <span id="duplikasi-sumber-nama">—</span><br>
+                            <small class="text-muted">Semua jalur, jadwal, syarat, formulir, dan biaya akan disalin.
+                            <strong>Kuota jurusan tidak ikut disalin</strong> (perlu diisi manual setelah duplikasi).</small>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Lembaga Tujuan <span class="text-danger">*</span></label>
+                            <select class="form-control selectpicker" name="lembaga_id" id="duplikasi-lembaga_id" data-live-search="true" required>
+                                <option value="">Pilih Lembaga Tujuan</option>
+                                @foreach($lembaga as $lb)
+                                    <option value="{{ $lb->id }}">{{ $lb->nama }} ({{ $lb->jenis }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Tahun Pelajaran <span class="text-danger">*</span></label>
+                            <select class="form-control selectpicker" name="tahun_pelajaran_id" id="duplikasi-tahun_pelajaran_id" data-live-search="true" required>
+                                <option value="">Pilih Tahun Pelajaran</option>
+                                @foreach($tahunPelajaran as $tp)
+                                    <option value="{{ $tp->id }}">{{ $tp->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Nama Pembukaan Baru <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="nama" id="duplikasi-nama" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Tanggal Mulai <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="mulai" id="duplikasi-mulai" required>
+                            <small class="text-muted">Jadwal akan digeser otomatis mengikuti selisih tanggal ini.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Tanggal Selesai <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="selesai" id="duplikasi-selesai" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Status Awal</label>
+                            <select class="form-control selectpicker" name="status" id="duplikasi-status">
+                                <option value="tutup" selected>Tutup (aman, aktifkan manual)</option>
+                                <option value="draft">Draft</option>
+                                <option value="buka">Buka Langsung</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="bi bi-copy me-1"></i> Duplikasi Sekarang
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -204,6 +300,7 @@
                 { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
                 { data: 'action', name: 'action', orderable: false, searchable: false },
                 { data: 'nama', name: 'nama' },
+                { data: 'lembaga', name: 'lembaga', orderable: false, searchable: false },
                 { data: 'tahun_pelajaran', name: 'tahun_pelajaran', orderable: false, searchable: false },
                 { data: 'periode', name: 'periode', orderable: false, searchable: false },
                 { data: 'status', name: 'status', orderable: false, searchable: false }
@@ -222,10 +319,14 @@
             deleteUrl: "{{ route('admin.ppdb.pembukaan.index') }}/{id}",
             onEditSuccess: function(data) {
                 ResponseHandler.handleResponse({ status: 200, data: data }, '#form-edit');
+
+                // Tampilkan nama lembaga (read-only, tidak bisa diubah)
+                $('#edit-lembaga-display').val(data.lembaga ? data.lembaga.nama : '-');
+
                 if ($.fn.selectpicker) {
                     $('#edit-tahun_pelajaran_id').selectpicker('refresh');
                 }
-                
+
                 // Format dates for input type date
                 if(data.mulai) {
                     let dMulai = new Date(data.mulai);
@@ -245,6 +346,7 @@
             AjaxHandler.sendGetRequest(url, function(response) {
                 if(response.status === 200) {
                     let d = response.data;
+                    $('#show-lembaga').text(d.lembaga ? d.lembaga.nama : '-');
                     $('#show-nama').text(d.nama);
                     $('#show-tahun_pelajaran').text(d.tahun_pelajaran ? d.tahun_pelajaran.nama : '-');
                     
@@ -287,6 +389,71 @@
                 }
             });
         });
+
+        // ── Duplikasi Handler ────────────────────────────────────────────────
+        $('#pembukaan-table').on('click', '.btn-duplikasi', function () {
+            const id      = $(this).data('id');
+            const nama    = $(this).data('nama');
+            const mulai   = $(this).data('mulai');
+            const selesai = $(this).data('selesai');
+            const ta      = $(this).data('ta');
+            const url     = "{{ route('admin.ppdb.pembukaan.index') }}/" + id + "/duplikasi";
+
+            // Isi form dengan data sumber
+            $('#duplikasi-sumber-nama').text(nama);
+            $('#duplikasi-nama').val(nama + ' (Duplikasi)');
+            $('#duplikasi-mulai').val(mulai ? mulai.substring(0, 10) : '');
+            $('#duplikasi-selesai').val(selesai ? selesai.substring(0, 10) : '');
+
+            // Set tahun pelajaran default sama dengan sumber
+            $('#duplikasi-tahun_pelajaran_id').val(ta);
+            if ($.fn.selectpicker) {
+                $('#duplikasi-lembaga_id').selectpicker('refresh');
+                $('#duplikasi-tahun_pelajaran_id').selectpicker('val', ta).selectpicker('refresh');
+                $('#duplikasi-status').selectpicker('refresh');
+            }
+
+            // Kosongkan lembaga tujuan (wajib dipilih manual)
+            $('#duplikasi-lembaga_id').val('');
+            if ($.fn.selectpicker) $('#duplikasi-lembaga_id').selectpicker('val', '').selectpicker('refresh');
+
+            // Set action form
+            $('#form-duplikasi').attr('action', url);
+
+            $('#modal-duplikasi').modal('show');
+        });
+
+        // Submit duplikasi via AJAX
+        $('#form-duplikasi').on('submit', function (e) {
+            e.preventDefault();
+            const url  = $(this).attr('action');
+            const data = $(this).serialize();
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: data,
+                success: function (response) {
+                    if (response.status === 200) {
+                        $('#modal-duplikasi').modal('hide');
+                        table.ajax.reload(null, false);
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        });
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Gagal', text: response.message });
+                    }
+                },
+                error: function (xhr) {
+                    const msg = xhr.responseJSON?.message ?? 'Terjadi kesalahan.';
+                    Swal.fire({ icon: 'error', title: 'Error', text: msg });
+                }
+            });
+        });
+
     });
 </script>
 @endpush

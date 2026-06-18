@@ -21,6 +21,18 @@ return Application::configure(basePath: dirname(__DIR__))
             'peserta.aktif' => \App\Http\Middleware\PesertaAktif::class,
         ]);
 
+        // Redirect already authenticated users (replaces the old 'guest' middleware logic)
+        $middleware->redirectUsersTo(function (\Illuminate\Http\Request $request) {
+            $user = auth()->user();
+            if ($user) {
+                if (app(\App\Services\PesertaAccountService::class)->isPeserta($user)) {
+                    return route('ppdb.dashboard');
+                }
+                return route('admin.dashboard');
+            }
+            return '/';
+        });
+
         // Exclude webhook routes from CSRF verification
         // Midtrans sends POST callbacks without CSRF token
         $middleware->validateCsrfTokens(except: [

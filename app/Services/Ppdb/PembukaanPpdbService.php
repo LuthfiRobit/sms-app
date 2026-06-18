@@ -2,9 +2,16 @@
 
 namespace App\Services\Ppdb;
 
+use App\Models\Ppdb\BiayaRegistrasi;
+use App\Models\Ppdb\FormulirField;
+use App\Models\Ppdb\FormulirPendaftaran;
+use App\Models\Ppdb\JadwalPendaftaran;
+use App\Models\Ppdb\JalurPendaftaran;
+use App\Models\Ppdb\SyaratPendaftaran;
 use App\Repositories\Ppdb\PembukaanPpdbRepositoryInterface;
 use App\Services\LogActivityService;
 use App\Services\ResponseService;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -81,6 +88,7 @@ class PembukaanPpdbService
             // Jika ternyata request ingin langsung buka, periksa dulu
             if ($data['status'] === 'buka') {
                 $konflik = $this->pembukaanRepo->all([
+                    'lembaga_id'         => $data['lembaga_id'],
                     'tahun_pelajaran_id' => $data['tahun_pelajaran_id'],
                     'status'             => 'buka',
                 ]);
@@ -89,7 +97,7 @@ class PembukaanPpdbService
                     DB::rollBack();
                     return [
                         'success' => false,
-                        'message' => 'Sudah ada pembukaan PPDB yang berstatus "buka" pada tahun pelajaran yang sama. Tutup pembukaan tersebut terlebih dahulu.',
+                        'message' => 'Lembaga ini sudah memiliki pembukaan PPDB yang berstatus "buka" pada tahun pelajaran yang sama. Tutup pembukaan tersebut terlebih dahulu.',
                         'data'    => null,
                     ];
                 }
@@ -135,6 +143,7 @@ class PembukaanPpdbService
     {
         try {
             $pembukaan = $this->pembukaanRepo->findById($id, [
+                'lembaga',
                 'tahunPelajaran',
                 'jalurPendaftaran',
                 'jalurPendaftaran.jadwalPendaftaran',
@@ -197,6 +206,7 @@ class PembukaanPpdbService
             // Validasi bisnis: jika mengubah status jadi "buka" lewat update
             if (isset($data['status']) && $data['status'] === 'buka' && $pembukaan->status !== 'buka') {
                 $konflik = $this->pembukaanRepo->all([
+                    'lembaga_id'         => $pembukaan->lembaga_id,
                     'tahun_pelajaran_id' => $pembukaan->tahun_pelajaran_id,
                     'status'             => 'buka',
                 ]);
@@ -345,15 +355,13 @@ class PembukaanPpdbService
             $statusLama = $pembukaan->status;
             $statusBaru = $statusLama === 'buka' ? 'tutup' : 'buka';
 
-            // Validasi one-active-at-a-time hanya saat HENDAK membuka
+            // Validasi one-active-at-a-time per lembaga hanya saat HENDAK membuka
             if ($statusBaru === 'buka') {
                 $konflik = $this->pembukaanRepo->all([
+                    'lembaga_id'         => $pembukaan->lembaga_id,
                     'tahun_pelajaran_id' => $pembukaan->tahun_pelajaran_id,
                     'status'             => 'buka',
-                ]);
-
-                // Filter: pastikan konflik bukan record dirinya sendiri
-                $konflik = $konflik->where('id', '!=', $id);
+                ])->where('id', '!=', $id);
 
                 if ($konflik->isNotEmpty()) {
                     $konflikNama = $konflik->first()->nama;
@@ -361,7 +369,7 @@ class PembukaanPpdbService
 
                     return [
                         'success' => false,
-                        'message' => "Tidak dapat membuka PPDB \"{$pembukaan->nama}\" karena \"{$konflikNama}\" sedang berstatus buka pada tahun pelajaran yang sama. Tutup pembukaan tersebut terlebih dahulu.",
+                        'message' => "Tidak dapat membuka PPDB \"{$pembukaan->nama}\" karena \"{$konflikNama}\" sedang berstatus buka pada lembaga yang sama. Tutup pembukaan tersebut terlebih dahulu.",
                         'data'    => null,
                     ];
                 }
@@ -381,7 +389,7 @@ class PembukaanPpdbService
             return [
                 'success' => true,
                 'message' => "Status Pembukaan PPDB \"{$pembukaan->nama}\" berhasil diubah menjadi \"{$statusBaru}\".",
-                'data'    => $this->pembukaanRepo->findById($id, ['tahunPelajaran']),
+                'data'    => $this->pembukaanRepo->findById($id, ['lembaga', 'tahunPelajaran']),
             ];
         } catch (Exception $e) {
             DB::rollBack();
@@ -392,6 +400,174 @@ class PembukaanPpdbService
                 'message' => 'Gagal mengubah status pembukaan PPDB: ' . $e->getMessage(),
                 'data'    => null,
             ];
+        }
+    }
+
+    // =========================================================================
+    // DUPLIKASI
+    // =========================================================================
+
+    /**
+     * Menduplikasi seluruh konfigurasi pembukaan PPDB ke lembaga lain.
+     *
+     * Yang di-clone: pembukaan → jalur → jadwal, syarat, formulir+field, biaya.
+     * Yang tidak di-clone: kuota_jurusan (jurusan berbeda antar lembaga).
+     *
+     * Jadwal di-shift secara proporsional berdasarkan selisih tanggal mulai
+     * antara sumber dan target agar timeline tetap masuk akal.
+     */
+    public function duplikasi(int $sourceId, array $data, int $userId): array
+    {
+        DB::beginTransaction();
+        try {
+            // Load source dengan semua relasi yang perlu di-clone
+            $source = $this->pembukaanRepo->findById($sourceId, [
+                'jalurPendaftaran',
+                'jalurPendaftaran.jadwalPendaftaran',
+                'jalurPendaftaran.syaratPendaftaran',
+                'jalurPendaftaran.formulirPendaftaran.formulirField',
+                'jalurPendaftaran.biayaRegistrasi',
+            ]);
+
+            if (! $source) {
+                DB::rollBack();
+                return ['success' => false, 'message' => 'Pembukaan sumber tidak ditemukan.', 'data' => null];
+            }
+
+            // Hitung offset hari untuk shift jadwal
+            $sourceMulai = Carbon::parse($source->mulai);
+            $targetMulai = Carbon::parse($data['mulai']);
+            $offsetHari  = $sourceMulai->diffInDays($targetMulai, false);
+
+            // Cek tidak ada konflik: target lembaga + TA yang sama sudah buka
+            if (($data['status'] ?? 'tutup') === 'buka') {
+                $konflik = $this->pembukaanRepo->all([
+                    'lembaga_id'         => $data['lembaga_id'],
+                    'tahun_pelajaran_id' => $data['tahun_pelajaran_id'],
+                    'status'             => 'buka',
+                ]);
+                if ($konflik->isNotEmpty()) {
+                    DB::rollBack();
+                    return ['success' => false, 'message' => 'Lembaga tujuan sudah memiliki pembukaan aktif pada tahun pelajaran yang sama.', 'data' => null];
+                }
+            }
+
+            // 1. Buat pembukaan baru
+            $newPembukaan = $this->pembukaanRepo->create([
+                'lembaga_id'         => $data['lembaga_id'],
+                'tahun_pelajaran_id' => $data['tahun_pelajaran_id'],
+                'nama'               => $data['nama'],
+                'deskripsi'          => $source->deskripsi,
+                'mulai'              => $data['mulai'],
+                'selesai'            => $data['selesai'],
+                'status'             => $data['status'] ?? 'tutup',
+            ]);
+
+            $jalurCount    = 0;
+            $jadwalCount   = 0;
+            $syaratCount   = 0;
+            $formulirCount = 0;
+            $biayaCount    = 0;
+
+            // 2. Clone setiap jalur
+            foreach ($source->jalurPendaftaran as $jalur) {
+                $newJalur = JalurPendaftaran::create([
+                    'pembukaan_ppdb_id' => $newPembukaan->id,
+                    'kode_jalur'        => $jalur->kode_jalur,
+                    'nama'              => $jalur->nama,
+                    'deskripsi'         => $jalur->deskripsi,
+                    'kuota'             => $jalur->kuota,
+                    'urutan'            => $jalur->urutan,
+                    'status'            => $jalur->status,
+                ]);
+                $jalurCount++;
+
+                // 2a. Clone jadwal — geser tanggal sesuai offset
+                foreach ($jalur->jadwalPendaftaran as $jadwal) {
+                    JadwalPendaftaran::create([
+                        'jalur_pendaftaran_id' => $newJalur->id,
+                        'nama'                 => $jadwal->nama,
+                        'tipe'                 => $jadwal->tipe,
+                        'mulai'                => Carbon::parse($jadwal->mulai)->addDays($offsetHari),
+                        'selesai'              => Carbon::parse($jadwal->selesai)->addDays($offsetHari),
+                        'status'               => $jadwal->status,
+                        'keterangan'           => $jadwal->keterangan,
+                    ]);
+                    $jadwalCount++;
+                }
+
+                // 2b. Clone syarat
+                foreach ($jalur->syaratPendaftaran as $syarat) {
+                    SyaratPendaftaran::create([
+                        'jalur_pendaftaran_id' => $newJalur->id,
+                        'tahun_pelajaran_id'   => $data['tahun_pelajaran_id'],
+                        'nama'                 => $syarat->nama,
+                        'tipe'                 => $syarat->tipe,
+                        'wajib'                => $syarat->wajib,
+                        'keterangan'           => $syarat->keterangan,
+                        'urutan'               => $syarat->urutan,
+                    ]);
+                    $syaratCount++;
+                }
+
+                // 2c. Clone formulir + field
+                foreach ($jalur->formulirPendaftaran as $formulir) {
+                    $newFormulir = FormulirPendaftaran::create([
+                        'jalur_pendaftaran_id' => $newJalur->id,
+                        'tahun_pelajaran_id'   => $data['tahun_pelajaran_id'],
+                        'nama'                 => $formulir->nama,
+                        'deskripsi'            => $formulir->deskripsi,
+                        'tipe'                 => $formulir->tipe,
+                        'is_aktif'             => $formulir->is_aktif,
+                    ]);
+                    $formulirCount++;
+
+                    foreach ($formulir->formulirField as $field) {
+                        FormulirField::create([
+                            'formulir_pendaftaran_id' => $newFormulir->id,
+                            'kode_field'              => $field->kode_field,
+                            'label'                   => $field->label,
+                            'tipe_field'              => $field->tipe_field,
+                            'is_required'             => $field->is_required,
+                            'is_statis'               => $field->is_statis,
+                            'dapodik_key'             => $field->dapodik_key,
+                            'urutan'                  => $field->urutan,
+                            'opsi'                    => $field->opsi,
+                        ]);
+                    }
+                }
+
+                // 2d. Clone biaya
+                foreach ($jalur->biayaRegistrasi as $biaya) {
+                    BiayaRegistrasi::create([
+                        'jalur_pendaftaran_id' => $newJalur->id,
+                        'tahun_pelajaran_id'   => $data['tahun_pelajaran_id'],
+                        'nama'                 => $biaya->nama,
+                        'nominal'              => $biaya->nominal,
+                        'deskripsi'            => $biaya->deskripsi,
+                        'is_aktif'             => $biaya->is_aktif,
+                    ]);
+                    $biayaCount++;
+                }
+            }
+
+            $this->logActivity->log(
+                'Duplikasi Pembukaan PPDB',
+                "Menduplikasi \"{$source->nama}\" → \"{$newPembukaan->nama}\" (lembaga_id: {$data['lembaga_id']}). " .
+                "{$jalurCount} jalur, {$jadwalCount} jadwal, {$syaratCount} syarat, {$formulirCount} formulir, {$biayaCount} biaya."
+            );
+
+            DB::commit();
+
+            return [
+                'success' => true,
+                'message' => "Berhasil menduplikasi ke \"{$newPembukaan->nama}\" — {$jalurCount} jalur, {$jadwalCount} jadwal, {$syaratCount} syarat, {$biayaCount} biaya disalin. Kuota jurusan perlu diisi manual.",
+                'data'    => $newPembukaan->load(['lembaga', 'tahunPelajaran']),
+            ];
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('[PembukaanPpdbService::duplikasi] ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Gagal menduplikasi: ' . $e->getMessage(), 'data' => null];
         }
     }
 }

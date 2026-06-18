@@ -34,7 +34,10 @@ class KuotaJurusanController extends Controller
     {
         $this->logActivity->log('View Kuota Jurusan', 'Membuka halaman Kuota Jurusan PPDB');
 
-        $jalurList = JalurPendaftaran::with('pembukaanPpdb')->orderBy('nama')->get();
+        $activeLembagaId = app('active_lembaga_id');
+        $jalurList       = JalurPendaftaran::with('pembukaanPpdb')
+            ->when($activeLembagaId, fn ($q) => $q->whereHas('pembukaanPpdb', fn ($q2) => $q2->where('lembaga_id', $activeLembagaId)))
+            ->orderBy('nama')->get();
         $tahunPelajaranList = TahunPelajaran::orderByDesc('mulai')->get();
 
         // Jika ada filter dari GET, langsung load data kuota
