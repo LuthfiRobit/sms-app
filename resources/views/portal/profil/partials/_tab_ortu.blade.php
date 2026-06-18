@@ -112,8 +112,8 @@
                                 <select name="pendidikan"
                                         class="flex-1 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface border-none focus:ring-0 focus:outline-none appearance-none cursor-pointer min-w-0">
                                     <option value="">— Pilih —</option>
-                                    @foreach(['SD','SMP','SMA/SMK','D1','D2','D3','S1','S2','S3','Tidak Sekolah'] as $pdd)
-                                        <option value="{{ $pdd }}" {{ $ot['data']?->pendidikan === $pdd ? 'selected' : '' }}>{{ $pdd }}</option>
+                                    @foreach(['SD' => 'SD/Sederajat', 'SMP' => 'SMP/Sederajat', 'SMA' => 'SMA/SMK/Sederajat', 'D1' => 'Diploma 1 (D1)', 'D2' => 'Diploma 2 (D2)', 'D3' => 'Diploma 3 (D3)', 'S1' => 'S1/D4', 'S2' => 'S2 (Magister)', 'S3' => 'S3 (Doktor)', 'Tidak_Sekolah' => 'Tidak Sekolah'] as $val => $label)
+                                        <option value="{{ $val }}" {{ $ot['data']?->pendidikan === $val ? 'selected' : '' }}>{{ $label }}</option>
                                     @endforeach
                                 </select>
                                 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">arrow_drop_down</span>

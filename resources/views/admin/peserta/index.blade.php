@@ -317,8 +317,8 @@
                                             <label class="form-label fw-bold">Pendidikan Terakhir</label>
                                             <select class="form-select" id="f-{{ $tipe }}-pendidikan">
                                                 <option value="">— Pilih —</option>
-                                                @foreach(['SD','SMP','SMA/SMK','D1/D2/D3','S1','S2','S3','Tidak Sekolah'] as $p)
-                                                    <option value="{{ $p }}">{{ $p }}</option>
+                                                @foreach(['SD' => 'SD/Sederajat', 'SMP' => 'SMP/Sederajat', 'SMA' => 'SMA/SMK/Sederajat', 'D1' => 'D1', 'D2' => 'D2', 'D3' => 'D3', 'S1' => 'S1/D4', 'S2' => 'S2 (Magister)', 'S3' => 'S3 (Doktor)', 'Tidak_Sekolah' => 'Tidak Sekolah'] as $val => $label)
+                                                    <option value="{{ $val }}">{{ $label }}</option>
                                                 @endforeach
                                             </select>
                                         </div>
