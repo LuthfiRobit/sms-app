@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="Portal PPDB LP Ma'arif NU Kraksaan — Penerimaan Peserta Didik Baru">
-    <title>@yield('title', 'Portal PPDB') — LP Ma'arif NU Kraksaan</title>
+    <meta name="description" content="Marifat — Portal PPDB LP Ma'arif NU Kraksaan | Penerimaan Peserta Didik Baru">
+    <title>@yield('title', 'Portal PPDB') — Marifat</title>
 
     {{-- Typography: Plus Jakarta Sans --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,14 +32,14 @@
     <nav class="navbar navbar-expand-md navbar-portal" role="navigation" aria-label="Main navigation">
         <div class="container">
             {{-- Brand / Logo --}}
-            <a class="navbar-brand" href="{{ route('ppdb.dashboard') }}" aria-label="Portal PPDB LP Ma'arif NU Kraksaan">
+            <a class="navbar-brand" href="{{ route('ppdb.dashboard') }}" aria-label="Marifat — Portal PPDB">
                 <div class="brand-logo-wrap" aria-hidden="true">
                     <img src="{{ asset('assets/sekolah-refaktor-template/images/logo/logomaarif.png') }}"
-                         alt="Logo LP Ma'arif NU" class="brand-logo">
+                         alt="Logo Marifat" class="brand-logo">
                 </div>
                 <div class="brand-text">
-                    <div class="brand-text-primary">PPDB Online</div>
-                    <div class="brand-text-sub">LP Ma'arif NU Kraksaan</div>
+                    <div class="brand-text-primary">Marifat</div>
+                    <div class="brand-text-sub">Ma'arif Integrated Facility</div>
                 </div>
             </a>
 
@@ -179,11 +179,11 @@
                 <div class="col-sm-7">
                     <div class="footer-brand">
                         <img src="{{ asset('assets/sekolah-refaktor-template/images/logo/logomaarif.png') }}"
-                             alt="Logo LP Ma'arif NU" width="32" height="32">
-                        <span>LP Ma'arif NU Kraksaan</span>
+                             alt="Logo Marifat" width="32" height="32">
+                        <span>Marifat</span>
                     </div>
                     <p class="mb-0">
-                        Lembaga Pendidikan Ma'arif Nahdlatul Ulama<br>
+                        Ma'arif Integrated Facility — LP Ma'arif NU Kraksaan<br>
                         Portal Penerimaan Peserta Didik Baru (PPDB) Online
                     </p>
                 </div>
@@ -203,7 +203,7 @@
                             <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
                             Kraksaan, Probolinggo, Jawa Timur
                         </a>
-                        <span class="d-block mt-2">&copy; {{ date('Y') }} LP Ma'arif NU Kraksaan</span>
+                        <span class="d-block mt-2">&copy; {{ date('Y') }} Marifat — LP Ma'arif NU Kraksaan</span>
                     </div>
                 </div>
             </div>

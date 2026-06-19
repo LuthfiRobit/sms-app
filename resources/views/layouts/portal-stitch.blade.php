@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'PPDB Online') — LP Ma'arif NU Kraksaan</title>
+    <title>@yield('title', 'PPDB Online') — Marifat</title>
     <link rel="icon" href="{{ asset('assets/sekolah-refaktor-template/images/logo/logomaarif.png') }}" type="image/png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -144,14 +144,14 @@
     @else
     <footer class="bg-surface-container-highest text-on-surface-variant border-t-2 border-tertiary-fixed mt-auto">
         <div class="flex flex-col md:flex-row justify-between items-center px-4 md:px-8 py-stack-lg w-full max-w-[1440px] mx-auto gap-4">
-            <div class="text-headline-sm text-primary font-bold">LP Ma'arif NU Kraksaan</div>
+            <div class="text-headline-sm text-primary font-bold">Marifat</div>
             <div class="flex gap-6">
                 <a href="#" class="text-body-sm text-on-surface-variant opacity-80 hover:text-primary transition-colors">Kebijakan Privasi</a>
                 <a href="#" class="text-body-sm text-on-surface-variant opacity-80 hover:text-primary transition-colors">Syarat &amp; Ketentuan</a>
                 <a href="#" class="text-body-sm text-on-surface-variant opacity-80 hover:text-primary transition-colors">Kontak Kami</a>
             </div>
             <div class="text-body-sm text-on-surface-variant opacity-80 text-center md:text-right">
-                &copy; {{ date('Y') }} LP Ma'arif NU Kraksaan. All Rights Reserved.
+                &copy; {{ date('Y') }} Marifat — LP Ma'arif NU Kraksaan. All Rights Reserved.
             </div>
         </div>
     </footer>

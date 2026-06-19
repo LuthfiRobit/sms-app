@@ -33,18 +33,18 @@
                     <div class="flex items-center gap-4 mb-10">
                         <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm flex-shrink-0">
                             <img src="{{ asset('assets/sekolah-refaktor-template/images/logo/logomaarif.png') }}"
-                                 alt="Logo LP Ma'arif NU" class="w-9 h-9 object-contain" style="filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))">
+                                 alt="Logo Marifat" class="w-9 h-9 object-contain" style="filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))">
                         </div>
                         <div>
-                            <p class="text-on-primary font-bold leading-tight text-[15px]">LP Ma'arif NU</p>
-                            <p class="text-on-primary/70 text-[12px]">Kraksaan</p>
+                            <p class="text-on-primary font-bold leading-tight text-[15px]">Marifat</p>
+                            <p class="text-on-primary/70 text-[12px]">Ma'arif Integrated Facility</p>
                         </div>
                     </div>
 
                     <p class="text-tertiary-fixed-dim text-[10px] tracking-[0.5em] font-semibold mb-3" aria-hidden="true">✦ &nbsp; ✦ &nbsp; ✦</p>
                     <h1 class="text-headline-lg text-on-primary mb-3 leading-tight">Daftar<br>Akun PPDB</h1>
                     <p class="text-on-primary/75 text-body-md mb-10">
-                        Buat akun untuk mendaftarkan putra-putri Anda ke LP Ma'arif NU Kraksaan.
+                        Buat akun untuk mendaftarkan putra-putri Anda ke LP Ma'arif NU Kraksaan (Marifat).
                     </p>
 
                     {{-- Steps Overview --}}
@@ -66,7 +66,7 @@
                 </div>
 
                 <div class="relative z-10 mt-10">
-                    <p class="text-on-primary/40 text-[11px]">&copy; {{ date('Y') }} LP Ma'arif NU Kraksaan</p>
+                    <p class="text-on-primary/40 text-[11px]">&copy; {{ date('Y') }} Marifat — LP Ma'arif NU Kraksaan</p>
                 </div>
             </div>
 
@@ -184,7 +184,7 @@
                             <label for="setuju_syarat" class="text-body-sm text-on-surface-variant leading-relaxed cursor-pointer">
                                 Saya menyetujui
                                 <a href="#" class="font-semibold text-primary hover:text-primary-container transition-colors">syarat dan ketentuan</a>
-                                pendaftaran PPDB LP Ma'arif NU Kraksaan
+                                pendaftaran PPDB Marifat — LP Ma'arif NU Kraksaan
                             </label>
                         </div>
                         @error('setuju_syarat')

@@ -3,10 +3,10 @@
         <div class="m-header">
             <a href="{{ route('admin.dashboard') }}" class="b-brand">
                 <img src="{{ asset('assets/sekolah-refaktor-template/images/logo/logomaarif.png') }}"
-                     alt="Logo LP Ma'arif NU" class="logo-lg">
+                     alt="Logo Marifat" class="logo-lg">
                 <div>
-                    <span class="brand-name">LP Ma'arif NU</span>
-                    <span class="brand-sub">Kraksaan — SIMS Terpadu</span>
+                    <span class="brand-name">Marifat</span>
+                    <span class="brand-sub">Ma'arif Integrated Facility</span>
                 </div>
             </a>
         </div>

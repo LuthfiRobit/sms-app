@@ -2,12 +2,12 @@
 <html lang="id">
 
 <head>
-    <title>Login Admin — LP Ma'arif NU Kraksaan</title>
+    <title>Login Admin — Marifat</title>
     <!-- [Meta] -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="description" content="Admin Panel SIMS Terpadu — LP Ma'arif NU Kraksaan" />
+    <meta name="description" content="Marifat — Ma'arif Integrated Facility | Admin Panel" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- [Favicon] -->
@@ -95,9 +95,9 @@
                         {{-- LP Ma'arif NU Header --}}
                         <div class="auth-maarif-header">
                             <img src="{{ asset('assets/sekolah-refaktor-template/images/logo/logomaarif.png') }}"
-                                 alt="Logo LP Ma'arif NU Kraksaan">
-                            <h2>LP Ma'arif NU Kraksaan</h2>
-                            <p>SIMS Terpadu — Admin Panel</p>
+                                 alt="Logo Marifat">
+                            <h2>Marifat</h2>
+                            <p>Ma'arif Integrated Facility — Admin Panel</p>
                         </div>
 
                         <div class="auth-maarif-ornam" aria-hidden="true">✦ &nbsp; ✦ &nbsp; ✦</div>

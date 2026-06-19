@@ -7,8 +7,8 @@
     <div class="flex justify-between items-center w-full px-4 md:px-8 h-20 max-w-[1440px] mx-auto">
         <div class="flex items-center gap-4">
             <div class="bg-surface text-primary p-2 rounded-lg font-headline-sm text-headline-sm font-bold shadow-sm select-none">LP</div>
-            <span class="font-headline-md text-headline-md text-on-primary hidden sm:block">LP Ma'arif NU Kraksaan</span>
-            <span class="text-body-sm font-semibold text-on-primary sm:hidden">LP Ma'arif NU</span>
+            <span class="font-headline-md text-headline-md text-on-primary hidden sm:block">Marifat</span>
+            <span class="text-body-sm font-semibold text-on-primary sm:hidden">Marifat</span>
         </div>
 
         <div class="hidden md:flex gap-8 items-center">

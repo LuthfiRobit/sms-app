@@ -6,9 +6,9 @@
 <nav class="bg-gradient-to-r from-primary to-primary-container text-on-primary sticky top-0 border-b-4 border-tertiary-container shadow-md z-50">
     <div class="flex justify-between items-center w-full px-4 md:px-8 h-20 max-w-[1440px] mx-auto">
         <div class="flex items-center gap-4">
-            <div class="bg-surface text-primary p-2 rounded-lg font-headline-sm text-headline-sm font-bold shadow-sm select-none">LP</div>
-            <span class="font-headline-md text-headline-md text-on-primary hidden sm:block">LP Ma'arif NU Kraksaan</span>
-            <span class="text-body-sm font-semibold text-on-primary sm:hidden">LP Ma'arif NU</span>
+            <div class="bg-surface text-primary p-2 rounded-lg font-headline-sm text-headline-sm font-bold shadow-sm select-none">M</div>
+            <span class="font-headline-md text-headline-md text-on-primary hidden sm:block">Marifat</span>
+            <span class="text-body-sm font-semibold text-on-primary sm:hidden">Marifat</span>
         </div>
 
         <div class="hidden md:flex gap-8 items-center">
@@ -85,8 +85,8 @@
                 <h1 class="text-on-primary font-extrabold mb-4 leading-tight"
                     style="font-size:clamp(28px,5vw,48px);line-height:1.15;letter-spacing:-0.02em">
                     Selamat Datang di<br>
-                    <span style="color:#f6bd50">Portal PPDB</span><br>
-                    LP Ma'arif NU Kraksaan
+                    <span style="color:#f6bd50">Marifat</span><br>
+                    Ma'arif Integrated Facility
                 </h1>
 
                 <p class="text-on-primary/75 text-body-lg mb-6 max-w-lg mx-auto lg:mx-0">
@@ -413,7 +413,7 @@
             Siap Bergabung dengan Kami?
         </h2>
         <p class="text-on-primary/75 text-body-lg mb-8 max-w-xl mx-auto">
-            Jangan sampai kehabisan kuota! Daftar sekarang dan raih kesempatan untuk bergabung dengan lembaga pendidikan terbaik LP Ma'arif NU Kraksaan.
+            Jangan sampai kehabisan kuota! Daftar sekarang dan raih kesempatan untuk bergabung dengan lembaga pendidikan terbaik di bawah naungan LP Ma'arif NU Kraksaan.
         </p>
         <div class="flex flex-wrap gap-4 justify-center">
             @guest

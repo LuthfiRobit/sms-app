@@ -195,6 +195,20 @@ class PembayaranService
 
             // --- 5. Siapkan parameter Midtrans Snap ---
             $peserta = $pendaftaran->peserta;
+
+            // Gunakan email user yang login sebagai fallback — Midtrans menolak empty string
+            $authUser      = \App\Models\User::find($userId);
+            $customerEmail = $peserta?->kontak?->email ?: ($authUser?->email ?? null);
+            $customerPhone = $peserta?->kontak?->no_hp ?: null;
+
+            $customerDetails = ['first_name' => $peserta?->nama_lengkap ?? 'Peserta'];
+            if ($customerEmail) {
+                $customerDetails['email'] = $customerEmail;
+            }
+            if ($customerPhone) {
+                $customerDetails['phone'] = $customerPhone;
+            }
+
             $params = [
                 'transaction_details' => [
                     'order_id'     => $orderId,
@@ -208,11 +222,7 @@ class PembayaranService
                         'name'     => substr($biaya->nama ?? 'Biaya Registrasi PPDB', 0, 50),
                     ],
                 ],
-                'customer_details' => [
-                    'first_name' => $peserta?->nama_lengkap ?? 'Peserta',
-                    'email'      => $peserta?->kontak?->email ?? '',
-                    'phone'      => $peserta?->kontak?->no_hp ?? '',
-                ],
+                'customer_details' => $customerDetails,
                 'callbacks' => [
                     'finish' => url('/portal/pembayaran/selesai'),
                 ],

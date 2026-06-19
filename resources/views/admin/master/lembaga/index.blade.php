@@ -6,7 +6,7 @@
     <div class="col-sm-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5>Data Lembaga LP Ma'arif NU Kraksaan</h5>
+                <h5>Data Lembaga LP Ma'arif NU Kraksaan (Marifat)</h5>
                 @if(auth()->user()->hasPermissionTo('admin.master.lembaga.store'))
                 <button type="button" class="btn btn-primary btn-sm" id="btn-tambah-lembaga">
                     <i class="bi bi-plus-lg"></i> Tambah Lembaga

@@ -12,8 +12,8 @@
         {{-- Brand --}}
         <div class="flex items-center gap-4">
             <div class="bg-surface text-primary p-2 rounded-lg font-headline-sm text-headline-sm font-bold shadow-sm select-none">LP</div>
-            <span class="font-headline-md text-headline-md text-on-primary hidden sm:block">LP Ma'arif NU Kraksaan</span>
-            <span class="text-body-sm font-semibold text-on-primary sm:hidden">LP Ma'arif NU</span>
+            <span class="font-headline-md text-headline-md text-on-primary hidden sm:block">Marifat</span>
+            <span class="text-body-sm font-semibold text-on-primary sm:hidden">Marifat</span>
         </div>
 
         {{-- Nav Links --}}
@@ -104,7 +104,7 @@
                 Selamat Datang, <span id="greeting-name">{{ $user->name }}</span>!
             </h1>
             <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
-                Portal Pendaftaran Peserta Didik Baru (PPDB) LP Ma'arif NU Kraksaan.
+                Portal Pendaftaran Peserta Didik Baru (PPDB) Marifat.
                 Silakan ikuti langkah-langkah pendaftaran untuk melengkapi profil calon peserta didik.
             </p>
             {{-- Status badge --}}
