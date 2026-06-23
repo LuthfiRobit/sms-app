@@ -150,6 +150,41 @@ Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
             Route::get('nilai', [\App\Http\Controllers\Akademik\NilaiController::class, 'index'])->name('nilai.index');
             Route::get('nilai/sheet', [\App\Http\Controllers\Akademik\NilaiController::class, 'sheet'])->name('nilai.sheet');
             Route::post('nilai/save', [\App\Http\Controllers\Akademik\NilaiController::class, 'save'])->name('nilai.save');
+
+            // Setting Akademik
+            Route::get('setting', [\App\Http\Controllers\Akademik\AkademikSettingController::class, 'index'])->name('setting.index');
+            Route::post('setting/{lembagaId}', [\App\Http\Controllers\Akademik\AkademikSettingController::class, 'update'])->name('setting.update');
+
+            // Modul Raport
+            Route::prefix('raport')->name('raport.')->group(function () {
+                // Pengajuan Raport (Wali Kelas / Guru)
+                Route::get('pengajuan',           [\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'index'])->name('pengajuan.index');
+                Route::get('pengajuan/list',      [\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'list'])->name('pengajuan.list');
+                Route::post('pengajuan',          [\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'store'])->name('pengajuan.store');
+                Route::get('pengajuan/{id}',      [\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'show'])->name('pengajuan.show');
+                Route::post('pengajuan/{id}/submit',       [\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'submit'])->name('pengajuan.submit');
+                Route::post('pengajuan/{id}/withdraw',     [\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'withdraw'])->name('pengajuan.withdraw');
+                Route::post('pengajuan/{id}/refresh-nilai',[\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'refreshNilai'])->name('pengajuan.refresh-nilai');
+                Route::put('pengajuan/{id}/nilai',         [\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'updateNilai'])->name('pengajuan.update-nilai');
+                Route::delete('pengajuan/{id}',   [\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'destroy'])->name('pengajuan.destroy');
+
+                // Verifikasi (Wakasek/Koordinator)
+                Route::get('verifikasi', [\App\Http\Controllers\Akademik\VerifikasiRaportController::class, 'index'])->name('verifikasi.index');
+                Route::get('verifikasi/list', [\App\Http\Controllers\Akademik\VerifikasiRaportController::class, 'list'])->name('verifikasi.list');
+                Route::post('verifikasi/{id}/verify', [\App\Http\Controllers\Akademik\VerifikasiRaportController::class, 'verify'])->name('verifikasi.verify');
+                Route::post('verifikasi/{id}/reject', [\App\Http\Controllers\Akademik\VerifikasiRaportController::class, 'reject'])->name('verifikasi.reject');
+
+                // Approval (Kepala Sekolah)
+                Route::get('approval', [\App\Http\Controllers\Akademik\ApprovalRaportController::class, 'index'])->name('approval.index');
+                Route::get('approval/list', [\App\Http\Controllers\Akademik\ApprovalRaportController::class, 'list'])->name('approval.list');
+                Route::post('approval/{id}/approve', [\App\Http\Controllers\Akademik\ApprovalRaportController::class, 'approve'])->name('approval.approve');
+                Route::post('approval/{id}/reject', [\App\Http\Controllers\Akademik\ApprovalRaportController::class, 'reject'])->name('approval.reject');
+
+                // Cetak Raport (PDF & Preview)
+                Route::get('{id}/preview',               [\App\Http\Controllers\Akademik\CetakRaportController::class, 'preview'])->name('preview');
+                Route::get('{id}/cetak-satu/{pesertaId}',[\App\Http\Controllers\Akademik\CetakRaportController::class, 'cetakSatu'])->name('cetak-satu');
+                Route::get('{id}/cetak-semua',           [\App\Http\Controllers\Akademik\CetakRaportController::class, 'cetakSemua'])->name('cetak-semua');
+            });
         });
 
         // PPDB

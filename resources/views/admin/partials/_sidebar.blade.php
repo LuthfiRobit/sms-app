@@ -252,6 +252,11 @@
                             <a class="pc-link" href="{{ route('admin.master.rombel-siswa.index') }}">Pengelolaan Siswa</a>
                         </li>
                         @endif
+                        @if(auth()->user()->hasPermissionTo('admin.akademik.setting.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.akademik.setting.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.akademik.setting.index') }}"><span class="pc-micon"><i class="bi bi-gear"></i></span><span class="pc-mtext">Setting Akademik</span></a>
+                        </li>
+                        @endif
                         @if(auth()->user()->hasPermissionTo('admin.akademik.absensi.index'))
                         <li class="pc-item {{ request()->routeIs('admin.akademik.absensi.*') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('admin.akademik.absensi.index') }}">Absensi Siswa</a>
@@ -260,6 +265,21 @@
                         @if(auth()->user()->hasPermissionTo('admin.akademik.nilai.index'))
                         <li class="pc-item {{ request()->routeIs('admin.akademik.nilai.*') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('admin.akademik.nilai.index') }}">Input Nilai</a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.akademik.raport.pengajuan.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.akademik.raport.pengajuan.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.akademik.raport.pengajuan.index') }}"><span class="pc-micon"><i class="bi bi-journal-bookmark"></i></span><span class="pc-mtext">Pengajuan Raport</span></a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.akademik.raport.verifikasi.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.akademik.raport.verifikasi.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.akademik.raport.verifikasi.index') }}"><span class="pc-micon"><i class="bi bi-patch-check"></i></span><span class="pc-mtext">Verifikasi Raport</span></a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.akademik.raport.approval.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.akademik.raport.approval.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.akademik.raport.approval.index') }}"><span class="pc-micon"><i class="bi bi-check-circle"></i></span><span class="pc-mtext">Approval Raport</span></a>
                         </li>
                         @endif
                         @if(auth()->user()->hasPermissionTo('admin.akademik.perangkat-mengajar.index'))

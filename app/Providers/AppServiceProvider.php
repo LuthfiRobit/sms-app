@@ -87,6 +87,10 @@ use App\Repositories\Akademik\AbsensiRepositoryInterface;
 use App\Repositories\Akademik\AbsensiRepository;
 use App\Repositories\Akademik\NilaiRepositoryInterface;
 use App\Repositories\Akademik\NilaiRepository;
+use App\Repositories\Akademik\AkademikSettingRepositoryInterface;
+use App\Repositories\Akademik\AkademikSettingRepository;
+use App\Repositories\Akademik\PengajuanRaportRepositoryInterface;
+use App\Repositories\Akademik\PengajuanRaportRepository;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -141,6 +145,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(MateriBelajarRepositoryInterface::class, MateriBelajarRepository::class);
         $this->app->bind(AbsensiRepositoryInterface::class, AbsensiRepository::class);
         $this->app->bind(NilaiRepositoryInterface::class, NilaiRepository::class);
+        $this->app->bind(AkademikSettingRepositoryInterface::class, AkademikSettingRepository::class);
+        $this->app->bind(PengajuanRaportRepositoryInterface::class, PengajuanRaportRepository::class);
 
         // Default binding untuk active_lembaga_id agar tidak throw BindingResolutionException
         $this->app->bind('active_lembaga_id', function () {

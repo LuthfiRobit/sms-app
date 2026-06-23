@@ -32,6 +32,29 @@ class CheckPermission
         'admin.akademik.absensi.siswa'             => 'admin.akademik.absensi.index',
         'admin.akademik.nilai.sheet'               => 'admin.akademik.nilai.index',
         'admin.akademik.nilai.save'                => 'admin.akademik.nilai.index',
+
+        // Raport — helper / action routes delegate to index
+        'admin.akademik.raport.pengajuan.list'          => 'admin.akademik.raport.pengajuan.index',
+        'admin.akademik.raport.pengajuan.store'         => 'admin.akademik.raport.pengajuan.index',
+        'admin.akademik.raport.pengajuan.show'          => 'admin.akademik.raport.pengajuan.index',
+        'admin.akademik.raport.pengajuan.submit'        => 'admin.akademik.raport.pengajuan.index',
+        'admin.akademik.raport.pengajuan.withdraw'      => 'admin.akademik.raport.pengajuan.index',
+        'admin.akademik.raport.pengajuan.refresh-nilai' => 'admin.akademik.raport.pengajuan.index',
+        'admin.akademik.raport.pengajuan.update-nilai'  => 'admin.akademik.raport.pengajuan.index',
+        'admin.akademik.raport.pengajuan.destroy'       => 'admin.akademik.raport.pengajuan.index',
+
+        // Verifikasi & Approval helper routes
+        'admin.akademik.raport.verifikasi.list'   => 'admin.akademik.raport.verifikasi.index',
+        'admin.akademik.raport.verifikasi.verify' => 'admin.akademik.raport.verifikasi.index',
+        'admin.akademik.raport.verifikasi.reject' => 'admin.akademik.raport.verifikasi.index',
+        'admin.akademik.raport.approval.list'     => 'admin.akademik.raport.approval.index',
+        'admin.akademik.raport.approval.approve'  => 'admin.akademik.raport.approval.index',
+        'admin.akademik.raport.approval.reject'   => 'admin.akademik.raport.approval.index',
+
+        // Setting & Raport cetak
+        'admin.akademik.setting.update'                 => 'admin.akademik.setting.index',
+        'admin.akademik.raport.preview'                 => 'admin.akademik.raport.cetak-satu',
+        'admin.akademik.raport.cetak-semua'             => 'admin.akademik.raport.cetak-satu',
     ];
 
     public function handle(Request $request, Closure $next): Response
