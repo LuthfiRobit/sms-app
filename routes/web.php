@@ -26,9 +26,8 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
-        Route::get('/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('dashboard');
+        Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard/widget/{id}', [\App\Http\Controllers\Admin\DashboardController::class, 'widget'])->name('dashboard.widget');
 
         // RBAC System
         Route::prefix('rbac')->name('rbac.')->group(function () {
@@ -96,6 +95,61 @@ Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
             Route::get('semester/list', [\App\Http\Controllers\Master\SemesterController::class, 'list'])->name('semester.list');
             Route::post('semester/{semester}/toggle-status', [\App\Http\Controllers\Master\SemesterController::class, 'toggleStatus'])->name('semester.toggle');
             Route::resource('semester', \App\Http\Controllers\Master\SemesterController::class)->except(['create', 'edit']);
+
+            // Jurusan / Program Studi
+            Route::get('jurusan/list', [\App\Http\Controllers\Master\JurusanController::class, 'list'])->name('jurusan.list');
+            Route::resource('jurusan', \App\Http\Controllers\Master\JurusanController::class)->except(['create', 'edit']);
+
+            // Mata Pelajaran
+            Route::get('mata-pelajaran/list', [\App\Http\Controllers\Master\MataPelajaranController::class, 'list'])->name('mata-pelajaran.list');
+            Route::resource('mata-pelajaran', \App\Http\Controllers\Master\MataPelajaranController::class)->except(['create', 'edit']);
+
+            // Rombel / Kelas
+            Route::get('rombel/list', [\App\Http\Controllers\Master\RombelController::class, 'list'])->name('rombel.list');
+            Route::get('rombel/guru/{lembaga}', [\App\Http\Controllers\Master\RombelController::class, 'guruByLembaga'])->name('rombel.guru-by-lembaga');
+            Route::resource('rombel', \App\Http\Controllers\Master\RombelController::class)->except(['create', 'edit']);
+
+            // Guru
+            Route::get('guru/list', [\App\Http\Controllers\Master\GuruController::class, 'list'])->name('guru.list');
+            Route::resource('guru', \App\Http\Controllers\Master\GuruController::class)->except(['create', 'edit']);
+
+            // Mapping Jurusan ↔ Mata Pelajaran
+            Route::get('jurusan-mapel', [\App\Http\Controllers\Master\JurusanMapelController::class, 'index'])->name('jurusan-mapel.index');
+            Route::get('jurusan-mapel/{jurusan}', [\App\Http\Controllers\Master\JurusanMapelController::class, 'show'])->name('jurusan-mapel.show');
+            Route::post('jurusan-mapel/{jurusan}/sync', [\App\Http\Controllers\Master\JurusanMapelController::class, 'sync'])->name('jurusan-mapel.sync');
+
+            // Jadwal KBM
+            Route::get('jadwal-kbm/list', [\App\Http\Controllers\Master\JadwalKbmController::class, 'list'])->name('jadwal-kbm.list');
+            Route::resource('jadwal-kbm', \App\Http\Controllers\Master\JadwalKbmController::class)->except(['create', 'edit']);
+
+            // Rombel Siswa
+            Route::get('rombel-siswa', [\App\Http\Controllers\Master\RombelSiswaController::class, 'index'])->name('rombel-siswa.index');
+            Route::get('rombel-siswa/{rombel}/siswa', [\App\Http\Controllers\Master\RombelSiswaController::class, 'getByRombel'])->name('rombel-siswa.by-rombel');
+            Route::post('rombel-siswa/{rombel}/assign', [\App\Http\Controllers\Master\RombelSiswaController::class, 'assign'])->name('rombel-siswa.assign');
+            Route::post('rombel-siswa/{rombel}/unassign', [\App\Http\Controllers\Master\RombelSiswaController::class, 'unassign'])->name('rombel-siswa.unassign');
+            Route::post('rombel-siswa/{rombel}/update-absen', [\App\Http\Controllers\Master\RombelSiswaController::class, 'updateNoAbsen'])->name('rombel-siswa.update-absen');
+        });
+
+        // Akademik
+        Route::prefix('akademik')->name('akademik.')->group(function () {
+            // Perangkat Mengajar
+            Route::get('perangkat-mengajar/list', [\App\Http\Controllers\Akademik\PerangkatMengajarController::class, 'list'])->name('perangkat-mengajar.list');
+            Route::resource('perangkat-mengajar', \App\Http\Controllers\Akademik\PerangkatMengajarController::class)->except(['create', 'edit']);
+
+            // Materi Belajar
+            Route::get('materi-belajar/list', [\App\Http\Controllers\Akademik\MateriBelajarController::class, 'list'])->name('materi-belajar.list');
+            Route::resource('materi-belajar', \App\Http\Controllers\Akademik\MateriBelajarController::class)->except(['create', 'edit']);
+
+            // Absensi Siswa
+            Route::get('absensi/list', [\App\Http\Controllers\Akademik\AbsensiController::class, 'list'])->name('absensi.list');
+            Route::get('absensi/{absensi}/detail', [\App\Http\Controllers\Akademik\AbsensiController::class, 'detail'])->name('absensi.detail');
+            Route::get('absensi/siswa/{rombel}', [\App\Http\Controllers\Akademik\AbsensiController::class, 'getSiswa'])->name('absensi.siswa');
+            Route::resource('absensi', \App\Http\Controllers\Akademik\AbsensiController::class)->except(['create', 'edit']);
+
+            // Input Nilai
+            Route::get('nilai', [\App\Http\Controllers\Akademik\NilaiController::class, 'index'])->name('nilai.index');
+            Route::get('nilai/sheet', [\App\Http\Controllers\Akademik\NilaiController::class, 'sheet'])->name('nilai.sheet');
+            Route::post('nilai/save', [\App\Http\Controllers\Akademik\NilaiController::class, 'save'])->name('nilai.save');
         });
 
         // PPDB

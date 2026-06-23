@@ -2,6 +2,11 @@
 
 namespace App\Providers;
 
+use App\Dashboard\DashboardWidgetRegistry;
+use App\Dashboard\Widgets\Ppdb\ActionQueueWidget;
+use App\Dashboard\Widgets\Ppdb\PembukaanAktifWidget;
+use App\Dashboard\Widgets\Ppdb\StatWidget;
+use App\Dashboard\Widgets\Ppdb\TrenWidget;
 use Illuminate\Support\ServiceProvider;
 
 use App\Repositories\Rbac\RoleRepositoryInterface;
@@ -66,6 +71,22 @@ use App\Repositories\Transaksi\PendaftaranFieldValueRepository;
 // Cluster Master
 use App\Repositories\Master\JurusanRepositoryInterface;
 use App\Repositories\Master\JurusanRepository;
+use App\Repositories\Master\MataPelajaranRepositoryInterface;
+use App\Repositories\Master\MataPelajaranRepository;
+use App\Repositories\Master\RombelRepositoryInterface;
+use App\Repositories\Master\RombelRepository;
+use App\Repositories\Master\GuruRepositoryInterface;
+use App\Repositories\Master\GuruRepository;
+use App\Repositories\Master\JadwalKbmRepositoryInterface;
+use App\Repositories\Master\JadwalKbmRepository;
+use App\Repositories\Akademik\PerangkatMengajarRepositoryInterface;
+use App\Repositories\Akademik\PerangkatMengajarRepository;
+use App\Repositories\Akademik\MateriBelajarRepositoryInterface;
+use App\Repositories\Akademik\MateriBelajarRepository;
+use App\Repositories\Akademik\AbsensiRepositoryInterface;
+use App\Repositories\Akademik\AbsensiRepository;
+use App\Repositories\Akademik\NilaiRepositoryInterface;
+use App\Repositories\Akademik\NilaiRepository;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -110,10 +131,46 @@ class AppServiceProvider extends ServiceProvider
 
         // Cluster Master
         $this->app->bind(JurusanRepositoryInterface::class, JurusanRepository::class);
+        $this->app->bind(MataPelajaranRepositoryInterface::class, MataPelajaranRepository::class);
+        $this->app->bind(RombelRepositoryInterface::class, RombelRepository::class);
+        $this->app->bind(GuruRepositoryInterface::class, GuruRepository::class);
+        $this->app->bind(JadwalKbmRepositoryInterface::class, JadwalKbmRepository::class);
+
+        // Cluster Akademik
+        $this->app->bind(PerangkatMengajarRepositoryInterface::class, PerangkatMengajarRepository::class);
+        $this->app->bind(MateriBelajarRepositoryInterface::class, MateriBelajarRepository::class);
+        $this->app->bind(AbsensiRepositoryInterface::class, AbsensiRepository::class);
+        $this->app->bind(NilaiRepositoryInterface::class, NilaiRepository::class);
 
         // Default binding untuk active_lembaga_id agar tidak throw BindingResolutionException
         $this->app->bind('active_lembaga_id', function () {
             return session('active_lembaga_id');
+        });
+
+        // Dashboard Widget Registry
+        $this->app->singleton(DashboardWidgetRegistry::class, function () {
+            $registry = new DashboardWidgetRegistry();
+
+            // ── Modul PPDB (aktif) ──────────────────────────────────────────
+            $registry->register(
+                new StatWidget(),
+                new TrenWidget(),
+                new ActionQueueWidget(),
+                new PembukaanAktifWidget(),
+            );
+
+            // ── Modul Akademik (uncomment ketika siap) ─────────────────────
+            // $registry->register(
+            //     new \App\Dashboard\Widgets\Akademik\JadwalHariIniWidget(),
+            //     new \App\Dashboard\Widgets\Akademik\AbsensiWidget(),
+            // );
+
+            // ── Modul Keuangan (uncomment ketika siap) ─────────────────────
+            // $registry->register(
+            //     new \App\Dashboard\Widgets\Keuangan\RekapSppWidget(),
+            // );
+
+            return $registry;
         });
     }
 

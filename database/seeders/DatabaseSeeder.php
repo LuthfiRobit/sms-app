@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             KurikulumSeeder::class,
             ProfilSekolahSeeder::class,
             JurusanSeeder::class,
+            GuruSeeder::class,
             PpdbDemoTestDataSeeder::class,   // SMK Ma'arif Gending
             PpdbAllLembagaSeeder::class,     // 6 lembaga lainnya
         ]);

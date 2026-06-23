@@ -76,11 +76,31 @@
                             class="pc-mtext">Org. &
                             Akademik</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
                     <ul class="pc-submenu">
-                        <li class="pc-item"><a class="pc-link" href="#">Jurusan / Peminatan</a></li>
-                        <li class="pc-item"><a class="pc-link" href="#">Tingkat Kelas</a></li>
-                        <li class="pc-item"><a class="pc-link" href="#">Rombel (Kelas)</a></li>
-                        <li class="pc-item"><a class="pc-link" href="#">Mata Pelajaran</a></li>
-                        <li class="pc-item"><a class="pc-link" href="#">Mapping Jurusan <-> Mapel</a></li>
+                        @if(auth()->user()->hasPermissionTo('admin.master.jurusan.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.master.jurusan.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.master.jurusan.index') }}">Jurusan / Program Studi</a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.master.mata-pelajaran.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.master.mata-pelajaran.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.master.mata-pelajaran.index') }}">Mata Pelajaran</a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.master.rombel.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.master.rombel.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.master.rombel.index') }}">Rombel / Kelas</a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.master.guru.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.master.guru.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.master.guru.index') }}">Data Guru</a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.master.jurusan-mapel.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.master.jurusan-mapel.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.master.jurusan-mapel.index') }}">Mapping Jurusan ↔ Mapel</a>
+                        </li>
+                        @endif
                     </ul>
                 </li>
                 <li class="pc-item pc-hasmenu">
@@ -88,9 +108,13 @@
                             class="pc-mtext">Sarana &
                             Jadwal</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
                     <ul class="pc-submenu">
+                        @if(auth()->user()->hasPermissionTo('admin.master.jadwal-kbm.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.master.jadwal-kbm.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.master.jadwal-kbm.index') }}">Jadwal KBM</a>
+                        </li>
+                        @endif
                         <li class="pc-item"><a class="pc-link" href="#">Gedung</a></li>
                         <li class="pc-item"><a class="pc-link" href="#">Ruang Kelas / Lab</a></li>
-                        <li class="pc-item"><a class="pc-link" href="#">Slot Jam Pelajaran</a></li>
                         <li class="pc-item"><a class="pc-link" href="#">Kalender Akademik</a></li>
                     </ul>
                 </li>
@@ -218,15 +242,36 @@
                         <li class="pc-item"><a class="pc-link" href="#">Daftar Ulang</a></li>
                     </ul>
                 </li>
-                <li class="pc-item pc-hasmenu">
+                <li class="pc-item pc-hasmenu {{ request()->routeIs('admin.master.rombel-siswa.*') || request()->routeIs('admin.akademik.*') ? 'active pc-trigger' : '' }}">
                     <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-journal-text"></i></span><span
                             class="pc-mtext">Akademik</span><span class="pc-arrow"><i
                                 class="bi bi-chevron-right"></i></span></a>
                     <ul class="pc-submenu">
-                        <li class="pc-item"><a class="pc-link" href="#">Penjadwalan KBM</a></li>
-                        <li class="pc-item"><a class="pc-link" href="#">Presensi Siswa</a></li>
-                        <li class="pc-item"><a class="pc-link" href="#">Presensi & Jurnal Guru</a></li>
-                        <li class="pc-item"><a class="pc-link" href="#">Nilai (F & S)</a></li>
+                        @if(auth()->user()->hasPermissionTo('admin.master.rombel-siswa.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.master.rombel-siswa.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.master.rombel-siswa.index') }}">Pengelolaan Siswa</a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.akademik.absensi.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.akademik.absensi.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.akademik.absensi.index') }}">Absensi Siswa</a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.akademik.nilai.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.akademik.nilai.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.akademik.nilai.index') }}">Input Nilai</a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.akademik.perangkat-mengajar.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.akademik.perangkat-mengajar.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.akademik.perangkat-mengajar.index') }}">Perangkat Mengajar</a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.akademik.materi-belajar.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.akademik.materi-belajar.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.akademik.materi-belajar.index') }}">Materi Belajar</a>
+                        </li>
+                        @endif
                         <li class="pc-item"><a class="pc-link" href="#">E-Rapor</a></li>
                     </ul>
                 </li>
