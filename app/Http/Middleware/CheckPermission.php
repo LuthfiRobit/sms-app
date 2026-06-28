@@ -23,6 +23,9 @@ class CheckPermission
         'admin.master.rombel-siswa.assign'       => 'admin.master.rombel-siswa.index',
         'admin.master.rombel-siswa.unassign'     => 'admin.master.rombel-siswa.index',
         'admin.master.rombel-siswa.update-absen' => 'admin.master.rombel-siswa.index',
+        'admin.master.siswa.list'               => 'admin.master.siswa.index',
+        'admin.master.siswa.stats'              => 'admin.master.siswa.index',
+        'admin.master.siswa.export'             => 'admin.master.siswa.index',
 
         // Akademik — helper routes
         'admin.akademik.perangkat-mengajar.list'  => 'admin.akademik.perangkat-mengajar.index',
@@ -55,6 +58,33 @@ class CheckPermission
         'admin.akademik.setting.update'                 => 'admin.akademik.setting.index',
         'admin.akademik.raport.preview'                 => 'admin.akademik.raport.cetak-satu',
         'admin.akademik.raport.cetak-semua'             => 'admin.akademik.raport.cetak-satu',
+
+        // Program Kerja
+        'admin.program-kerja.list'               => 'admin.program-kerja.index',
+        'admin.program-kerja.show'               => 'admin.program-kerja.index',
+        'admin.program-kerja.update'             => 'admin.program-kerja.index',
+        'admin.program-kerja.destroy'            => 'admin.program-kerja.index',
+        'admin.program-kerja.store'              => 'admin.program-kerja.index',
+        'admin.program-kerja.submit'             => 'admin.program-kerja.index',
+        'admin.program-kerja.withdraw'           => 'admin.program-kerja.index',
+        'admin.program-kerja.verifikasi'         => 'admin.program-kerja.index',
+        'admin.program-kerja.approval'           => 'admin.program-kerja.index',
+        'admin.program-kerja.tolak'              => 'admin.program-kerja.index',
+        'admin.program-kerja.cetak'              => 'admin.program-kerja.index',
+        'admin.program-kerja.kegiatan.store'     => 'admin.program-kerja.index',
+        'admin.program-kerja.kegiatan.update'    => 'admin.program-kerja.index',
+        'admin.program-kerja.kegiatan.destroy'   => 'admin.program-kerja.index',
+        'admin.program-kerja.kegiatan.realisasi' => 'admin.program-kerja.index',
+        // Kinerja
+        'admin.kinerja.dashboard'       => 'admin.kinerja.index',
+        'admin.kinerja.manage'          => 'admin.kinerja.index',
+        'admin.kinerja.list'            => 'admin.kinerja.index',
+        'admin.kinerja.show'            => 'admin.kinerja.index',
+        'admin.kinerja.store'           => 'admin.kinerja.index',
+        'admin.kinerja.update'          => 'admin.kinerja.index',
+        'admin.kinerja.destroy'         => 'admin.kinerja.index',
+        'admin.kinerja.inputRealisasi'  => 'admin.kinerja.index',
+        'admin.kinerja.syncAuto'        => 'admin.kinerja.index',
     ];
 
     public function handle(Request $request, Closure $next): Response

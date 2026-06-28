@@ -128,6 +128,12 @@ Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
             Route::post('rombel-siswa/{rombel}/assign', [\App\Http\Controllers\Master\RombelSiswaController::class, 'assign'])->name('rombel-siswa.assign');
             Route::post('rombel-siswa/{rombel}/unassign', [\App\Http\Controllers\Master\RombelSiswaController::class, 'unassign'])->name('rombel-siswa.unassign');
             Route::post('rombel-siswa/{rombel}/update-absen', [\App\Http\Controllers\Master\RombelSiswaController::class, 'updateNoAbsen'])->name('rombel-siswa.update-absen');
+
+            // Master Siswa (view-only, filter dari peserta siswa_tetap)
+            Route::get('siswa/list',   [\App\Http\Controllers\Master\SiswaController::class, 'list'])->name('siswa.list');
+            Route::get('siswa/stats',  [\App\Http\Controllers\Master\SiswaController::class, 'stats'])->name('siswa.stats');
+            Route::get('siswa/export', [\App\Http\Controllers\Master\SiswaController::class, 'exportCsv'])->name('siswa.export');
+            Route::get('siswa',        [\App\Http\Controllers\Master\SiswaController::class, 'index'])->name('siswa.index');
         });
 
         // Akademik
@@ -266,6 +272,40 @@ Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
             Route::post('{id}/konfirmasi', [App\Http\Controllers\Transaksi\PembayaranController::class, 'konfirmasiManual'])->name('konfirmasi');
             Route::get('/', [App\Http\Controllers\Transaksi\PembayaranController::class, 'index'])->name('index');
             Route::get('/{id}', [App\Http\Controllers\Transaksi\PembayaranController::class, 'show'])->name('show');
+        });
+
+        // Program Kerja
+        Route::prefix('program-kerja')->name('program-kerja.')->group(function () {
+            Route::get('/',                                     [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'index'])->name('index');
+            Route::get('/list',                                 [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'list'])->name('list');
+            Route::post('/',                                    [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'store'])->name('store');
+            Route::get('/{id}',                                 [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'show'])->name('show');
+            Route::put('/{id}',                                 [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'update'])->name('update');
+            Route::delete('/{id}',                              [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'destroy'])->name('destroy');
+            Route::post('/{id}/submit',                         [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'submit'])->name('submit');
+            Route::post('/{id}/withdraw',                       [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'withdraw'])->name('withdraw');
+            Route::post('/{id}/verifikasi',                     [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'verifikasi'])->name('verifikasi');
+            Route::post('/{id}/approval',                       [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'approval'])->name('approval');
+            Route::post('/{id}/tolak',                          [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'tolak'])->name('tolak');
+            Route::get('/{id}/cetak',                           [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'cetak'])->name('cetak');
+            Route::post('/{programId}/kegiatan',                [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'addKegiatan'])->name('kegiatan.store');
+            Route::put('/{programId}/kegiatan/{kegiatanId}',    [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'updateKegiatan'])->name('kegiatan.update');
+            Route::delete('/{programId}/kegiatan/{kegiatanId}', [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'deleteKegiatan'])->name('kegiatan.destroy');
+            Route::put('/{programId}/kegiatan/{kegiatanId}/realisasi', [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'updateRealisasi'])->name('kegiatan.realisasi');
+        });
+
+        // Kinerja (KPI Dashboard)
+        Route::prefix('kinerja')->name('kinerja.')->group(function () {
+            Route::get('/',                         [\App\Http\Controllers\Kinerja\KinerjaController::class, 'index'])->name('index');
+            Route::get('/dashboard',                [\App\Http\Controllers\Kinerja\KinerjaController::class, 'dashboard'])->name('dashboard');
+            Route::get('/manage',                   [\App\Http\Controllers\Kinerja\KinerjaController::class, 'manage'])->name('manage');
+            Route::get('/list',                     [\App\Http\Controllers\Kinerja\KinerjaController::class, 'list'])->name('list');
+            Route::post('/',                        [\App\Http\Controllers\Kinerja\KinerjaController::class, 'store'])->name('store');
+            Route::get('/{id}',                     [\App\Http\Controllers\Kinerja\KinerjaController::class, 'show'])->name('show');
+            Route::put('/{id}',                     [\App\Http\Controllers\Kinerja\KinerjaController::class, 'update'])->name('update');
+            Route::delete('/{id}',                  [\App\Http\Controllers\Kinerja\KinerjaController::class, 'destroy'])->name('destroy');
+            Route::post('/{id}/realisasi',          [\App\Http\Controllers\Kinerja\KinerjaController::class, 'inputRealisasi'])->name('inputRealisasi');
+            Route::post('/sync-auto',               [\App\Http\Controllers\Kinerja\KinerjaController::class, 'syncAuto'])->name('syncAuto');
         });
 
         // Seleksi

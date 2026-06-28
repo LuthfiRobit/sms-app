@@ -33,8 +33,12 @@ class KuotaJurusanService
     public function index(int $jalurId, int $tahunPelajaranId): array
     {
         try {
-            // Ambil semua jurusan aktif
-            $allJurusan = Jurusan::aktif()->orderBy('nama')->get();
+            // Derive lembaga dari jalur agar jurusan yang ditampilkan hanya milik lembaga ini
+            $jalur     = JalurPendaftaran::with('pembukaanPpdb')->find($jalurId);
+            $lembagaId = $jalur?->pembukaanPpdb?->lembaga_id;
+
+            // Ambil semua jurusan aktif milik lembaga ini saja
+            $allJurusan = Jurusan::aktif()->byLembaga($lembagaId)->orderBy('nama')->get();
 
             // Ambil kuota existing untuk kombinasi ini
             $existingKuota = KuotaJurusan::with('jurusan')
@@ -108,6 +112,7 @@ class KuotaJurusanService
                 ];
             }
 
+            $lembagaId  = $jalur->pembukaanPpdb?->lembaga_id;
             $errors     = [];
             $processed  = 0;
 
@@ -115,8 +120,8 @@ class KuotaJurusanService
                 $jurusanId  = (int) $item['jurusan_id'];
                 $kuotaBaru  = (int) $item['kuota'];
 
-                // Jurusan harus valid/aktif
-                $jurusan = Jurusan::aktif()->find($jurusanId);
+                // Jurusan harus valid/aktif dan milik lembaga yang sama
+                $jurusan = Jurusan::aktif()->byLembaga($lembagaId)->find($jurusanId);
                 if (!$jurusan) {
                     $errors[] = "Jurusan ID {$jurusanId} tidak ditemukan atau tidak aktif.";
                     continue;

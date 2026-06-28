@@ -158,7 +158,7 @@
                                 </span>
                                 <strong>{{ $siswa->nama }}</strong>
                                 <span class="ms-auto me-3 badge bg-light text-dark border" style="font-size:.75rem;">
-                                    {{ count($siswa->nilai_rows) }} Mapel
+                                    {{ count($siswa->rows) }} Mapel
                                 </span>
                             </button>
                         </h2>
@@ -181,10 +181,10 @@
                                             </tr>
                                         </thead>
                                         <tbody id="tbody-{{ $pid }}">
-                                            @forelse($siswa->nilai_rows as $i => $n)
+                                            @forelse($siswa->rows as $i => $n)
                                             <tr data-mapel="{{ $n->mata_pelajaran_id }}">
                                                 <td class="text-center">{{ $i + 1 }}</td>
-                                                <td>{{ $n->mapel_nama }}</td>
+                                                <td>{{ $n->mapel->nama ?? '—' }}</td>
                                                 <td class="text-center">
                                                     @if($canEdit)
                                                     <input type="number" class="form-control form-control-sm text-center inp-nilai inp-harian"
@@ -262,7 +262,7 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                @if($canEdit && count($siswa->nilai_rows) > 0)
+                                @if($canEdit && count($siswa->rows) > 0)
                                 <div class="p-2 text-end bg-light border-top">
                                     <button class="btn btn-sm btn-primary"
                                         onclick="saveSiswaNilai({{ $pid }}, {{ $pengajuan->id }})">
@@ -304,19 +304,18 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($nilaiPerSiswa as $i => $siswa)
+                            @forelse($siswaList as $i => $siswa)
                             @php
-                                $absensi    = $siswa->absensi_rekap;
-                                $totalAbsen = ($absensi->sakit ?? 0) + ($absensi->izin ?? 0) + ($absensi->alpa ?? 0);
+                                $totalAbsen = ($siswa->sakit ?? 0) + ($siswa->izin ?? 0) + ($siswa->alpa ?? 0);
                             @endphp
                             <tr>
                                 <td class="text-center">{{ $loop->iteration }}</td>
                                 <td>{{ $siswa->nama }}</td>
                                 <td class="text-center">{{ $siswa->no_absen ?? '—' }}</td>
-                                <td class="text-center text-success fw-bold">{{ $absensi->hadir ?? 0 }}</td>
-                                <td class="text-center text-warning fw-bold">{{ $absensi->sakit ?? 0 }}</td>
-                                <td class="text-center text-info fw-bold">{{ $absensi->izin ?? 0 }}</td>
-                                <td class="text-center text-danger fw-bold">{{ $absensi->alpa ?? 0 }}</td>
+                                <td class="text-center text-success fw-bold">{{ $siswa->hadir ?? 0 }}</td>
+                                <td class="text-center text-warning fw-bold">{{ $siswa->sakit ?? 0 }}</td>
+                                <td class="text-center text-info fw-bold">{{ $siswa->izin ?? 0 }}</td>
+                                <td class="text-center text-danger fw-bold">{{ $siswa->alpa ?? 0 }}</td>
                                 <td class="text-center fw-bold {{ $totalAbsen > 0 ? 'text-danger' : 'text-muted' }}">
                                     {{ $totalAbsen }}
                                 </td>

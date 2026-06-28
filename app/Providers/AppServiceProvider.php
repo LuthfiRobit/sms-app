@@ -9,6 +9,8 @@ use App\Dashboard\Widgets\Ppdb\StatWidget;
 use App\Dashboard\Widgets\Ppdb\TrenWidget;
 use Illuminate\Support\ServiceProvider;
 
+use App\Repositories\Kinerja\KpiRepositoryInterface;
+use App\Repositories\Kinerja\KpiRepository;
 use App\Repositories\Rbac\RoleRepositoryInterface;
 use App\Repositories\Rbac\RoleRepository;
 use App\Repositories\Rbac\PermissionRepositoryInterface;
@@ -147,6 +149,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(NilaiRepositoryInterface::class, NilaiRepository::class);
         $this->app->bind(AkademikSettingRepositoryInterface::class, AkademikSettingRepository::class);
         $this->app->bind(PengajuanRaportRepositoryInterface::class, PengajuanRaportRepository::class);
+
+        // Cluster Kinerja
+        $this->app->bind(KpiRepositoryInterface::class, KpiRepository::class);
+
+        // Cluster Program Kerja
+        $this->app->bind(\App\Repositories\ProgramKerja\ProgramKerjaRepositoryInterface::class, \App\Repositories\ProgramKerja\ProgramKerjaRepository::class);
 
         // Default binding untuk active_lembaga_id agar tidak throw BindingResolutionException
         $this->app->bind('active_lembaga_id', function () {

@@ -252,6 +252,11 @@
                             <a class="pc-link" href="{{ route('admin.master.rombel-siswa.index') }}">Pengelolaan Siswa</a>
                         </li>
                         @endif
+                        @if(auth()->user()->hasPermissionTo('admin.master.siswa.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.master.siswa.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.master.siswa.index') }}"><i class="bi bi-person-badge me-1"></i>Daftar Siswa Aktif</a>
+                        </li>
+                        @endif
                         @if(auth()->user()->hasPermissionTo('admin.akademik.setting.index'))
                         <li class="pc-item {{ request()->routeIs('admin.akademik.setting.*') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('admin.akademik.setting.index') }}"><span class="pc-micon"><i class="bi bi-gear"></i></span><span class="pc-mtext">Setting Akademik</span></a>
@@ -317,6 +322,29 @@
                         <li class="pc-item"><a class="pc-link" href="#">Bimbingan Konseling</a></li>
                     </ul>
                 </li>
+
+                <!-- 4b. Program Kerja -->
+                <li class="pc-item pc-caption"><label>Program & Kinerja</label><i class="bi bi-clipboard2-check"></i></li>
+                @if(auth()->user()->hasPermissionTo('admin.program-kerja.index'))
+                <li class="pc-item pc-hasmenu {{ request()->routeIs('admin.program-kerja.*') ? 'active' : '' }}">
+                    <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-clipboard2-check"></i></span><span class="pc-mtext">Program Kerja</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                    <ul class="pc-submenu">
+                        <li class="pc-item {{ request()->routeIs('admin.program-kerja.index') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.program-kerja.index') }}"><span class="pc-micon"><i class="bi bi-list-task"></i></span><span class="pc-mtext">Semua Program</span></a>
+                        </li>
+                    </ul>
+                </li>
+                @endif
+                @if(auth()->user()->hasPermissionTo('admin.kinerja.index'))
+                <li class="pc-item {{ request()->routeIs('admin.kinerja.*') ? 'active' : '' }}">
+                    <a class="pc-link" href="{{ route('admin.kinerja.index') }}"><span class="pc-micon"><i class="bi bi-graph-up-arrow"></i></span><span class="pc-mtext">Dashboard Kinerja</span></a>
+                </li>
+                @if(auth()->user()->hasPermissionTo('admin.kinerja.manage'))
+                <li class="pc-item {{ request()->routeIs('admin.kinerja.manage*') ? 'active' : '' }}">
+                    <a class="pc-link" href="{{ route('admin.kinerja.manage') }}"><span class="pc-micon"><i class="bi bi-sliders"></i></span><span class="pc-mtext">Kelola Indikator KPI</span></a>
+                </li>
+                @endif
+                @endif
 
                 <!-- 5. Laporan & Pengaturan -->
                 <li class="pc-item pc-caption"><label>Laporan & Pengaturan</label><i

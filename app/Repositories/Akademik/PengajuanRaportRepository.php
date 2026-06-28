@@ -20,7 +20,7 @@ class PengajuanRaportRepository implements PengajuanRaportRepositoryInterface
     {
         $query = $this->model
             ->with([
-                'rombel:id,nama,tingkat',
+                'rombel:id,nama,tingkat,wali_kelas',
                 'semester:id,nama',
                 'lembaga:id,nama',
                 'tahunPelajaran:id,nama',
@@ -44,7 +44,7 @@ class PengajuanRaportRepository implements PengajuanRaportRepositoryInterface
             'lembaga',
             'raportNilai.mataPelajaran',
             'raportNilai.peserta',
-            'raportAbsensiRekap.peserta',
+            'absensiRekap.peserta',
         ];
 
         $relations = empty($with) ? $defaultWith : $with;
