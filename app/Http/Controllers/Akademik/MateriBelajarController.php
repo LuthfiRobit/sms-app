@@ -81,9 +81,10 @@ class MateriBelajarController extends Controller
                 }
                 return $parts ? implode(' ', $parts) : '<span class="text-muted small">—</span>';
             })
-            ->addColumn('status_badge', fn($r) => $r->status === 'aktif'
-                ? "<span class='badge bg-success'>Aktif</span>"
-                : "<span class='badge bg-secondary'>Non-Aktif</span>")
+            ->addColumn('status_badge', function ($r) {
+                $badge = \App\Models\Akademik\MateriBelajar::statusBadge($r->status);
+                return "<span class='badge bg-{$badge['class']}'>{$badge['label']}</span>";
+            })
             ->addColumn('action', function ($r) {
                 $edit = auth()->user()->hasPermissionTo('admin.akademik.materi-belajar.update')
                     ? "<button class='btn btn-xs btn-icon btn-light-primary me-1' onclick='editMateri({$r->id})' title='Edit'><i class='bi bi-pencil'></i></button>"
@@ -111,8 +112,11 @@ class MateriBelajarController extends Controller
             'file'              => 'nullable|file|max:20480',
             'url_eksternal'     => 'nullable|url|max:500',
             'tanggal'           => 'required|date',
-            'status'            => 'required|in:aktif,nonaktif',
+            'status'            => 'nullable|in:pending,disetujui,ditolak',
         ]);
+
+        // Materi yang baru diupload oleh guru langsung masuk status pending untuk diverifikasi
+        $data['status'] = 'pending';
 
         $file = $request->file('file');
         unset($data['file']);
@@ -143,8 +147,13 @@ class MateriBelajarController extends Controller
             'file'              => 'nullable|file|max:20480',
             'url_eksternal'     => 'nullable|url|max:500',
             'tanggal'           => 'required|date',
-            'status'            => 'required|in:aktif,nonaktif',
         ]);
+
+        // Editing a materi resets it to pending for re-verification
+        $data['status'] = 'pending';
+        $data['catatan_revisi']  = null;
+        $data['diverifikasi_by'] = null;
+        $data['diverifikasi_at'] = null;
 
         $file = $request->file('file');
         unset($data['file']);

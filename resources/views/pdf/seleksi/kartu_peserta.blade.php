@@ -310,7 +310,11 @@
             <tr>
                 <td style="width: 70px; vertical-align: middle;">
                     @if(!empty($qr_base64))
-                        <img src="{{ $qr_base64 }}" alt="QR Code Verifikasi" style="width: 65px; height: 65px;" />
+                        @if(str_starts_with($qr_base64, '<svg') || str_starts_with($qr_base64, '<?xml'))
+                            <div style="width:65px;height:65px;">{!! $qr_base64 !!}</div>
+                        @else
+                            <img src="{{ $qr_base64 }}" alt="QR Code Verifikasi" style="width: 65px; height: 65px;" />
+                        @endif
                     @else
                         <div style="width:65px;height:65px;background:#f3f4f6;border:1px dashed #d1d5db;
                                     text-align:center; padding-top: 15px;

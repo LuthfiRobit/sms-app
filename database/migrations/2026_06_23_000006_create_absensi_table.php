@@ -25,7 +25,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('absensi_id')->constrained('absensi')->cascadeOnDelete();
             $table->foreignId('peserta_id')->constrained('peserta')->cascadeOnDelete();
-            $table->enum('status', ['hadir', 'sakit', 'izin', 'alpha'])->default('hadir');
+            $table->enum('status', ['hadir', 'sakit', 'izin', 'alpa'])->default('hadir');
             $table->string('keterangan', 255)->nullable();
             $table->unique(['absensi_id', 'peserta_id']);
         });

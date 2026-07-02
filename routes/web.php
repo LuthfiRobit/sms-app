@@ -146,14 +146,27 @@ Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
             Route::get('materi-belajar/list', [\App\Http\Controllers\Akademik\MateriBelajarController::class, 'list'])->name('materi-belajar.list');
             Route::resource('materi-belajar', \App\Http\Controllers\Akademik\MateriBelajarController::class)->except(['create', 'edit']);
 
+            // Verifikasi Materi Ajar
+            Route::get('verifikasi-materi',              [\App\Http\Controllers\Akademik\VerifikasiMateriController::class, 'index'])->name('verifikasi-materi.index');
+            Route::get('verifikasi-materi/list',         [\App\Http\Controllers\Akademik\VerifikasiMateriController::class, 'list'])->name('verifikasi-materi.list');
+            Route::post('verifikasi-materi/{id}/aksi',   [\App\Http\Controllers\Akademik\VerifikasiMateriController::class, 'verifikasi'])->name('verifikasi-materi.aksi');
+
             // Absensi Siswa
-            Route::get('absensi/list', [\App\Http\Controllers\Akademik\AbsensiController::class, 'list'])->name('absensi.list');
+            Route::get('absensi/rekap',        [\App\Http\Controllers\Akademik\AbsensiController::class, 'rekap'])->name('absensi.rekap');
+            Route::get('absensi/rekap-pdf',    [\App\Http\Controllers\Akademik\AbsensiController::class, 'rekapPdf'])->name('absensi.rekap-pdf');
+            Route::get('absensi/rekap-excel',  [\App\Http\Controllers\Akademik\AbsensiController::class, 'rekapExcel'])->name('absensi.rekap-excel');
+            Route::get('absensi/tap',          [\App\Http\Controllers\Akademik\AbsensiController::class, 'tapScan'])->name('absensi.tap');
+            Route::post('absensi/tap/scan',    [\App\Http\Controllers\Akademik\AbsensiController::class, 'tapRecord'])->name('absensi.tap.scan');
+            Route::get('absensi/list',         [\App\Http\Controllers\Akademik\AbsensiController::class, 'list'])->name('absensi.list');
             Route::get('absensi/{absensi}/detail', [\App\Http\Controllers\Akademik\AbsensiController::class, 'detail'])->name('absensi.detail');
             Route::get('absensi/siswa/{rombel}', [\App\Http\Controllers\Akademik\AbsensiController::class, 'getSiswa'])->name('absensi.siswa');
             Route::resource('absensi', \App\Http\Controllers\Akademik\AbsensiController::class)->except(['create', 'edit']);
 
             // Input Nilai
             Route::get('nilai', [\App\Http\Controllers\Akademik\NilaiController::class, 'index'])->name('nilai.index');
+            Route::get('nilai/rekap', [\App\Http\Controllers\Akademik\NilaiController::class, 'rekap'])->name('nilai.rekap');
+            Route::get('nilai/rekap-pdf', [\App\Http\Controllers\Akademik\NilaiController::class, 'rekapPdf'])->name('nilai.rekap-pdf');
+            Route::get('nilai/rekap-excel', [\App\Http\Controllers\Akademik\NilaiController::class, 'rekapExcel'])->name('nilai.rekap-excel');
             Route::get('nilai/sheet', [\App\Http\Controllers\Akademik\NilaiController::class, 'sheet'])->name('nilai.sheet');
             Route::post('nilai/save', [\App\Http\Controllers\Akademik\NilaiController::class, 'save'])->name('nilai.save');
 
@@ -262,6 +275,7 @@ Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
             Route::get('list', [App\Http\Controllers\Transaksi\PendaftaranController::class, 'list'])->name('list');
             Route::post('{id}/verifikasi', [App\Http\Controllers\Transaksi\PendaftaranController::class, 'verifikasi'])->name('verifikasi');
             Route::post('{id}/dokumen/{dokumenId}/verifikasi', [App\Http\Controllers\Transaksi\PendaftaranController::class, 'verifikasiDokumen'])->name('dokumen.verifikasi');
+            Route::post('{id}/konfirmasi-siswa-tetap', [App\Http\Controllers\Transaksi\PendaftaranController::class, 'konfirmasiSiswaTetap'])->name('konfirmasi-siswa-tetap');
             Route::get('/', [App\Http\Controllers\Transaksi\PendaftaranController::class, 'index'])->name('index');
             Route::get('/{id}', [App\Http\Controllers\Transaksi\PendaftaranController::class, 'show'])->name('show');
         });
@@ -406,6 +420,13 @@ Route::prefix('ppdb')->name('ppdb.')->group(function () {
         Route::prefix('/daftar-ulang')->name('daftar-ulang.')->group(function () {
             Route::get('/{pendaftaranId}', [DaftarUlangPesertaController::class, 'index'])->name('index');
             Route::post('/{pendaftaranId}', [DaftarUlangPesertaController::class, 'store'])->name('store');
+        });
+
+        // Raport Online
+        Route::prefix('/raport')->name('raport.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Portal\RaportPesertaController::class, 'index'])->name('index');
+            Route::get('/{pengajuanId}', [\App\Http\Controllers\Portal\RaportPesertaController::class, 'show'])->name('show');
+            Route::get('/{pengajuanId}/download', [\App\Http\Controllers\Portal\RaportPesertaController::class, 'download'])->name('download');
         });
     });
 });

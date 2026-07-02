@@ -30,11 +30,21 @@ class CheckPermission
         // Akademik — helper routes
         'admin.akademik.perangkat-mengajar.list'  => 'admin.akademik.perangkat-mengajar.index',
         'admin.akademik.materi-belajar.list'       => 'admin.akademik.materi-belajar.index',
+        'admin.akademik.verifikasi-materi.list'    => 'admin.akademik.verifikasi-materi.index',
+        'admin.akademik.verifikasi-materi.aksi'    => 'admin.akademik.verifikasi-materi.index',
         'admin.akademik.absensi.list'              => 'admin.akademik.absensi.index',
         'admin.akademik.absensi.detail'            => 'admin.akademik.absensi.index',
         'admin.akademik.absensi.siswa'             => 'admin.akademik.absensi.index',
+        'admin.akademik.absensi.rekap'             => 'admin.akademik.absensi.index',
+        'admin.akademik.absensi.rekap-pdf'         => 'admin.akademik.absensi.index',
+        'admin.akademik.absensi.rekap-excel'       => 'admin.akademik.absensi.index',
+        'admin.akademik.absensi.tap'               => 'admin.akademik.absensi.index',
+        'admin.akademik.absensi.tap.scan'          => 'admin.akademik.absensi.index',
         'admin.akademik.nilai.sheet'               => 'admin.akademik.nilai.index',
         'admin.akademik.nilai.save'                => 'admin.akademik.nilai.index',
+        'admin.akademik.nilai.rekap'               => 'admin.akademik.nilai.index',
+        'admin.akademik.nilai.rekap-pdf'           => 'admin.akademik.nilai.index',
+        'admin.akademik.nilai.rekap-excel'         => 'admin.akademik.nilai.index',
 
         // Raport — helper / action routes delegate to index
         'admin.akademik.raport.pengajuan.list'          => 'admin.akademik.raport.pengajuan.index',
@@ -75,6 +85,13 @@ class CheckPermission
         'admin.program-kerja.kegiatan.update'    => 'admin.program-kerja.index',
         'admin.program-kerja.kegiatan.destroy'   => 'admin.program-kerja.index',
         'admin.program-kerja.kegiatan.realisasi' => 'admin.program-kerja.index',
+        // Pendaftaran admin actions
+        'admin.ppdb.pendaftaran.list'                  => 'admin.ppdb.pendaftaran.index',
+        'admin.ppdb.pendaftaran.show'                  => 'admin.ppdb.pendaftaran.index',
+        'admin.ppdb.pendaftaran.verifikasi'            => 'admin.ppdb.pendaftaran.index',
+        'admin.ppdb.pendaftaran.dokumen.verifikasi'    => 'admin.ppdb.pendaftaran.index',
+        'admin.ppdb.pendaftaran.konfirmasi-siswa-tetap'=> 'admin.ppdb.pendaftaran.index',
+
         // Kinerja
         'admin.kinerja.dashboard'       => 'admin.kinerja.index',
         'admin.kinerja.manage'          => 'admin.kinerja.index',

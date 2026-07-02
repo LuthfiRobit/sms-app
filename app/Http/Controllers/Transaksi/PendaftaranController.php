@@ -147,4 +147,20 @@ class PendaftaranController extends Controller
 
         return response()->json(['success' => false, 'message' => 'Gagal menyimpan status dokumen'], 500);
     }
+
+    public function konfirmasiSiswaTetap(Request $request, int $id)
+    {
+        $userId = Auth::user()->id_user ?? Auth::id();
+        $result = $this->pendaftaranService->konfirmasiSiswaTetap($id, $userId);
+
+        if ($result['success']) {
+            return response()->json([
+                'success'     => true,
+                'message'     => $result['message'],
+                'auto_rombel' => $result['auto_rombel'] ?? false,
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => $result['message']], 400);
+    }
 }

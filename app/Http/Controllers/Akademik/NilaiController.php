@@ -11,7 +11,9 @@ use App\Models\Master\TahunPelajaran;
 use App\Services\Akademik\NilaiService;
 use App\Services\LogActivityService;
 use App\Services\ResponseService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class NilaiController extends Controller
 {
@@ -88,5 +90,72 @@ class NilaiController extends Controller
         );
 
         return $this->response->success(null, 'Nilai berhasil disimpan.');
+    }
+
+    // ─── REKAP NILAI ─────────────────────────────────────────────────────────
+
+    public function rekap(Request $request)
+    {
+        $this->logActivity->log('Akses Rekap Nilai', 'Membuka halaman rekap nilai siswa.');
+        $activeLembagaId = app('active_lembaga_id');
+
+        $rombelList   = Rombel::byLembaga($activeLembagaId)->aktif()->orderBy('tingkat')->orderBy('nama')->get(['id','nama','tingkat','lembaga_id']);
+        $semesterList = Semester::orderBy('nama')->get(['id','nama']);
+        $tahunList    = TahunPelajaran::orderByDesc('nama')->get(['id','nama','status']);
+
+        $rekap    = collect();
+        $mapelList = collect();
+        $rombel   = null;
+        $semester = null;
+        $tahun    = null;
+
+        $rombelId   = $request->integer('rombel_id') ?: null;
+        $semesterId = $request->integer('semester_id') ?: null;
+        $tahunId    = $request->integer('tahun_pelajaran_id') ?: null;
+
+        if ($rombelId && $semesterId && $tahunId) {
+            ['siswa' => $rekap, 'mapel' => $mapelList] = $this->service->getRekapNilai($rombelId, $semesterId, $tahunId);
+            $rombel   = Rombel::find($rombelId);
+            $semester = Semester::find($semesterId);
+            $tahun    = TahunPelajaran::find($tahunId);
+        }
+
+        return view('admin.akademik.nilai.rekap', compact(
+            'rombelList','semesterList','tahunList','rekap','mapelList',
+            'rombel','semester','tahun','rombelId','semesterId','tahunId'
+        ));
+    }
+
+    public function rekapPdf(Request $request)
+    {
+        $rombelId   = $request->integer('rombel_id');
+        $semesterId = $request->integer('semester_id');
+        $tahunId    = $request->integer('tahun_pelajaran_id');
+
+        ['siswa' => $rekap, 'mapel' => $mapelList] = $this->service->getRekapNilai($rombelId, $semesterId, $tahunId);
+        $rombel   = Rombel::with('lembaga')->find($rombelId);
+        $semester = Semester::find($semesterId);
+        $tahun    = TahunPelajaran::find($tahunId);
+
+        $pdf = Pdf::loadView('pdf.akademik.rekap-nilai', compact('rekap','mapelList','rombel','semester','tahun'))
+            ->setPaper('a4', 'landscape');
+
+        $filename = 'rekap-nilai-' . ($rombel?->nama ?? 'kelas') . '-' . ($semester?->nama ?? '') . '.pdf';
+        return $pdf->download($filename);
+    }
+
+    public function rekapExcel(Request $request)
+    {
+        $rombelId   = $request->integer('rombel_id');
+        $semesterId = $request->integer('semester_id');
+        $tahunId    = $request->integer('tahun_pelajaran_id');
+
+        ['siswa' => $rekap, 'mapel' => $mapelList] = $this->service->getRekapNilai($rombelId, $semesterId, $tahunId);
+        $rombel   = Rombel::with('lembaga')->find($rombelId);
+        $semester = Semester::find($semesterId);
+        $tahun    = TahunPelajaran::find($tahunId);
+
+        $filename = 'rekap-nilai-' . ($rombel?->nama ?? 'kelas') . '-' . ($semester?->nama ?? '') . '.xlsx';
+        return Excel::download(new \App\Exports\RekapNilaiExport($rekap, $mapelList, $rombel, $semester, $tahun), $filename);
     }
 }

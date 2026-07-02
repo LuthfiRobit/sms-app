@@ -447,12 +447,15 @@ class SeleksiService
                 ];
             });
 
-            // Sort: total_nilai DESC, tanggal_daftar ASC (tie-breaking)
+            // Sort: total_nilai DESC, tanggal_daftar ASC (tie-breaking FIFO)
             $sorted = $denganTotalNilai
-                ->sortBy([
-                    fn($a, $b) => $b['total_nilai'] <=> $a['total_nilai'],        // DESC
-                    fn($a, $b) => $a['tanggal_daftar'] <=> $b['tanggal_daftar'], // ASC
-                ])
+                ->sort(function ($a, $b) {
+                    $nilaiCmp = $b['total_nilai'] <=> $a['total_nilai']; // DESC
+                    if ($nilaiCmp !== 0) {
+                        return $nilaiCmp;
+                    }
+                    return $a['tanggal_daftar'] <=> $b['tanggal_daftar']; // ASC
+                })
                 ->values();
 
             // Upsert hasil_seleksi dalam satu transaksi
@@ -611,9 +614,10 @@ class SeleksiService
             }
 
             // --- Publikasi dalam satu transaksi atomik ---
-            $summary = [];
+            $summary       = [];
+            $notifications = []; // Dikumpulkan dalam transaksi, dikirim setelah commit
 
-            DB::transaction(function () use ($pendaftaranList, $userId, &$summary) {
+            DB::transaction(function () use ($pendaftaranList, $jalur, $userId, &$summary, &$notifications) {
                 $waktuPengumuman = now();
 
                 foreach ($pendaftaranList as $pendaftaran) {
@@ -634,36 +638,24 @@ class SeleksiService
                         $pendaftaran->update(['status' => $statusBaru]);
                     }
 
-                    // Kirim notifikasi in-app ke peserta
-                    // $userId_peserta = $pendaftaran->peserta?->user_id;
-                    // if ($userId_peserta) {
-                    //     [$judulNotif, $isiNotif, $tipeNotif] = $this->buildNotifikasiPengumuman(
-                    //         $pendaftaran,
-                    //         $hasil,
-                    //     );
+                    // Kumpulkan data notifikasi untuk dikirim setelah transaction commit
+                    $userId_peserta = $pendaftaran->peserta?->user_id;
+                    if ($userId_peserta) {
+                        $event = match ($statusKelulusan) {
+                            HasilSeleksi::STATUS_LULUS => 'pengumuman_lulus',
+                            default                    => 'pengumuman_tidak_lulus',
+                        };
 
-                    //     $this->notifikasiService->kirim(
-                    //         $userId_peserta,
-                    //         $tipeNotif,
-                    //         $judulNotif,
-                    //         $isiNotif
-                    //     );
-
-                    //     // Log email intent (implementasi kirim email bisa via queue)
-                    //     $emailPeserta = $pendaftaran->peserta?->kontak?->email
-                    //                  ?? $pendaftaran->peserta?->user?->email;
-
-                    //     if ($emailPeserta) {
-                    //         Log::info('[SeleksiService::pengumuman] Email pengumuman untuk peserta', [
-                    //             'no_pendaftaran'   => $pendaftaran->no_pendaftaran,
-                    //             'email'            => $emailPeserta,
-                    //             'status_kelulusan' => $statusKelulusan,
-                    //         ]);
-
-                    //         // TODO: Dispatch email job
-                    //         // SendPengumumanEmailJob::dispatch($pendaftaran, $hasil)->onQueue('notifications');
-                    //     }
-                    // }
+                        $notifications[] = [
+                            'user_id' => $userId_peserta,
+                            'event'   => $event,
+                            'data'    => [
+                                'nama_peserta'   => $pendaftaran->peserta?->nama_lengkap ?? '-',
+                                'no_pendaftaran' => $pendaftaran->no_pendaftaran,
+                                'jalur'          => $jalur->nama,
+                            ],
+                        ];
+                    }
 
                     $summary[] = [
                         'pendaftaran_id' => $pendaftaran->id,
@@ -677,6 +669,11 @@ class SeleksiService
                     ];
                 }
             });
+
+            // Kirim notifikasi ke setiap peserta setelah transaction berhasil commit
+            foreach ($notifications as $notif) {
+                $this->notifikasiService->kirim($notif['user_id'], $notif['event'], $notif['data']);
+            }
 
             $this->logActivity->log(
                 'Pengumuman Seleksi',
@@ -1044,22 +1041,21 @@ class SeleksiService
     }
 
     /**
-     * Membuat QR Code sebagai string base64 data URL.
-     * Mendukung dua library: SimpleSoftwareIO/simple-qrcode (preferred)
-     * atau BaconQrCode sebagai fallback.
+     * Generate QR Code.
+     * Mencoba PNG via SimpleSoftwareIO (butuh Imagick), lalu fallback ke inline SVG via BaconQrCode.
+     * Return value: data URL PNG, inline SVG markup, atau null.
      *
      * @param  string $content  Konten yang di-encode dalam QR
-     * @return string|null      Data URL base64 atau null jika library tidak tersedia
+     * @return string|null
      */
     private function generateQrCodeBase64(string $content): ?string
     {
-        // Coba SimpleSoftwareIO/simple-qrcode (composer require simplesoftwareio/simple-qrcode)
+        // Coba PNG via SimpleSoftwareIO (butuh Imagick)
         if (
             class_exists(\SimpleSoftwareIO\QrCode\Facades\QrCode::class)
             || class_exists(\SimpleSoftwareIO\QrCode\QrCode::class)
         ) {
             try {
-                // DOMPDF sangat sensitif terhadap SVG base64, jadi kita force ke format PNG.
                 $qrPng = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
                     ->size(200)
                     ->margin(0)
@@ -1068,17 +1064,21 @@ class SeleksiService
 
                 return 'data:image/png;base64,' . base64_encode($qrPng);
             } catch (Exception $e) {
-                Log::warning('[SeleksiService::generateQrCodeBase64] SimpleSoftwareIO QR gagal: ' . $e->getMessage());
+                Log::info('[SeleksiService::generateQrCodeBase64] PNG gagal (Imagick?), fallback ke SVG: ' . $e->getMessage());
             }
         }
 
-        // Fallback: Kita skip BaconQrCode jika merender SVG karena DOMPDF bisa crash.
-        // Jika butuh fallback PNG BaconQrCode, perlukan driver Imagick dsb yang rumit di Windows.
-        // Oleh karena itu return null secara default jika simple-qrcode gagal/tidak ada PNG.
-
-        Log::warning('[SeleksiService::generateQrCodeBase64] QrCode gagal digenerate dalam format PNG.', [
-            'content' => $content,
-        ]);
+        // Fallback: BaconQrCode SVG (tersedia tanpa Imagick, DomPDF mendukung inline SVG)
+        try {
+            $renderer = new \BaconQrCode\Renderer\ImageRenderer(
+                new \BaconQrCode\Renderer\RendererStyle\RendererStyle(200, 1),
+                new \BaconQrCode\Renderer\Image\SvgImageBackEnd()
+            );
+            $writer = new \BaconQrCode\Writer($renderer);
+            return $writer->writeString($content);
+        } catch (Exception $e) {
+            Log::warning('[SeleksiService::generateQrCodeBase64] SVG juga gagal: ' . $e->getMessage());
+        }
 
         return null;
     }

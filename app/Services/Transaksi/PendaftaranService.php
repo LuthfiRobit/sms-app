@@ -1293,4 +1293,153 @@ class PendaftaranService
             'data'    => null,
         ];
     }
+
+    // =========================================================================
+    // KONFIRMASI SISWA TETAP — Admin konfirmasi daftar_ulang → siswa_tetap
+    // =========================================================================
+
+    /**
+     * Mengkonfirmasi peserta daftar ulang menjadi siswa tetap.
+     *
+     * Setelah status berubah ke siswa_tetap, sistem mencoba auto-assign
+     * ke rombel berdasarkan jurusan dari jalur PPDB. Jika tepat satu
+     * rombel sesuai ditemukan, siswa langsung di-assign.
+     *
+     * @param  int    $pendaftaranId
+     * @param  int    $adminUserId   auth()->user()->id_user
+     * @return array  ['success', 'message', 'auto_rombel' => bool]
+     */
+    public function konfirmasiSiswaTetap(int $pendaftaranId, int $adminUserId): array
+    {
+        $pendaftaran = $this->pendaftaranRepo->findById($pendaftaranId, [
+            'peserta', 'jalurPendaftaran.pembukaanPpdb',
+        ]);
+
+        if (! $pendaftaran) {
+            return $this->notFound('Pendaftaran', $pendaftaranId);
+        }
+
+        if ($pendaftaran->status !== Pendaftaran::STATUS_DAFTAR_ULANG) {
+            return [
+                'success' => false,
+                'message' => "Status pendaftaran harus 'daftar_ulang' untuk dikonfirmasi. Status saat ini: {$pendaftaran->status}.",
+                'data'    => null,
+            ];
+        }
+
+        try {
+            DB::transaction(function () use ($pendaftaran, $adminUserId) {
+                $this->pendaftaranRepo->updateStatus(
+                    $pendaftaran->id,
+                    Pendaftaran::STATUS_SISWA_TETAP
+                );
+            });
+
+            // Auto-assign rombel: cari berdasarkan jurusan + lembaga + tahun pelajaran
+            $autoRombel = $this->tryAutoAssignRombel($pendaftaran);
+
+            // Notifikasi ke peserta
+            if ($pendaftaran->peserta?->user_id) {
+                $this->notifikasiService->kirim(
+                    $pendaftaran->peserta->user_id,
+                    'siswa_tetap_confirmed',
+                    [
+                        'nama_peserta'   => $pendaftaran->peserta->nama_lengkap ?? 'Peserta',
+                        'no_pendaftaran' => $pendaftaran->no_pendaftaran,
+                    ]
+                );
+            }
+
+            $this->logActivity->log(
+                'Konfirmasi Siswa Tetap',
+                "Pendaftaran #{$pendaftaran->no_pendaftaran} dikonfirmasi sebagai siswa tetap oleh user ID #{$adminUserId}."
+                . ($autoRombel ? " Auto-assigned ke rombel." : "")
+            );
+
+            return [
+                'success'     => true,
+                'message'     => 'Peserta berhasil dikonfirmasi sebagai Siswa Tetap.'
+                    . ($autoRombel ? ' Siswa otomatis ditempatkan di kelas yang sesuai.' : ' Silakan assign siswa ke kelas melalui menu Rombel Siswa.'),
+                'auto_rombel' => $autoRombel,
+                'data'        => null,
+            ];
+        } catch (Exception $e) {
+            Log::error('[PendaftaranService::konfirmasiSiswaTetap] ' . $e->getMessage(), [
+                'pendaftaran_id' => $pendaftaranId,
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Gagal mengkonfirmasi: ' . $e->getMessage(),
+                'data'    => null,
+            ];
+        }
+    }
+
+    /**
+     * Attempt to auto-assign the peserta to a matching rombel.
+     * Returns true if assignment succeeded.
+     */
+    private function tryAutoAssignRombel(Pendaftaran $pendaftaran): bool
+    {
+        try {
+            $lembagaId     = $pendaftaran->lembaga_id;
+            $tahunId       = $pendaftaran->tahun_pelajaran_id;
+            $pesertaId = $pendaftaran->peserta_id;
+
+            if (! $lembagaId || ! $tahunId || ! $pesertaId) {
+                return false;
+            }
+
+            // Try to determine jurusan from kuota_jurusan via jalur
+            $jurusanId = null;
+            if ($pendaftaran->jalur_pendaftaran_id) {
+                $jurusanRow = DB::table('kuota_jurusan')
+                    ->where('jalur_pendaftaran_id', $pendaftaran->jalur_pendaftaran_id)
+                    ->first(['jurusan_id']);
+                $jurusanId = $jurusanRow?->jurusan_id;
+            }
+
+            $query = DB::table('rombel')
+                ->where('lembaga_id', $lembagaId)
+                ->where('tahun_pelajaran_id', $tahunId)
+                ->where('status', 'aktif');
+
+            if ($jurusanId) {
+                $query->where('jurusan_id', $jurusanId);
+            }
+
+            $rombels = $query->get(['id', 'nama']);
+
+            if ($rombels->count() !== 1) {
+                // 0 = no matching rombel, >1 = ambiguous — skip auto-assign
+                return false;
+            }
+
+            $rombelId = $rombels->first()->id;
+
+            // Check if already assigned to avoid duplicate
+            $alreadyAssigned = DB::table('rombel_siswa')
+                ->where('rombel_id', $rombelId)
+                ->where('peserta_id', $pesertaId)
+                ->exists();
+
+            if ($alreadyAssigned) {
+                return true;
+            }
+
+            DB::table('rombel_siswa')->insert([
+                'rombel_id'  => $rombelId,
+                'peserta_id' => $pesertaId,
+                'no_absen'   => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            return true;
+        } catch (Exception $e) {
+            Log::warning('[PendaftaranService::tryAutoAssignRombel] ' . $e->getMessage());
+            return false;
+        }
+    }
 }

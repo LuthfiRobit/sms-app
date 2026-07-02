@@ -7,12 +7,17 @@ use App\Models\Master\Guru;
 use App\Models\Master\Lembaga;
 use App\Models\Master\MataPelajaran;
 use App\Models\Master\Rombel;
+use App\Models\Master\Semester;
 use App\Models\Master\TahunPelajaran;
 use App\Repositories\Akademik\AbsensiRepositoryInterface;
 use App\Services\Akademik\AbsensiService;
 use App\Services\LogActivityService;
 use App\Services\ResponseService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
 class AbsensiController extends Controller
@@ -154,5 +159,180 @@ class AbsensiController extends Controller
         } catch (\Exception $e) {
             return $this->response->error($e->getMessage());
         }
+    }
+
+    // ─── REKAP ABSENSI ───────────────────────────────────────────────────────
+
+    public function rekap(Request $request)
+    {
+        $this->logActivity->log('Akses Rekap Absensi', 'Membuka halaman rekap absensi siswa.');
+        $activeLembagaId = app('active_lembaga_id');
+
+        $rombelList   = Rombel::byLembaga($activeLembagaId)->aktif()->orderBy('tingkat')->orderBy('nama')->get(['id','nama','tingkat','lembaga_id']);
+        $semesterList = Semester::orderBy('nama')->get(['id','nama']);
+        $tahunList    = TahunPelajaran::orderByDesc('nama')->get(['id','nama','status']);
+
+        $rekap      = collect();
+        $rombel     = null;
+        $tanggalMulai = $request->input('tanggal_mulai');
+        $tanggalAkhir = $request->input('tanggal_akhir');
+        $rombelId   = $request->integer('rombel_id') ?: null;
+
+        if ($rombelId && $tanggalMulai && $tanggalAkhir) {
+            $rekap  = $this->service->getRekapAbsensi($rombelId, $tanggalMulai, $tanggalAkhir);
+            $rombel = Rombel::find($rombelId);
+        }
+
+        return view('admin.akademik.absensi.rekap', compact(
+            'rombelList','semesterList','tahunList','rekap','rombel','tanggalMulai','tanggalAkhir','rombelId'
+        ));
+    }
+
+    public function rekapPdf(Request $request)
+    {
+        $rombelId     = $request->integer('rombel_id');
+        $tanggalMulai = $request->input('tanggal_mulai');
+        $tanggalAkhir = $request->input('tanggal_akhir');
+
+        $rekap  = $this->service->getRekapAbsensi($rombelId, $tanggalMulai, $tanggalAkhir);
+        $rombel = Rombel::with('lembaga')->find($rombelId);
+
+        $pdf = Pdf::loadView('pdf.akademik.rekap-absensi', compact('rekap','rombel','tanggalMulai','tanggalAkhir'))
+            ->setPaper('a4', 'landscape');
+
+        $filename = 'rekap-absensi-' . ($rombel?->nama ?? 'kelas') . '-' . $tanggalMulai . '.pdf';
+        return $pdf->download($filename);
+    }
+
+    public function rekapExcel(Request $request)
+    {
+        $rombelId     = $request->integer('rombel_id');
+        $tanggalMulai = $request->input('tanggal_mulai');
+        $tanggalAkhir = $request->input('tanggal_akhir');
+
+        $rekap  = $this->service->getRekapAbsensi($rombelId, $tanggalMulai, $tanggalAkhir);
+        $rombel = Rombel::with('lembaga')->find($rombelId);
+
+        $filename = 'rekap-absensi-' . ($rombel?->nama ?? 'kelas') . '-' . $tanggalMulai . '.xlsx';
+        return Excel::download(new \App\Exports\RekapAbsensiExport($rekap, $rombel, $tanggalMulai, $tanggalAkhir), $filename);
+    }
+
+    // ── TAP Kehadiran QR ─────────────────────────────────────────────────────
+
+    /**
+     * Halaman TAP scan — menampilkan daftar siswa dengan QR tiap siswa,
+     * serta area scan kamera untuk merekam kehadiran.
+     */
+    public function tapScan(Request $request)
+    {
+        $activeLembagaId = app('active_lembaga_id');
+        $rombelList      = Rombel::byLembaga($activeLembagaId)->aktif()->orderBy('tingkat')->orderBy('nama')->get(['id', 'nama', 'tingkat']);
+
+        $rombelId = $request->integer('rombel_id');
+        $tanggal  = $request->input('tanggal', today()->toDateString());
+
+        $siswaList = collect();
+        $rombel    = null;
+
+        if ($rombelId) {
+            $rombel    = Rombel::with('lembaga')->find($rombelId);
+            $siswaList = DB::table('rombel_siswa')
+                ->join('peserta', 'peserta.id', '=', 'rombel_siswa.peserta_id')
+                ->where('rombel_siswa.rombel_id', $rombelId)
+                ->whereNull('peserta.deleted_at')
+                ->select('peserta.id', 'peserta.nama_lengkap', 'rombel_siswa.no_absen')
+                ->orderBy('rombel_siswa.no_absen')
+                ->orderBy('peserta.nama_lengkap')
+                ->get()
+                ->map(function ($siswa) use ($tanggal) {
+                    $qrToken = $this->generateQrToken((int) $siswa->id, $tanggal);
+                    $siswa->qr_token = $qrToken;
+                    return $siswa;
+                });
+        }
+
+        $this->logActivity->log('TAP Kehadiran QR', 'Membuka halaman TAP scan kehadiran.');
+
+        return view('admin.akademik.absensi.tap', compact('rombelList', 'rombelId', 'tanggal', 'rombel', 'siswaList'));
+    }
+
+    /**
+     * Mobile-friendly endpoint: terima QR token, cari siswa, catat hadir.
+     */
+    public function tapRecord(Request $request)
+    {
+        $request->validate([
+            'token'     => 'required|string',
+            'absensi_id'=> 'required|integer|exists:absensi,id',
+        ]);
+
+        $payload = $this->verifyQrToken($request->input('token'));
+
+        if (! $payload) {
+            return $this->response->error('Token QR tidak valid atau sudah kedaluwarsa.');
+        }
+
+        ['peserta_id' => $pesertaId, 'tanggal' => $tanggal] = $payload;
+
+        $absensiId = $request->integer('absensi_id');
+
+        // Pastikan peserta ada di absensi ini
+        $existing = DB::table('absensi_detail')
+            ->where('absensi_id', $absensiId)
+            ->where('peserta_id', $pesertaId)
+            ->first();
+
+        if (! $existing) {
+            return $this->response->error('Siswa tidak terdaftar pada sesi absensi ini.');
+        }
+
+        if ($existing->status === 'hadir') {
+            $peserta = DB::table('peserta')->where('id', $pesertaId)->value('nama_lengkap');
+            return $this->response->success(['nama' => $peserta, 'status' => 'hadir'], 'Sudah tercatat hadir.');
+        }
+
+        DB::table('absensi_detail')
+            ->where('absensi_id', $absensiId)
+            ->where('peserta_id', $pesertaId)
+            ->update(['status' => 'hadir', 'updated_at' => now()]);
+
+        $peserta = DB::table('peserta')->where('id', $pesertaId)->value('nama_lengkap');
+
+        $this->logActivity->log('TAP Kehadiran', "Siswa {$peserta} (ID #{$pesertaId}) hadir via TAP QR pada absensi #{$absensiId}.");
+
+        return $this->response->success(['nama' => $peserta, 'status' => 'hadir'], "{$peserta} berhasil dicatat hadir.");
+    }
+
+    // ── QR Token helpers ─────────────────────────────────────────────────────
+
+    private function generateQrToken(int $pesertaId, string $tanggal): string
+    {
+        $secret  = config('app.key');
+        $payload = base64_encode(json_encode(['peserta_id' => $pesertaId, 'tanggal' => $tanggal]));
+        $sig     = hash_hmac('sha256', $payload, $secret);
+        return $payload . '.' . substr($sig, 0, 16);
+    }
+
+    private function verifyQrToken(string $token): ?array
+    {
+        $parts = explode('.', $token, 2);
+        if (count($parts) !== 2) {
+            return null;
+        }
+
+        [$payload, $shortSig] = $parts;
+        $secret  = config('app.key');
+        $fullSig = hash_hmac('sha256', $payload, $secret);
+
+        if (! hash_equals(substr($fullSig, 0, 16), $shortSig)) {
+            return null;
+        }
+
+        $data = json_decode(base64_decode($payload), true);
+        if (! isset($data['peserta_id'], $data['tanggal'])) {
+            return null;
+        }
+
+        return $data;
     }
 }
