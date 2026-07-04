@@ -37,6 +37,16 @@ class AbsensiRepository implements AbsensiRepositoryInterface
         ], $with))->find($id);
     }
 
+    public function findByRombelMapelTanggal(int $rombelId, int $mapelId, string $tanggal): ?object
+    {
+        return $this->model
+            ->where('rombel_id', $rombelId)
+            ->where('mata_pelajaran_id', $mapelId)
+            ->whereDate('tanggal', $tanggal)
+            ->with('detail')
+            ->first();
+    }
+
     public function create(array $data): object
     {
         return $this->model->create($data);
@@ -46,9 +56,9 @@ class AbsensiRepository implements AbsensiRepositoryInterface
     {
         AbsensiDetail::where('absensi_id', $absensiId)->delete();
 
-        $rows = array_map(fn($d) => array_merge($d, ['absensi_id' => $absensiId]), $details);
+        $rows = array_map(fn ($d) => array_merge($d, ['absensi_id' => $absensiId]), $details);
 
-        if (!empty($rows)) {
+        if (! empty($rows)) {
             AbsensiDetail::insert($rows);
         }
     }

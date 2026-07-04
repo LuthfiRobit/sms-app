@@ -30,6 +30,10 @@ class Lembaga extends Model
         'logo',
         'status',
         'urutan',
+        'latitude',
+        'longitude',
+        'radius_meter',
+        'jam_masuk_batas',
     ];
 
     public function pembukaanPpdb(): HasMany

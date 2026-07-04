@@ -14,9 +14,9 @@ class JadwalKbmService
         protected LogActivityService $logActivity,
     ) {}
 
-    public function datatable(int $lembagaId, ?int $rombelId = null, ?int $tahunId = null): Builder
+    public function datatable(?int $lembagaId, ?int $rombelId = null, ?int $tahunId = null, ?int $guruId = null): Builder
     {
-        $filters = ['lembaga_id' => $lembagaId];
+        $filters = $lembagaId ? ['lembaga_id' => $lembagaId] : [];
 
         if ($rombelId) {
             $filters['rombel_id'] = $rombelId;
@@ -24,6 +24,10 @@ class JadwalKbmService
 
         if ($tahunId) {
             $filters['tahun_pelajaran_id'] = $tahunId;
+        }
+
+        if ($guruId) {
+            $filters['guru_id'] = $guruId;
         }
 
         return $this->repo->datatable($filters);
@@ -36,6 +40,7 @@ class JadwalKbmService
             'Tambah Jadwal KBM',
             "Jadwal KBM hari {$jadwal->hari} jam {$jadwal->jam_mulai}-{$jadwal->jam_selesai} ditambahkan."
         );
+
         return $jadwal;
     }
 
@@ -46,6 +51,7 @@ class JadwalKbmService
             'Update Jadwal KBM',
             "Jadwal KBM ID {$id} hari {$jadwal->hari} diperbarui."
         );
+
         return $jadwal;
     }
 

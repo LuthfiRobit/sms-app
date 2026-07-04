@@ -1,15 +1,66 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Akademik\AbsensiController;
+use App\Http\Controllers\Akademik\AbsensiGuruController;
+use App\Http\Controllers\Akademik\AkademikSettingController;
+use App\Http\Controllers\Akademik\ApprovalRaportController;
+use App\Http\Controllers\Akademik\CetakRaportController;
+use App\Http\Controllers\Akademik\MateriBelajarController;
+use App\Http\Controllers\Akademik\NilaiController;
+use App\Http\Controllers\Akademik\PengajuanIzinGuruController;
+use App\Http\Controllers\Akademik\PengajuanRaportController;
+use App\Http\Controllers\Akademik\PerangkatMengajarController;
+use App\Http\Controllers\Akademik\VerifikasiMateriController;
+use App\Http\Controllers\Akademik\VerifikasiRaportController;
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Portal\PortalController;
+use App\Http\Controllers\Kinerja\KinerjaController;
+use App\Http\Controllers\Master\GuruController;
+use App\Http\Controllers\Master\JadwalKbmController;
+use App\Http\Controllers\Master\JurusanController;
+use App\Http\Controllers\Master\JurusanMapelController;
+use App\Http\Controllers\Master\KalenderLiburController;
+use App\Http\Controllers\Master\KurikulumController;
+use App\Http\Controllers\Master\LembagaController;
+use App\Http\Controllers\Master\MataPelajaranController;
+use App\Http\Controllers\Master\ProfilSekolahController;
+use App\Http\Controllers\Master\RombelController;
+use App\Http\Controllers\Master\RombelSiswaController;
+use App\Http\Controllers\Master\SemesterController;
+use App\Http\Controllers\Master\SiswaController;
+use App\Http\Controllers\Master\SwitchLembagaController;
+use App\Http\Controllers\Master\TahunPelajaranController;
+use App\Http\Controllers\NotifikasiController;
+use App\Http\Controllers\Peserta\PesertaController;
 use App\Http\Controllers\Portal\AuthPesertaController;
-use App\Http\Controllers\Portal\DashboardPesertaController;
-use App\Http\Controllers\Portal\ProfilPesertaController;
-use App\Http\Controllers\Portal\PendaftaranPesertaController;
-use App\Http\Controllers\Portal\PembayaranPesertaController;
-use App\Http\Controllers\Portal\PengumumanPesertaController;
 use App\Http\Controllers\Portal\DaftarUlangPesertaController;
+use App\Http\Controllers\Portal\DashboardPesertaController;
+use App\Http\Controllers\Portal\PembayaranPesertaController;
+use App\Http\Controllers\Portal\PendaftaranPesertaController;
+use App\Http\Controllers\Portal\PengumumanPesertaController;
+use App\Http\Controllers\Portal\PortalController;
+use App\Http\Controllers\Portal\ProfilPesertaController;
+use App\Http\Controllers\Portal\RaportPesertaController;
+use App\Http\Controllers\Ppdb\BiayaRegistrasiController;
+use App\Http\Controllers\Ppdb\FormulirPendaftaranController;
+use App\Http\Controllers\Ppdb\JadwalPendaftaranController;
+use App\Http\Controllers\Ppdb\JalurPendaftaranController;
+use App\Http\Controllers\Ppdb\KuotaJurusanController;
+use App\Http\Controllers\Ppdb\PembukaanPpdbController;
+use App\Http\Controllers\Ppdb\SyaratPendaftaranController;
+use App\Http\Controllers\Ppdb\TemplateDokumenController;
+use App\Http\Controllers\ProgramKerja\ProgramKerjaController;
+use App\Http\Controllers\Rbac\PermissionController;
+use App\Http\Controllers\Rbac\RoleController;
+use App\Http\Controllers\Rbac\UserController;
+use App\Http\Controllers\System\LogActivityController;
+use App\Http\Controllers\System\PermissionSyncController;
+use App\Http\Controllers\Transaksi\PembayaranController;
+use App\Http\Controllers\Transaksi\PendaftaranController;
+use App\Http\Controllers\Transaksi\SeleksiController;
+use App\Http\Controllers\Webhook\WebhookController;
+use App\Services\NotifikasiService;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -26,312 +77,336 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
-        Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
-        Route::get('/dashboard/widget/{id}', [\App\Http\Controllers\Admin\DashboardController::class, 'widget'])->name('dashboard.widget');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard/widget/{id}', [DashboardController::class, 'widget'])->name('dashboard.widget');
 
         // RBAC System
         Route::prefix('rbac')->name('rbac.')->group(function () {
             // Roles
-            Route::get('role/list', [\App\Http\Controllers\Rbac\RoleController::class, 'list'])->name('role.list');
-            Route::get('role/{role}/permissions', [\App\Http\Controllers\Rbac\RoleController::class, 'getPermissions'])->name('role.permissions.list');
-            Route::post('role/{role}/permissions', [\App\Http\Controllers\Rbac\RoleController::class, 'assignPermissions'])->name('role.permissions.assign');
-            Route::resource('role', \App\Http\Controllers\Rbac\RoleController::class)->except(['create', 'edit']);
-            Route::get('role/{role}/edit', [\App\Http\Controllers\Rbac\RoleController::class, 'edit'])->name('role.edit');
+            Route::get('role/list', [RoleController::class, 'list'])->name('role.list');
+            Route::get('role/{role}/permissions', [RoleController::class, 'getPermissions'])->name('role.permissions.list');
+            Route::post('role/{role}/permissions', [RoleController::class, 'assignPermissions'])->name('role.permissions.assign');
+            Route::resource('role', RoleController::class)->except(['create', 'edit']);
+            Route::get('role/{role}/edit', [RoleController::class, 'edit'])->name('role.edit');
 
             // Permissions
-            Route::get('permission/list', [\App\Http\Controllers\Rbac\PermissionController::class, 'list'])->name('permission.list');
-            Route::post('permission/{permission}/toggle-status', [\App\Http\Controllers\Rbac\PermissionController::class, 'toggleStatus'])->name('permission.toggle');
-            Route::resource('permission', \App\Http\Controllers\Rbac\PermissionController::class)->except(['create', 'edit']);
+            Route::get('permission/list', [PermissionController::class, 'list'])->name('permission.list');
+            Route::post('permission/{permission}/toggle-status', [PermissionController::class, 'toggleStatus'])->name('permission.toggle');
+            Route::resource('permission', PermissionController::class)->except(['create', 'edit']);
 
             // Users Role Management
-            Route::get('user/list', [\App\Http\Controllers\Rbac\UserController::class, 'list'])->name('user.list');
-            Route::post('user/{user}/toggle-status', [\App\Http\Controllers\Rbac\UserController::class, 'toggleStatus'])->name('user.toggle');
-            Route::resource('user', \App\Http\Controllers\Rbac\UserController::class)->except(['create', 'edit']);
+            Route::get('user/list', [UserController::class, 'list'])->name('user.list');
+            Route::post('user/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('user.toggle');
+            Route::resource('user', UserController::class)->except(['create', 'edit']);
         });
 
         // System Routes
         Route::prefix('system')->name('system.')->group(function () {
-            Route::post('sync-permissions', [\App\Http\Controllers\System\PermissionSyncController::class, 'sync'])->name('sync-permissions');
+            Route::post('sync-permissions', [PermissionSyncController::class, 'sync'])->name('sync-permissions');
 
-            Route::get('log-activity/list', [\App\Http\Controllers\System\LogActivityController::class, 'list'])->name('log-activity.list');
-            Route::delete('log-activity/delete-all', [\App\Http\Controllers\System\LogActivityController::class, 'deleteAll'])->name('log-activity.delete-all');
-            Route::resource('log-activity', \App\Http\Controllers\System\LogActivityController::class)->only(['index', 'show']);
+            Route::get('log-activity/list', [LogActivityController::class, 'list'])->name('log-activity.list');
+            Route::delete('log-activity/delete-all', [LogActivityController::class, 'deleteAll'])->name('log-activity.delete-all');
+            Route::resource('log-activity', LogActivityController::class)->only(['index', 'show']);
         });
 
         // Notifikasi Routes
         Route::prefix('notifikasi')->name('notifikasi.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\NotifikasiController::class, 'index'])->name('index');
-            Route::get('/unread-count', [\App\Http\Controllers\NotifikasiController::class, 'getUnreadCount'])->name('unread-count');
-            Route::post('/{id}/read', [\App\Http\Controllers\NotifikasiController::class, 'markRead'])->name('read');
-            Route::post('/mark-all-read', [\App\Http\Controllers\NotifikasiController::class, 'markAllRead'])->name('mark-all-read');
+            Route::get('/', [NotifikasiController::class, 'index'])->name('index');
+            Route::get('/unread-count', [NotifikasiController::class, 'getUnreadCount'])->name('unread-count');
+            Route::post('/{id}/read', [NotifikasiController::class, 'markRead'])->name('read');
+            Route::post('/mark-all-read', [NotifikasiController::class, 'markAllRead'])->name('mark-all-read');
         });
 
         // Switch Lembaga Aktif (super admin)
-        Route::post('switch-lembaga', \App\Http\Controllers\Master\SwitchLembagaController::class)->name('switch-lembaga');
+        Route::post('switch-lembaga', SwitchLembagaController::class)->name('switch-lembaga');
 
         // Master Data
         Route::prefix('master')->name('master.')->group(function () {
             // Lembaga (multi-tenant root)
-            Route::get('lembaga/list', [\App\Http\Controllers\Master\LembagaController::class, 'list'])->name('lembaga.list');
-            Route::post('lembaga/{id}/toggle-status', [\App\Http\Controllers\Master\LembagaController::class, 'toggleStatus'])->name('lembaga.toggle');
-            Route::post('lembaga/{id}/set-admin', [\App\Http\Controllers\Master\LembagaController::class, 'setAdmin'])->name('lembaga.set-admin');
-            Route::resource('lembaga', \App\Http\Controllers\Master\LembagaController::class)->except(['create', 'edit']);
+            Route::get('lembaga/list', [LembagaController::class, 'list'])->name('lembaga.list');
+            Route::post('lembaga/{id}/toggle-status', [LembagaController::class, 'toggleStatus'])->name('lembaga.toggle');
+            Route::post('lembaga/{id}/set-admin', [LembagaController::class, 'setAdmin'])->name('lembaga.set-admin');
+            Route::resource('lembaga', LembagaController::class)->except(['create', 'edit']);
 
             // Profil Sekolah
-            Route::get('profil-sekolah', [\App\Http\Controllers\Master\ProfilSekolahController::class, 'index'])->name('profil-sekolah.index');
-            Route::post('profil-sekolah', [\App\Http\Controllers\Master\ProfilSekolahController::class, 'store'])->name('profil-sekolah.store');
+            Route::get('profil-sekolah', [ProfilSekolahController::class, 'index'])->name('profil-sekolah.index');
+            Route::post('profil-sekolah', [ProfilSekolahController::class, 'store'])->name('profil-sekolah.store');
 
             // Kurikulum
-            Route::get('kurikulum/list', [\App\Http\Controllers\Master\KurikulumController::class, 'list'])->name('kurikulum.list');
-            Route::post('kurikulum/{kurikulum}/toggle-status', [\App\Http\Controllers\Master\KurikulumController::class, 'toggleStatus'])->name('kurikulum.toggle');
-            Route::resource('kurikulum', \App\Http\Controllers\Master\KurikulumController::class)->except(['create', 'edit']);
+            Route::get('kurikulum/list', [KurikulumController::class, 'list'])->name('kurikulum.list');
+            Route::post('kurikulum/{kurikulum}/toggle-status', [KurikulumController::class, 'toggleStatus'])->name('kurikulum.toggle');
+            Route::resource('kurikulum', KurikulumController::class)->except(['create', 'edit']);
 
             // Tahun Pelajaran & Semester
-            Route::get('tahun-pelajaran/list', [\App\Http\Controllers\Master\TahunPelajaranController::class, 'list'])->name('tahun-pelajaran.list');
-            Route::post('tahun-pelajaran/{tahun_pelajaran}/toggle-status', [\App\Http\Controllers\Master\TahunPelajaranController::class, 'toggleStatus'])->name('tahun-pelajaran.toggle');
-            Route::resource('tahun-pelajaran', \App\Http\Controllers\Master\TahunPelajaranController::class)->except(['create', 'edit']);
+            Route::get('tahun-pelajaran/list', [TahunPelajaranController::class, 'list'])->name('tahun-pelajaran.list');
+            Route::post('tahun-pelajaran/{tahun_pelajaran}/toggle-status', [TahunPelajaranController::class, 'toggleStatus'])->name('tahun-pelajaran.toggle');
+            Route::resource('tahun-pelajaran', TahunPelajaranController::class)->except(['create', 'edit']);
 
             // Semester
-            Route::get('semester/list', [\App\Http\Controllers\Master\SemesterController::class, 'list'])->name('semester.list');
-            Route::post('semester/{semester}/toggle-status', [\App\Http\Controllers\Master\SemesterController::class, 'toggleStatus'])->name('semester.toggle');
-            Route::resource('semester', \App\Http\Controllers\Master\SemesterController::class)->except(['create', 'edit']);
+            Route::get('semester/list', [SemesterController::class, 'list'])->name('semester.list');
+            Route::post('semester/{semester}/toggle-status', [SemesterController::class, 'toggleStatus'])->name('semester.toggle');
+            Route::resource('semester', SemesterController::class)->except(['create', 'edit']);
+
+            // Kalender Libur
+            Route::get('kalender-libur/list', [KalenderLiburController::class, 'list'])->name('kalender-libur.list');
+            Route::post('kalender-libur/rentang', [KalenderLiburController::class, 'storeRentang'])->name('kalender-libur.rentang');
+            Route::resource('kalender-libur', KalenderLiburController::class)->except(['create', 'edit']);
 
             // Jurusan / Program Studi
-            Route::get('jurusan/list', [\App\Http\Controllers\Master\JurusanController::class, 'list'])->name('jurusan.list');
-            Route::resource('jurusan', \App\Http\Controllers\Master\JurusanController::class)->except(['create', 'edit']);
+            Route::get('jurusan/list', [JurusanController::class, 'list'])->name('jurusan.list');
+            Route::resource('jurusan', JurusanController::class)->except(['create', 'edit']);
 
             // Mata Pelajaran
-            Route::get('mata-pelajaran/list', [\App\Http\Controllers\Master\MataPelajaranController::class, 'list'])->name('mata-pelajaran.list');
-            Route::resource('mata-pelajaran', \App\Http\Controllers\Master\MataPelajaranController::class)->except(['create', 'edit']);
+            Route::get('mata-pelajaran/list', [MataPelajaranController::class, 'list'])->name('mata-pelajaran.list');
+            Route::resource('mata-pelajaran', MataPelajaranController::class)->except(['create', 'edit']);
 
             // Rombel / Kelas
-            Route::get('rombel/list', [\App\Http\Controllers\Master\RombelController::class, 'list'])->name('rombel.list');
-            Route::get('rombel/guru/{lembaga}', [\App\Http\Controllers\Master\RombelController::class, 'guruByLembaga'])->name('rombel.guru-by-lembaga');
-            Route::resource('rombel', \App\Http\Controllers\Master\RombelController::class)->except(['create', 'edit']);
+            Route::get('rombel/list', [RombelController::class, 'list'])->name('rombel.list');
+            Route::get('rombel/guru/{lembaga}', [RombelController::class, 'guruByLembaga'])->name('rombel.guru-by-lembaga');
+            Route::resource('rombel', RombelController::class)->except(['create', 'edit']);
 
             // Guru
-            Route::get('guru/list', [\App\Http\Controllers\Master\GuruController::class, 'list'])->name('guru.list');
-            Route::resource('guru', \App\Http\Controllers\Master\GuruController::class)->except(['create', 'edit']);
+            Route::get('guru/list', [GuruController::class, 'list'])->name('guru.list');
+            Route::get('guru/{id}/akses-mobile', [GuruController::class, 'aksesMobile'])->name('guru.akses-mobile');
+            Route::post('guru/{id}/akses-mobile/reset-password', [GuruController::class, 'aksesMobileResetPassword'])->name('guru.akses-mobile.reset-password');
+            Route::post('guru/{id}/akses-mobile/toggle-status', [GuruController::class, 'aksesMobileToggleStatus'])->name('guru.akses-mobile.toggle-status');
+            Route::post('guru/{id}/akses-mobile/revoke-sesi', [GuruController::class, 'aksesMobileRevokeSesi'])->name('guru.akses-mobile.revoke-sesi');
+            Route::resource('guru', GuruController::class)->except(['create', 'edit']);
 
             // Mapping Jurusan ↔ Mata Pelajaran
-            Route::get('jurusan-mapel', [\App\Http\Controllers\Master\JurusanMapelController::class, 'index'])->name('jurusan-mapel.index');
-            Route::get('jurusan-mapel/{jurusan}', [\App\Http\Controllers\Master\JurusanMapelController::class, 'show'])->name('jurusan-mapel.show');
-            Route::post('jurusan-mapel/{jurusan}/sync', [\App\Http\Controllers\Master\JurusanMapelController::class, 'sync'])->name('jurusan-mapel.sync');
+            Route::get('jurusan-mapel', [JurusanMapelController::class, 'index'])->name('jurusan-mapel.index');
+            Route::get('jurusan-mapel/{jurusan}', [JurusanMapelController::class, 'show'])->name('jurusan-mapel.show');
+            Route::post('jurusan-mapel/{jurusan}/sync', [JurusanMapelController::class, 'sync'])->name('jurusan-mapel.sync');
 
             // Jadwal KBM
-            Route::get('jadwal-kbm/list', [\App\Http\Controllers\Master\JadwalKbmController::class, 'list'])->name('jadwal-kbm.list');
-            Route::resource('jadwal-kbm', \App\Http\Controllers\Master\JadwalKbmController::class)->except(['create', 'edit']);
+            Route::get('jadwal-kbm/list', [JadwalKbmController::class, 'list'])->name('jadwal-kbm.list');
+            Route::resource('jadwal-kbm', JadwalKbmController::class)->except(['create', 'edit']);
 
             // Rombel Siswa
-            Route::get('rombel-siswa', [\App\Http\Controllers\Master\RombelSiswaController::class, 'index'])->name('rombel-siswa.index');
-            Route::get('rombel-siswa/{rombel}/siswa', [\App\Http\Controllers\Master\RombelSiswaController::class, 'getByRombel'])->name('rombel-siswa.by-rombel');
-            Route::post('rombel-siswa/{rombel}/assign', [\App\Http\Controllers\Master\RombelSiswaController::class, 'assign'])->name('rombel-siswa.assign');
-            Route::post('rombel-siswa/{rombel}/unassign', [\App\Http\Controllers\Master\RombelSiswaController::class, 'unassign'])->name('rombel-siswa.unassign');
-            Route::post('rombel-siswa/{rombel}/update-absen', [\App\Http\Controllers\Master\RombelSiswaController::class, 'updateNoAbsen'])->name('rombel-siswa.update-absen');
+            Route::get('rombel-siswa', [RombelSiswaController::class, 'index'])->name('rombel-siswa.index');
+            Route::get('rombel-siswa/{rombel}/siswa', [RombelSiswaController::class, 'getByRombel'])->name('rombel-siswa.by-rombel');
+            Route::post('rombel-siswa/{rombel}/assign', [RombelSiswaController::class, 'assign'])->name('rombel-siswa.assign');
+            Route::post('rombel-siswa/{rombel}/unassign', [RombelSiswaController::class, 'unassign'])->name('rombel-siswa.unassign');
+            Route::post('rombel-siswa/{rombel}/update-absen', [RombelSiswaController::class, 'updateNoAbsen'])->name('rombel-siswa.update-absen');
 
             // Master Siswa (view-only, filter dari peserta siswa_tetap)
-            Route::get('siswa/list',   [\App\Http\Controllers\Master\SiswaController::class, 'list'])->name('siswa.list');
-            Route::get('siswa/stats',  [\App\Http\Controllers\Master\SiswaController::class, 'stats'])->name('siswa.stats');
-            Route::get('siswa/export', [\App\Http\Controllers\Master\SiswaController::class, 'exportCsv'])->name('siswa.export');
-            Route::get('siswa',        [\App\Http\Controllers\Master\SiswaController::class, 'index'])->name('siswa.index');
+            Route::get('siswa/list', [SiswaController::class, 'list'])->name('siswa.list');
+            Route::get('siswa/stats', [SiswaController::class, 'stats'])->name('siswa.stats');
+            Route::get('siswa/export', [SiswaController::class, 'exportCsv'])->name('siswa.export');
+            Route::get('siswa', [SiswaController::class, 'index'])->name('siswa.index');
         });
 
         // Akademik
         Route::prefix('akademik')->name('akademik.')->group(function () {
             // Perangkat Mengajar
-            Route::get('perangkat-mengajar/list', [\App\Http\Controllers\Akademik\PerangkatMengajarController::class, 'list'])->name('perangkat-mengajar.list');
-            Route::resource('perangkat-mengajar', \App\Http\Controllers\Akademik\PerangkatMengajarController::class)->except(['create', 'edit']);
+            Route::get('perangkat-mengajar/list', [PerangkatMengajarController::class, 'list'])->name('perangkat-mengajar.list');
+            Route::resource('perangkat-mengajar', PerangkatMengajarController::class)->except(['create', 'edit']);
 
             // Materi Belajar
-            Route::get('materi-belajar/list', [\App\Http\Controllers\Akademik\MateriBelajarController::class, 'list'])->name('materi-belajar.list');
-            Route::resource('materi-belajar', \App\Http\Controllers\Akademik\MateriBelajarController::class)->except(['create', 'edit']);
+            Route::get('materi-belajar/list', [MateriBelajarController::class, 'list'])->name('materi-belajar.list');
+            Route::resource('materi-belajar', MateriBelajarController::class)->except(['create', 'edit']);
 
             // Verifikasi Materi Ajar
-            Route::get('verifikasi-materi',              [\App\Http\Controllers\Akademik\VerifikasiMateriController::class, 'index'])->name('verifikasi-materi.index');
-            Route::get('verifikasi-materi/list',         [\App\Http\Controllers\Akademik\VerifikasiMateriController::class, 'list'])->name('verifikasi-materi.list');
-            Route::post('verifikasi-materi/{id}/aksi',   [\App\Http\Controllers\Akademik\VerifikasiMateriController::class, 'verifikasi'])->name('verifikasi-materi.aksi');
+            Route::get('verifikasi-materi', [VerifikasiMateriController::class, 'index'])->name('verifikasi-materi.index');
+            Route::get('verifikasi-materi/list', [VerifikasiMateriController::class, 'list'])->name('verifikasi-materi.list');
+            Route::post('verifikasi-materi/{id}/aksi', [VerifikasiMateriController::class, 'verifikasi'])->name('verifikasi-materi.aksi');
 
             // Absensi Siswa
-            Route::get('absensi/rekap',        [\App\Http\Controllers\Akademik\AbsensiController::class, 'rekap'])->name('absensi.rekap');
-            Route::get('absensi/rekap-pdf',    [\App\Http\Controllers\Akademik\AbsensiController::class, 'rekapPdf'])->name('absensi.rekap-pdf');
-            Route::get('absensi/rekap-excel',  [\App\Http\Controllers\Akademik\AbsensiController::class, 'rekapExcel'])->name('absensi.rekap-excel');
-            Route::get('absensi/tap',          [\App\Http\Controllers\Akademik\AbsensiController::class, 'tapScan'])->name('absensi.tap');
-            Route::post('absensi/tap/scan',    [\App\Http\Controllers\Akademik\AbsensiController::class, 'tapRecord'])->name('absensi.tap.scan');
-            Route::get('absensi/list',         [\App\Http\Controllers\Akademik\AbsensiController::class, 'list'])->name('absensi.list');
-            Route::get('absensi/{absensi}/detail', [\App\Http\Controllers\Akademik\AbsensiController::class, 'detail'])->name('absensi.detail');
-            Route::get('absensi/siswa/{rombel}', [\App\Http\Controllers\Akademik\AbsensiController::class, 'getSiswa'])->name('absensi.siswa');
-            Route::resource('absensi', \App\Http\Controllers\Akademik\AbsensiController::class)->except(['create', 'edit']);
+            Route::get('absensi/rekap', [AbsensiController::class, 'rekap'])->name('absensi.rekap');
+            Route::get('absensi/rekap-pdf', [AbsensiController::class, 'rekapPdf'])->name('absensi.rekap-pdf');
+            Route::get('absensi/rekap-excel', [AbsensiController::class, 'rekapExcel'])->name('absensi.rekap-excel');
+            Route::get('absensi/tap', [AbsensiController::class, 'tapScan'])->name('absensi.tap');
+            Route::post('absensi/tap/scan', [AbsensiController::class, 'tapRecord'])->name('absensi.tap.scan');
+            Route::get('absensi/list', [AbsensiController::class, 'list'])->name('absensi.list');
+            Route::get('absensi/{absensi}/detail', [AbsensiController::class, 'detail'])->name('absensi.detail');
+            Route::get('absensi/siswa/{rombel}', [AbsensiController::class, 'getSiswa'])->name('absensi.siswa');
+            Route::resource('absensi', AbsensiController::class)->except(['create', 'edit']);
+
+            // Absensi Guru (rekap dari mobile + koreksi manual admin)
+            Route::get('absensi-guru/list', [AbsensiGuruController::class, 'list'])->name('absensi-guru.list');
+            Route::get('absensi-guru/export', [AbsensiGuruController::class, 'export'])->name('absensi-guru.export');
+            Route::get('absensi-guru/rekap-pdf', [AbsensiGuruController::class, 'rekapPdf'])->name('absensi-guru.rekap-pdf');
+            Route::get('absensi-guru/{id}/detail', [AbsensiGuruController::class, 'detail'])->name('absensi-guru.detail');
+            Route::resource('absensi-guru', AbsensiGuruController::class)->except(['create', 'edit', 'show']);
+
+            // Pengajuan Izin/Sakit Guru
+            Route::prefix('pengajuan-izin-guru')->name('pengajuan-izin-guru.')->group(function () {
+                Route::get('/', [PengajuanIzinGuruController::class, 'index'])->name('index');
+                Route::get('list', [PengajuanIzinGuruController::class, 'list'])->name('list');
+                Route::get('{id}/detail', [PengajuanIzinGuruController::class, 'detail'])->name('detail');
+                Route::post('{id}/approve', [PengajuanIzinGuruController::class, 'approve'])->name('approve');
+                Route::post('{id}/reject', [PengajuanIzinGuruController::class, 'reject'])->name('reject');
+            });
 
             // Input Nilai
-            Route::get('nilai', [\App\Http\Controllers\Akademik\NilaiController::class, 'index'])->name('nilai.index');
-            Route::get('nilai/rekap', [\App\Http\Controllers\Akademik\NilaiController::class, 'rekap'])->name('nilai.rekap');
-            Route::get('nilai/rekap-pdf', [\App\Http\Controllers\Akademik\NilaiController::class, 'rekapPdf'])->name('nilai.rekap-pdf');
-            Route::get('nilai/rekap-excel', [\App\Http\Controllers\Akademik\NilaiController::class, 'rekapExcel'])->name('nilai.rekap-excel');
-            Route::get('nilai/sheet', [\App\Http\Controllers\Akademik\NilaiController::class, 'sheet'])->name('nilai.sheet');
-            Route::post('nilai/save', [\App\Http\Controllers\Akademik\NilaiController::class, 'save'])->name('nilai.save');
+            Route::get('nilai', [NilaiController::class, 'index'])->name('nilai.index');
+            Route::get('nilai/rekap', [NilaiController::class, 'rekap'])->name('nilai.rekap');
+            Route::get('nilai/rekap-pdf', [NilaiController::class, 'rekapPdf'])->name('nilai.rekap-pdf');
+            Route::get('nilai/rekap-excel', [NilaiController::class, 'rekapExcel'])->name('nilai.rekap-excel');
+            Route::get('nilai/sheet', [NilaiController::class, 'sheet'])->name('nilai.sheet');
+            Route::post('nilai/save', [NilaiController::class, 'save'])->name('nilai.save');
 
             // Setting Akademik
-            Route::get('setting', [\App\Http\Controllers\Akademik\AkademikSettingController::class, 'index'])->name('setting.index');
-            Route::post('setting/{lembagaId}', [\App\Http\Controllers\Akademik\AkademikSettingController::class, 'update'])->name('setting.update');
+            Route::get('setting', [AkademikSettingController::class, 'index'])->name('setting.index');
+            Route::post('setting/{lembagaId}', [AkademikSettingController::class, 'update'])->name('setting.update');
 
             // Modul Raport
             Route::prefix('raport')->name('raport.')->group(function () {
                 // Pengajuan Raport (Wali Kelas / Guru)
-                Route::get('pengajuan',           [\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'index'])->name('pengajuan.index');
-                Route::get('pengajuan/list',      [\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'list'])->name('pengajuan.list');
-                Route::post('pengajuan',          [\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'store'])->name('pengajuan.store');
-                Route::get('pengajuan/{id}',      [\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'show'])->name('pengajuan.show');
-                Route::post('pengajuan/{id}/submit',       [\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'submit'])->name('pengajuan.submit');
-                Route::post('pengajuan/{id}/withdraw',     [\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'withdraw'])->name('pengajuan.withdraw');
-                Route::post('pengajuan/{id}/refresh-nilai',[\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'refreshNilai'])->name('pengajuan.refresh-nilai');
-                Route::put('pengajuan/{id}/nilai',         [\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'updateNilai'])->name('pengajuan.update-nilai');
-                Route::delete('pengajuan/{id}',   [\App\Http\Controllers\Akademik\PengajuanRaportController::class, 'destroy'])->name('pengajuan.destroy');
+                Route::get('pengajuan', [PengajuanRaportController::class, 'index'])->name('pengajuan.index');
+                Route::get('pengajuan/list', [PengajuanRaportController::class, 'list'])->name('pengajuan.list');
+                Route::post('pengajuan', [PengajuanRaportController::class, 'store'])->name('pengajuan.store');
+                Route::get('pengajuan/{id}', [PengajuanRaportController::class, 'show'])->name('pengajuan.show');
+                Route::post('pengajuan/{id}/submit', [PengajuanRaportController::class, 'submit'])->name('pengajuan.submit');
+                Route::post('pengajuan/{id}/withdraw', [PengajuanRaportController::class, 'withdraw'])->name('pengajuan.withdraw');
+                Route::post('pengajuan/{id}/refresh-nilai', [PengajuanRaportController::class, 'refreshNilai'])->name('pengajuan.refresh-nilai');
+                Route::put('pengajuan/{id}/nilai', [PengajuanRaportController::class, 'updateNilai'])->name('pengajuan.update-nilai');
+                Route::delete('pengajuan/{id}', [PengajuanRaportController::class, 'destroy'])->name('pengajuan.destroy');
 
                 // Verifikasi (Wakasek/Koordinator)
-                Route::get('verifikasi', [\App\Http\Controllers\Akademik\VerifikasiRaportController::class, 'index'])->name('verifikasi.index');
-                Route::get('verifikasi/list', [\App\Http\Controllers\Akademik\VerifikasiRaportController::class, 'list'])->name('verifikasi.list');
-                Route::post('verifikasi/{id}/verify', [\App\Http\Controllers\Akademik\VerifikasiRaportController::class, 'verify'])->name('verifikasi.verify');
-                Route::post('verifikasi/{id}/reject', [\App\Http\Controllers\Akademik\VerifikasiRaportController::class, 'reject'])->name('verifikasi.reject');
+                Route::get('verifikasi', [VerifikasiRaportController::class, 'index'])->name('verifikasi.index');
+                Route::get('verifikasi/list', [VerifikasiRaportController::class, 'list'])->name('verifikasi.list');
+                Route::post('verifikasi/{id}/verify', [VerifikasiRaportController::class, 'verify'])->name('verifikasi.verify');
+                Route::post('verifikasi/{id}/reject', [VerifikasiRaportController::class, 'reject'])->name('verifikasi.reject');
 
                 // Approval (Kepala Sekolah)
-                Route::get('approval', [\App\Http\Controllers\Akademik\ApprovalRaportController::class, 'index'])->name('approval.index');
-                Route::get('approval/list', [\App\Http\Controllers\Akademik\ApprovalRaportController::class, 'list'])->name('approval.list');
-                Route::post('approval/{id}/approve', [\App\Http\Controllers\Akademik\ApprovalRaportController::class, 'approve'])->name('approval.approve');
-                Route::post('approval/{id}/reject', [\App\Http\Controllers\Akademik\ApprovalRaportController::class, 'reject'])->name('approval.reject');
+                Route::get('approval', [ApprovalRaportController::class, 'index'])->name('approval.index');
+                Route::get('approval/list', [ApprovalRaportController::class, 'list'])->name('approval.list');
+                Route::post('approval/{id}/approve', [ApprovalRaportController::class, 'approve'])->name('approval.approve');
+                Route::post('approval/{id}/reject', [ApprovalRaportController::class, 'reject'])->name('approval.reject');
 
                 // Cetak Raport (PDF & Preview)
-                Route::get('{id}/preview',               [\App\Http\Controllers\Akademik\CetakRaportController::class, 'preview'])->name('preview');
-                Route::get('{id}/cetak-satu/{pesertaId}',[\App\Http\Controllers\Akademik\CetakRaportController::class, 'cetakSatu'])->name('cetak-satu');
-                Route::get('{id}/cetak-semua',           [\App\Http\Controllers\Akademik\CetakRaportController::class, 'cetakSemua'])->name('cetak-semua');
+                Route::get('{id}/preview', [CetakRaportController::class, 'preview'])->name('preview');
+                Route::get('{id}/cetak-satu/{pesertaId}', [CetakRaportController::class, 'cetakSatu'])->name('cetak-satu');
+                Route::get('{id}/cetak-semua', [CetakRaportController::class, 'cetakSemua'])->name('cetak-semua');
             });
         });
 
         // PPDB
         Route::prefix('ppdb')->name('ppdb.')->group(function () {
-            Route::get('pembukaan/list', [App\Http\Controllers\Ppdb\PembukaanPpdbController::class, 'list'])->name('pembukaan.list');
-            Route::post('pembukaan/{id}/toggle-status', [App\Http\Controllers\Ppdb\PembukaanPpdbController::class, 'toggleStatus'])->name('pembukaan.toggle');
-            Route::post('pembukaan/{id}/duplikasi', [App\Http\Controllers\Ppdb\PembukaanPpdbController::class, 'duplikasi'])->name('pembukaan.duplikasi');
-            Route::resource('pembukaan', App\Http\Controllers\Ppdb\PembukaanPpdbController::class)->except(['create', 'edit']);
+            Route::get('pembukaan/list', [PembukaanPpdbController::class, 'list'])->name('pembukaan.list');
+            Route::post('pembukaan/{id}/toggle-status', [PembukaanPpdbController::class, 'toggleStatus'])->name('pembukaan.toggle');
+            Route::post('pembukaan/{id}/duplikasi', [PembukaanPpdbController::class, 'duplikasi'])->name('pembukaan.duplikasi');
+            Route::resource('pembukaan', PembukaanPpdbController::class)->except(['create', 'edit']);
 
-            Route::get('jalur/list', [App\Http\Controllers\Ppdb\JalurPendaftaranController::class, 'list'])->name('jalur.list');
-            Route::post('jalur/{id}/sync-kuota', [App\Http\Controllers\Ppdb\JalurPendaftaranController::class, 'syncKuotaJurusan'])->name('jalur.sync_kuota');
-            Route::resource('jalur', App\Http\Controllers\Ppdb\JalurPendaftaranController::class)->except(['create', 'edit']);
+            Route::get('jalur/list', [JalurPendaftaranController::class, 'list'])->name('jalur.list');
+            Route::post('jalur/{id}/sync-kuota', [JalurPendaftaranController::class, 'syncKuotaJurusan'])->name('jalur.sync_kuota');
+            Route::resource('jalur', JalurPendaftaranController::class)->except(['create', 'edit']);
 
             // Jadwal Pendaftaran
-            Route::get('jadwal/list', [App\Http\Controllers\Ppdb\JadwalPendaftaranController::class, 'list'])->name('jadwal.list');
-            Route::resource('jadwal', App\Http\Controllers\Ppdb\JadwalPendaftaranController::class)->except(['create', 'edit']);
+            Route::get('jadwal/list', [JadwalPendaftaranController::class, 'list'])->name('jadwal.list');
+            Route::resource('jadwal', JadwalPendaftaranController::class)->except(['create', 'edit']);
 
             // Syarat Pendaftaran
-            Route::get('syarat/list', [App\Http\Controllers\Ppdb\SyaratPendaftaranController::class, 'list'])->name('syarat.list');
-            Route::post('syarat/reorder', [App\Http\Controllers\Ppdb\SyaratPendaftaranController::class, 'reorder'])->name('syarat.reorder');
-            Route::resource('syarat', App\Http\Controllers\Ppdb\SyaratPendaftaranController::class)->except(['create', 'edit']);
+            Route::get('syarat/list', [SyaratPendaftaranController::class, 'list'])->name('syarat.list');
+            Route::post('syarat/reorder', [SyaratPendaftaranController::class, 'reorder'])->name('syarat.reorder');
+            Route::resource('syarat', SyaratPendaftaranController::class)->except(['create', 'edit']);
 
             // Biaya Registrasi
-            Route::get('biaya/list', [App\Http\Controllers\Ppdb\BiayaRegistrasiController::class, 'list'])->name('biaya.list');
-            Route::resource('biaya', App\Http\Controllers\Ppdb\BiayaRegistrasiController::class)->except(['create', 'edit']);
+            Route::get('biaya/list', [BiayaRegistrasiController::class, 'list'])->name('biaya.list');
+            Route::resource('biaya', BiayaRegistrasiController::class)->except(['create', 'edit']);
 
             // Template Dokumen
-            Route::get('template/list', [App\Http\Controllers\Ppdb\TemplateDokumenController::class, 'list'])->name('template.list');
-            Route::post('template/{id}/set-aktif', [App\Http\Controllers\Ppdb\TemplateDokumenController::class, 'setAktif'])->name('template.set-aktif');
-            Route::resource('template', App\Http\Controllers\Ppdb\TemplateDokumenController::class)->except(['create', 'edit']);
+            Route::get('template/list', [TemplateDokumenController::class, 'list'])->name('template.list');
+            Route::post('template/{id}/set-aktif', [TemplateDokumenController::class, 'setAktif'])->name('template.set-aktif');
+            Route::resource('template', TemplateDokumenController::class)->except(['create', 'edit']);
 
             // Kuota Jurusan
-            Route::get('kuota', [App\Http\Controllers\Ppdb\KuotaJurusanController::class, 'index'])->name('kuota.index');
-            Route::post('kuota/upsert', [App\Http\Controllers\Ppdb\KuotaJurusanController::class, 'upsert'])->name('kuota.upsert');
-            Route::get('kuota/status', [App\Http\Controllers\Ppdb\KuotaJurusanController::class, 'status'])->name('kuota.status');
+            Route::get('kuota', [KuotaJurusanController::class, 'index'])->name('kuota.index');
+            Route::post('kuota/upsert', [KuotaJurusanController::class, 'upsert'])->name('kuota.upsert');
+            Route::get('kuota/status', [KuotaJurusanController::class, 'status'])->name('kuota.status');
 
             // Formulir Pendaftaran
-            Route::get('formulir/list', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'list'])->name('formulir.list');
-            Route::post('formulir/{id}/toggle-aktif', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'toggleAktif'])->name('formulir.toggle-aktif');
-            Route::get('formulir/{id}/builder', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'builder'])->name('formulir.builder');
-            Route::post('formulir/{formulirId}/fields', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'addField'])->name('formulir.field.add');
-            Route::post('formulir/{formulirId}/reorder-fields', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'reorderFields'])->name('formulir.field.reorder');
-            Route::get('formulir/{formulirId}/preview-fields', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'getFieldsForPendaftaran'])->name('formulir.field.preview');
-            Route::resource('formulir', App\Http\Controllers\Ppdb\FormulirPendaftaranController::class)->except(['create', 'edit']);
+            Route::get('formulir/list', [FormulirPendaftaranController::class, 'list'])->name('formulir.list');
+            Route::post('formulir/{id}/toggle-aktif', [FormulirPendaftaranController::class, 'toggleAktif'])->name('formulir.toggle-aktif');
+            Route::get('formulir/{id}/builder', [FormulirPendaftaranController::class, 'builder'])->name('formulir.builder');
+            Route::post('formulir/{formulirId}/fields', [FormulirPendaftaranController::class, 'addField'])->name('formulir.field.add');
+            Route::post('formulir/{formulirId}/reorder-fields', [FormulirPendaftaranController::class, 'reorderFields'])->name('formulir.field.reorder');
+            Route::get('formulir/{formulirId}/preview-fields', [FormulirPendaftaranController::class, 'getFieldsForPendaftaran'])->name('formulir.field.preview');
+            Route::resource('formulir', FormulirPendaftaranController::class)->except(['create', 'edit']);
             // Field CRUD routes (independent dari resource formulir)
-            Route::get('formulir/field/{fieldId}', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'showField'])->name('formulir.field.show');
-            Route::put('formulir/field/{fieldId}', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'updateField'])->name('formulir.field.update');
-            Route::delete('formulir/field/{fieldId}', [App\Http\Controllers\Ppdb\FormulirPendaftaranController::class, 'deleteField'])->name('formulir.field.delete');
+            Route::get('formulir/field/{fieldId}', [FormulirPendaftaranController::class, 'showField'])->name('formulir.field.show');
+            Route::put('formulir/field/{fieldId}', [FormulirPendaftaranController::class, 'updateField'])->name('formulir.field.update');
+            Route::delete('formulir/field/{fieldId}', [FormulirPendaftaranController::class, 'deleteField'])->name('formulir.field.delete');
         });
 
         // Peserta (Data Calon Peserta Didik — Dapodik)
         Route::prefix('peserta')->name('peserta.')->group(function () {
             // Endpoint non-resource harus SEBELUM route berparameter agar tidak konfllik
-            Route::get('list', [App\Http\Controllers\Peserta\PesertaController::class, 'list'])->name('list');
-            Route::post('import-csv', [App\Http\Controllers\Peserta\PesertaController::class, 'importCsv'])->name('import-csv');
-            Route::get('export-csv', [App\Http\Controllers\Peserta\PesertaController::class, 'exportCsv'])->name('export-csv');
+            Route::get('list', [PesertaController::class, 'list'])->name('list');
+            Route::post('import-csv', [PesertaController::class, 'importCsv'])->name('import-csv');
+            Route::get('export-csv', [PesertaController::class, 'exportCsv'])->name('export-csv');
 
             // CRUD — explicit routes dengan parameter {id} yang jelas
-            Route::get('/', [App\Http\Controllers\Peserta\PesertaController::class, 'index'])->name('index');
-            Route::post('/', [App\Http\Controllers\Peserta\PesertaController::class, 'store'])->name('store');
-            Route::get('/{id}', [App\Http\Controllers\Peserta\PesertaController::class, 'show'])->name('show');
-            Route::put('/{id}', [App\Http\Controllers\Peserta\PesertaController::class, 'update'])->name('update');
-            Route::delete('/{id}', [App\Http\Controllers\Peserta\PesertaController::class, 'destroy'])->name('destroy');
+            Route::get('/', [PesertaController::class, 'index'])->name('index');
+            Route::post('/', [PesertaController::class, 'store'])->name('store');
+            Route::get('/{id}', [PesertaController::class, 'show'])->name('show');
+            Route::put('/{id}', [PesertaController::class, 'update'])->name('update');
+            Route::delete('/{id}', [PesertaController::class, 'destroy'])->name('destroy');
         });
-
 
         // Pendaftaran & Transaksi
         Route::prefix('pendaftaran')->name('pendaftaran.')->group(function () {
-            Route::get('list', [App\Http\Controllers\Transaksi\PendaftaranController::class, 'list'])->name('list');
-            Route::post('{id}/verifikasi', [App\Http\Controllers\Transaksi\PendaftaranController::class, 'verifikasi'])->name('verifikasi');
-            Route::post('{id}/dokumen/{dokumenId}/verifikasi', [App\Http\Controllers\Transaksi\PendaftaranController::class, 'verifikasiDokumen'])->name('dokumen.verifikasi');
-            Route::post('{id}/konfirmasi-siswa-tetap', [App\Http\Controllers\Transaksi\PendaftaranController::class, 'konfirmasiSiswaTetap'])->name('konfirmasi-siswa-tetap');
-            Route::get('/', [App\Http\Controllers\Transaksi\PendaftaranController::class, 'index'])->name('index');
-            Route::get('/{id}', [App\Http\Controllers\Transaksi\PendaftaranController::class, 'show'])->name('show');
+            Route::get('list', [PendaftaranController::class, 'list'])->name('list');
+            Route::post('{id}/verifikasi', [PendaftaranController::class, 'verifikasi'])->name('verifikasi');
+            Route::post('{id}/dokumen/{dokumenId}/verifikasi', [PendaftaranController::class, 'verifikasiDokumen'])->name('dokumen.verifikasi');
+            Route::post('{id}/konfirmasi-siswa-tetap', [PendaftaranController::class, 'konfirmasiSiswaTetap'])->name('konfirmasi-siswa-tetap');
+            Route::get('/', [PendaftaranController::class, 'index'])->name('index');
+            Route::get('/{id}', [PendaftaranController::class, 'show'])->name('show');
         });
 
         // Pembayaran
         Route::prefix('pembayaran')->name('pembayaran.')->group(function () {
-            Route::get('list', [App\Http\Controllers\Transaksi\PembayaranController::class, 'list'])->name('list');
-            Route::post('{id}/konfirmasi', [App\Http\Controllers\Transaksi\PembayaranController::class, 'konfirmasiManual'])->name('konfirmasi');
-            Route::get('/', [App\Http\Controllers\Transaksi\PembayaranController::class, 'index'])->name('index');
-            Route::get('/{id}', [App\Http\Controllers\Transaksi\PembayaranController::class, 'show'])->name('show');
+            Route::get('list', [PembayaranController::class, 'list'])->name('list');
+            Route::post('{id}/konfirmasi', [PembayaranController::class, 'konfirmasiManual'])->name('konfirmasi');
+            Route::get('/', [PembayaranController::class, 'index'])->name('index');
+            Route::get('/{id}', [PembayaranController::class, 'show'])->name('show');
         });
 
         // Program Kerja
         Route::prefix('program-kerja')->name('program-kerja.')->group(function () {
-            Route::get('/',                                     [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'index'])->name('index');
-            Route::get('/list',                                 [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'list'])->name('list');
-            Route::post('/',                                    [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'store'])->name('store');
-            Route::get('/{id}',                                 [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'show'])->name('show');
-            Route::put('/{id}',                                 [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'update'])->name('update');
-            Route::delete('/{id}',                              [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'destroy'])->name('destroy');
-            Route::post('/{id}/submit',                         [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'submit'])->name('submit');
-            Route::post('/{id}/withdraw',                       [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'withdraw'])->name('withdraw');
-            Route::post('/{id}/verifikasi',                     [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'verifikasi'])->name('verifikasi');
-            Route::post('/{id}/approval',                       [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'approval'])->name('approval');
-            Route::post('/{id}/tolak',                          [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'tolak'])->name('tolak');
-            Route::get('/{id}/cetak',                           [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'cetak'])->name('cetak');
-            Route::post('/{programId}/kegiatan',                [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'addKegiatan'])->name('kegiatan.store');
-            Route::put('/{programId}/kegiatan/{kegiatanId}',    [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'updateKegiatan'])->name('kegiatan.update');
-            Route::delete('/{programId}/kegiatan/{kegiatanId}', [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'deleteKegiatan'])->name('kegiatan.destroy');
-            Route::put('/{programId}/kegiatan/{kegiatanId}/realisasi', [\App\Http\Controllers\ProgramKerja\ProgramKerjaController::class, 'updateRealisasi'])->name('kegiatan.realisasi');
+            Route::get('/', [ProgramKerjaController::class, 'index'])->name('index');
+            Route::get('/list', [ProgramKerjaController::class, 'list'])->name('list');
+            Route::post('/', [ProgramKerjaController::class, 'store'])->name('store');
+            Route::get('/{id}', [ProgramKerjaController::class, 'show'])->name('show');
+            Route::put('/{id}', [ProgramKerjaController::class, 'update'])->name('update');
+            Route::delete('/{id}', [ProgramKerjaController::class, 'destroy'])->name('destroy');
+            Route::post('/{id}/submit', [ProgramKerjaController::class, 'submit'])->name('submit');
+            Route::post('/{id}/withdraw', [ProgramKerjaController::class, 'withdraw'])->name('withdraw');
+            Route::post('/{id}/verifikasi', [ProgramKerjaController::class, 'verifikasi'])->name('verifikasi');
+            Route::post('/{id}/approval', [ProgramKerjaController::class, 'approval'])->name('approval');
+            Route::post('/{id}/tolak', [ProgramKerjaController::class, 'tolak'])->name('tolak');
+            Route::get('/{id}/cetak', [ProgramKerjaController::class, 'cetak'])->name('cetak');
+            Route::post('/{programId}/kegiatan', [ProgramKerjaController::class, 'addKegiatan'])->name('kegiatan.store');
+            Route::put('/{programId}/kegiatan/{kegiatanId}', [ProgramKerjaController::class, 'updateKegiatan'])->name('kegiatan.update');
+            Route::delete('/{programId}/kegiatan/{kegiatanId}', [ProgramKerjaController::class, 'deleteKegiatan'])->name('kegiatan.destroy');
+            Route::put('/{programId}/kegiatan/{kegiatanId}/realisasi', [ProgramKerjaController::class, 'updateRealisasi'])->name('kegiatan.realisasi');
         });
 
         // Kinerja (KPI Dashboard)
         Route::prefix('kinerja')->name('kinerja.')->group(function () {
-            Route::get('/',                         [\App\Http\Controllers\Kinerja\KinerjaController::class, 'index'])->name('index');
-            Route::get('/dashboard',                [\App\Http\Controllers\Kinerja\KinerjaController::class, 'dashboard'])->name('dashboard');
-            Route::get('/manage',                   [\App\Http\Controllers\Kinerja\KinerjaController::class, 'manage'])->name('manage');
-            Route::get('/list',                     [\App\Http\Controllers\Kinerja\KinerjaController::class, 'list'])->name('list');
-            Route::post('/',                        [\App\Http\Controllers\Kinerja\KinerjaController::class, 'store'])->name('store');
-            Route::get('/{id}',                     [\App\Http\Controllers\Kinerja\KinerjaController::class, 'show'])->name('show');
-            Route::put('/{id}',                     [\App\Http\Controllers\Kinerja\KinerjaController::class, 'update'])->name('update');
-            Route::delete('/{id}',                  [\App\Http\Controllers\Kinerja\KinerjaController::class, 'destroy'])->name('destroy');
-            Route::post('/{id}/realisasi',          [\App\Http\Controllers\Kinerja\KinerjaController::class, 'inputRealisasi'])->name('inputRealisasi');
-            Route::post('/sync-auto',               [\App\Http\Controllers\Kinerja\KinerjaController::class, 'syncAuto'])->name('syncAuto');
+            Route::get('/', [KinerjaController::class, 'index'])->name('index');
+            Route::get('/dashboard', [KinerjaController::class, 'dashboard'])->name('dashboard');
+            Route::get('/manage', [KinerjaController::class, 'manage'])->name('manage');
+            Route::get('/list', [KinerjaController::class, 'list'])->name('list');
+            Route::post('/', [KinerjaController::class, 'store'])->name('store');
+            Route::get('/{id}', [KinerjaController::class, 'show'])->name('show');
+            Route::put('/{id}', [KinerjaController::class, 'update'])->name('update');
+            Route::delete('/{id}', [KinerjaController::class, 'destroy'])->name('destroy');
+            Route::post('/{id}/realisasi', [KinerjaController::class, 'inputRealisasi'])->name('inputRealisasi');
+            Route::post('/sync-auto', [KinerjaController::class, 'syncAuto'])->name('syncAuto');
         });
 
         // Seleksi
         Route::prefix('seleksi')->name('seleksi.')->group(function () {
-            Route::get('jalur/{jalurId}', [App\Http\Controllers\Transaksi\SeleksiController::class, 'index'])->name('index');
-            Route::get('pendaftaran/{pendaftaranId}/penilaian', [App\Http\Controllers\Transaksi\SeleksiController::class, 'penilaian'])->name('penilaian');
-            Route::post('pendaftaran/{pendaftaranId}/nilai', [App\Http\Controllers\Transaksi\SeleksiController::class, 'inputNilai'])->name('nilai.store');
-            Route::post('jalur/{jalurId}/hitung-ranking', [App\Http\Controllers\Transaksi\SeleksiController::class, 'hitungRanking'])->name('hitung-ranking');
-            Route::get('jalur/{jalurId}/hasil', [App\Http\Controllers\Transaksi\SeleksiController::class, 'hasil'])->name('hasil');
-            Route::post('jalur/{jalurId}/pengumuman', [App\Http\Controllers\Transaksi\SeleksiController::class, 'pengumuman'])->name('pengumuman');
-            Route::get('jalur/{jalurId}/download-pengumuman', [App\Http\Controllers\Transaksi\SeleksiController::class, 'downloadPengumuman'])->name('download-pengumuman');
-            Route::get('pendaftaran/{pendaftaranId}/download-kartu', [App\Http\Controllers\Transaksi\SeleksiController::class, 'downloadKartu'])->name('download-kartu');
+            Route::get('jalur/{jalurId}', [SeleksiController::class, 'index'])->name('index');
+            Route::get('pendaftaran/{pendaftaranId}/penilaian', [SeleksiController::class, 'penilaian'])->name('penilaian');
+            Route::post('pendaftaran/{pendaftaranId}/nilai', [SeleksiController::class, 'inputNilai'])->name('nilai.store');
+            Route::post('jalur/{jalurId}/hitung-ranking', [SeleksiController::class, 'hitungRanking'])->name('hitung-ranking');
+            Route::get('jalur/{jalurId}/hasil', [SeleksiController::class, 'hasil'])->name('hasil');
+            Route::post('jalur/{jalurId}/pengumuman', [SeleksiController::class, 'pengumuman'])->name('pengumuman');
+            Route::get('jalur/{jalurId}/download-pengumuman', [SeleksiController::class, 'downloadPengumuman'])->name('download-pengumuman');
+            Route::get('pendaftaran/{pendaftaranId}/download-kartu', [SeleksiController::class, 'downloadKartu'])->name('download-kartu');
         });
     });
 });
@@ -345,7 +420,7 @@ Route::prefix('webhook')
     ->name('webhook.')
     ->middleware('throttle:60,1')
     ->group(function () {
-        Route::post('midtrans', [App\Http\Controllers\Webhook\WebhookController::class, 'midtrans'])->name('midtrans');
+        Route::post('midtrans', [WebhookController::class, 'midtrans'])->name('midtrans');
     });
 
 // =============================================================================
@@ -424,9 +499,9 @@ Route::prefix('ppdb')->name('ppdb.')->group(function () {
 
         // Raport Online
         Route::prefix('/raport')->name('raport.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\Portal\RaportPesertaController::class, 'index'])->name('index');
-            Route::get('/{pengajuanId}', [\App\Http\Controllers\Portal\RaportPesertaController::class, 'show'])->name('show');
-            Route::get('/{pengajuanId}/download', [\App\Http\Controllers\Portal\RaportPesertaController::class, 'download'])->name('download');
+            Route::get('/', [RaportPesertaController::class, 'index'])->name('index');
+            Route::get('/{pengajuanId}', [RaportPesertaController::class, 'show'])->name('show');
+            Route::get('/{pengajuanId}/download', [RaportPesertaController::class, 'download'])->name('download');
         });
     });
 });
@@ -439,9 +514,9 @@ Route::get('/test-notif', function () {
         // Default target user ID 1
         $userId = 13;
 
-        app(\App\Services\NotifikasiService::class)->kirim($userId, 'pendaftaran_submit', [
+        app(NotifikasiService::class)->kirim($userId, 'pendaftaran_submit', [
             'no_pendaftaran' => 'PPDB202600001',
-            'nama_peserta' => 'Ahmad'
+            'nama_peserta' => 'Ahmad',
         ]);
 
         return response()->json([
@@ -452,21 +527,20 @@ Route::get('/test-notif', function () {
                 'user_id' => $userId,
                 'event' => 'pendaftaran_submit',
                 'no_pendaftaran' => 'PPDB202600001',
-                'nama_peserta' => 'Ahmad'
-            ]
+                'nama_peserta' => 'Ahmad',
+            ],
         ]);
 
         Log::info('Notifikasi pendaftaran_submit berhasil di-dispatch ke queue.', [
             'user_id' => $userId,
             'event' => 'pendaftaran_submit',
             'no_pendaftaran' => 'PPDB202600001',
-            'nama_peserta' => 'Ahmad'
+            'nama_peserta' => 'Ahmad',
         ]);
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         return response()->json([
             'status' => 'error',
-            'message' => 'Gagal mengirim notifikasi: ' . $e->getMessage()
+            'message' => 'Gagal mengirim notifikasi: '.$e->getMessage(),
         ], 500);
     }
 });
-

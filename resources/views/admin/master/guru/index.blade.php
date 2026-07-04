@@ -26,7 +26,7 @@
                         <thead class="bg-light">
                             <tr>
                                 <th width="5%">No</th>
-                                <th width="10%">Aksi</th>
+                                <th width="13%">Aksi</th>
                                 <th width="15%">Lembaga</th>
                                 <th>Nama Lengkap</th>
                                 <th width="12%">NIP</th>
@@ -197,6 +197,21 @@
         </div>
     </div>
 </div>
+
+{{-- ── Modal Hak Akses Mobile ── --}}
+<div class="modal fade" id="modal-akses-mobile" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title text-white"><i class="bi bi-key me-1"></i>Hak Akses Mobile</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="akses-mobile-body">
+                <div class="text-center py-3"><i class="bi bi-hourglass-split"></i> Memuat...</div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -343,6 +358,115 @@ $(function () {
             }
         });
     });
+
+    // ── Hak Akses Mobile ────────────────────────────────────────
+    window.aksesMobileGuru = function (id) {
+        $('#akses-mobile-body').html('<div class="text-center py-3"><i class="bi bi-hourglass-split"></i> Memuat...</div>');
+        $('#modal-akses-mobile').modal('show');
+        muatAksesMobile(id);
+    };
+
+    function muatAksesMobile(id) {
+        $.get(`{{ url('admin/master/guru') }}/${id}/akses-mobile`, function (res) {
+            if (res.status !== 200) return;
+            const d = res.data;
+
+            if (!d.ada_akun) {
+                $('#akses-mobile-body').html(
+                    `<div class="text-center text-muted py-3">
+                        <i class="bi bi-exclamation-circle fs-3 d-block mb-2 opacity-50"></i>
+                        <strong>${d.nama_lengkap}</strong> belum memiliki akun login mobile.<br>
+                        Jalankan seeder akun guru atau tautkan manual lewat menu Kelola Pengguna.
+                    </div>`
+                );
+                return;
+            }
+
+            const statusBadge = d.status === 'active'
+                ? '<span class="badge bg-light-success text-success">Aktif</span>'
+                : '<span class="badge bg-light-secondary text-secondary">Non-Aktif</span>';
+
+            $('#akses-mobile-body').html(
+                `<dl class="row mb-3">
+                    <dt class="col-sm-4">Guru</dt><dd class="col-sm-8">${d.nama_lengkap}</dd>
+                    <dt class="col-sm-4">Email Login</dt><dd class="col-sm-8"><code>${d.email}</code></dd>
+                    <dt class="col-sm-4">Username</dt><dd class="col-sm-8"><code>${d.username}</code></dd>
+                    <dt class="col-sm-4">Status Akun</dt><dd class="col-sm-8">${statusBadge}</dd>
+                </dl>
+                <hr>
+                <div class="d-flex flex-column gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-warning text-start" id="btn-reset-password">
+                        <i class="bi bi-key me-1"></i>Reset Password
+                        <small class="d-block text-muted">Buat password acak baru — hanya tampil sekali, sampaikan langsung ke guru.</small>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary text-start" id="btn-toggle-status">
+                        <i class="bi bi-toggle2-on me-1"></i>${d.status === 'active' ? 'Nonaktifkan Akun' : 'Aktifkan Akun'}
+                        <small class="d-block text-muted">Akun nonaktif tidak bisa login ke aplikasi mobile sama sekali.</small>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger text-start" id="btn-revoke-sesi">
+                        <i class="bi bi-box-arrow-right me-1"></i>Cabut Sesi Login
+                        <small class="d-block text-muted">Paksa logout dari HP yang sedang login — guru harus login ulang.</small>
+                    </button>
+                </div>`
+            );
+
+            $('#btn-reset-password').on('click', function () {
+                Swal.fire({
+                    title: 'Reset password guru ini?',
+                    text: 'Password lama tidak akan bisa dipakai lagi.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Reset',
+                    cancelButtonText: 'Batal',
+                }).then(result => {
+                    if (!result.isConfirmed) return;
+                    $.post(`{{ url('admin/master/guru') }}/${id}/akses-mobile/reset-password`, { _token: '{{ csrf_token() }}' }, function (res) {
+                        if (res.status === 200) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Password baru dibuat',
+                                html: `Sampaikan ke guru, hanya tampil sekali:<br><code class="fs-5 mt-2 d-inline-block">${res.data.password}</code>`,
+                                confirmButtonText: 'Sudah Dicatat',
+                            });
+                        }
+                    }).fail(xhr => {
+                        Swal.fire({ icon: 'error', title: 'Gagal', text: xhr.responseJSON?.message ?? 'Terjadi kesalahan.' });
+                    });
+                });
+            });
+
+            $('#btn-toggle-status').on('click', function () {
+                $.post(`{{ url('admin/master/guru') }}/${id}/akses-mobile/toggle-status`, { _token: '{{ csrf_token() }}' }, function (res) {
+                    if (res.status === 200) {
+                        Swal.fire({ icon: 'success', title: res.message, timer: 1800, showConfirmButton: false });
+                        muatAksesMobile(id);
+                    }
+                }).fail(xhr => {
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: xhr.responseJSON?.message ?? 'Terjadi kesalahan.' });
+                });
+            });
+
+            $('#btn-revoke-sesi').on('click', function () {
+                Swal.fire({
+                    title: 'Cabut sesi login guru ini?',
+                    text: 'Guru akan otomatis logout dari HP-nya dan harus login ulang.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Cabut',
+                    cancelButtonText: 'Batal',
+                }).then(result => {
+                    if (!result.isConfirmed) return;
+                    $.post(`{{ url('admin/master/guru') }}/${id}/akses-mobile/revoke-sesi`, { _token: '{{ csrf_token() }}' }, function (res) {
+                        if (res.status === 200) {
+                            Swal.fire({ icon: 'success', title: res.message, timer: 2000, showConfirmButton: false });
+                        }
+                    }).fail(xhr => {
+                        Swal.fire({ icon: 'error', title: 'Gagal', text: xhr.responseJSON?.message ?? 'Terjadi kesalahan.' });
+                    });
+                });
+            });
+        });
+    }
 
     // ── Hapus ─────────────────────────────────────────────────
     window.hapusGuru = function (id, nama) {

@@ -24,14 +24,17 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             LembagaSeeder::class,
+            LembagaGeofenceSeeder::class,    // titik geofence absensi guru (Fase 1 mobile)
             RbacSeeder::class,
             TahunPelajaranSeeder::class,
             KurikulumSeeder::class,
             ProfilSekolahSeeder::class,
             JurusanSeeder::class,
             GuruSeeder::class,
+            GuruUserSeeder::class,           // akun login per guru (Fase 1 mobile)
             PpdbDemoTestDataSeeder::class,   // SMK Ma'arif Gending
             PpdbAllLembagaSeeder::class,     // 6 lembaga lainnya
+            KelasMobileDemoSeeder::class,    // rombel + siswa + jadwal_kbm (Fase 2/3 mobile)
         ]);
     }
 }

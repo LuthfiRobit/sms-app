@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 class UserService
 {
     protected $userRepository;
+
     protected $logActivityService;
 
     public function __construct(UserRepositoryInterface $userRepository, LogActivityService $logActivityService)
@@ -30,6 +31,7 @@ class UserService
             $user = $this->userRepository->create($data);
             $this->logActivityService->log('Create User', "Mendaftarkan User baru: {$user->username}");
             DB::commit();
+
             return $user;
         } catch (Exception $e) {
             DB::rollBack();
@@ -41,7 +43,7 @@ class UserService
     {
         DB::beginTransaction();
         try {
-            if (!empty($data['password'])) {
+            if (! empty($data['password'])) {
                 $data['password'] = Hash::make($data['password']);
             } else {
                 unset($data['password']);
@@ -50,6 +52,7 @@ class UserService
             $user = $this->userRepository->update($id, $data);
             $this->logActivityService->log('Update User', "Memperbarui data User: {$user->username}");
             DB::commit();
+
             return $user;
         } catch (Exception $e) {
             DB::rollBack();
@@ -66,6 +69,7 @@ class UserService
             $this->userRepository->delete($id);
             $this->logActivityService->log('Delete User', "Menghapus User: {$username}");
             DB::commit();
+
             return true;
         } catch (Exception $e) {
             DB::rollBack();
@@ -79,16 +83,27 @@ class UserService
         try {
             $user = $this->userRepository->getById($id);
             $newStatus = $user->status === 'active' ? 'inactive' : 'active';
-            $this->userRepository->update($id, ['status' => $newStatus]);
+            $updated = $this->userRepository->update($id, ['status' => $newStatus]);
 
             $this->logActivityService->log('Update User Status', "Mengubah status User {$user->username} menjadi {$newStatus}");
 
             DB::commit();
-            return $user;
+
+            return $updated;
         } catch (Exception $e) {
             DB::rollBack();
             throw $e;
         }
+    }
+
+    public function revokeTokens(int $id)
+    {
+        $user = $this->userRepository->getById($id);
+        $user->tokens()->delete();
+
+        $this->logActivityService->log('Revoke Sesi User', "Mencabut seluruh sesi login aktif User: {$user->username}");
+
+        return $user;
     }
 
     public function assignRoles(int $userId, array $roleIds)
@@ -99,6 +114,7 @@ class UserService
             $this->userRepository->assignRoles($userId, $roleIds);
             $this->logActivityService->log('Assign Roles to User', "Mengelola Role untuk User: {$user->username}");
             DB::commit();
+
             return $user;
         } catch (Exception $e) {
             DB::rollBack();

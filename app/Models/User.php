@@ -9,15 +9,17 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasRolesAndPermissions;
+    use HasFactory, HasApiTokens, Notifiable, HasRolesAndPermissions;
 
     /**
      * The table associated with the model.
@@ -70,6 +72,12 @@ class User extends Authenticatable
     public function getLembagaIds(): array
     {
         return $this->lembaga()->pluck('lembaga.id')->toArray();
+    }
+
+    /** Record guru yang tertaut ke akun ini (dipakai aplikasi mobile guru). */
+    public function guru(): HasOne
+    {
+        return $this->hasOne(\App\Models\Master\Guru::class, 'user_id', 'id_user');
     }
 
     public function isSuperAdmin(): bool

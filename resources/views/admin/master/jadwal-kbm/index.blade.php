@@ -23,7 +23,7 @@
             <div class="card-body">
                 {{-- Filter --}}
                 <div class="row g-2 mb-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <select class="form-select form-select-sm" id="filter-tahun">
                             <option value="">-- Semua Tahun Pelajaran --</option>
                             @foreach($tahunList as $t)
@@ -33,7 +33,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <select class="form-select form-select-sm" id="filter-rombel">
                             <option value="">-- Semua Rombel --</option>
                             @foreach($rombelList as $r)
@@ -41,9 +41,17 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
+                        <select class="form-select form-select-sm" id="filter-guru">
+                            <option value="">-- Semua Guru --</option>
+                            @foreach($guruList as $g)
+                                <option value="{{ $g['id'] }}">{{ $g['nama'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
                         <button class="btn btn-sm btn-secondary w-100" id="btn-filter">
-                            <i class="bi bi-funnel me-1"></i>Filter
+                            <i class="bi bi-funnel me-1"></i>Filter — Lihat Mapel yang Diampu
                         </button>
                     </div>
                 </div>
@@ -293,6 +301,7 @@ $(document).ready(function () {
             data: function (d) {
                 d.rombel_id = $('#filter-rombel').val();
                 d.tahun_id  = $('#filter-tahun').val();
+                d.guru_id   = $('#filter-guru').val();
             }
         },
         columns: [
@@ -403,8 +412,8 @@ $(document).ready(function () {
                 }, 50);
                 $('#edit-tahun').val(d.tahun_pelajaran_id);
                 $('#edit-hari').val(d.hari);
-                $('#edit-jam-mulai').val(d.jam_mulai);
-                $('#edit-jam-selesai').val(d.jam_selesai);
+                $('#edit-jam-mulai').val(d.jam_mulai ? d.jam_mulai.substring(0, 5) : '');
+                $('#edit-jam-selesai').val(d.jam_selesai ? d.jam_selesai.substring(0, 5) : '');
                 $('#edit-jam-ke').val(d.jam_ke);
                 $('#edit-ruangan').val(d.ruangan);
                 $('#edit-alert').addClass('d-none');

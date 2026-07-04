@@ -101,6 +101,11 @@
                             <a class="pc-link" href="{{ route('admin.master.jurusan-mapel.index') }}">Mapping Jurusan ↔ Mapel</a>
                         </li>
                         @endif
+                        @if(auth()->user()->hasPermissionTo('admin.master.jadwal-kbm.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.master.jadwal-kbm.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.master.jadwal-kbm.index') }}">Jadwal KBM</a>
+                        </li>
+                        @endif
                     </ul>
                 </li>
                 <li class="pc-item pc-hasmenu">
@@ -108,14 +113,13 @@
                             class="pc-mtext">Sarana &
                             Jadwal</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
                     <ul class="pc-submenu">
-                        @if(auth()->user()->hasPermissionTo('admin.master.jadwal-kbm.index'))
-                        <li class="pc-item {{ request()->routeIs('admin.master.jadwal-kbm.*') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('admin.master.jadwal-kbm.index') }}">Jadwal KBM</a>
-                        </li>
-                        @endif
                         <li class="pc-item"><a class="pc-link" href="#">Gedung</a></li>
                         <li class="pc-item"><a class="pc-link" href="#">Ruang Kelas / Lab</a></li>
-                        <li class="pc-item"><a class="pc-link" href="#">Kalender Akademik</a></li>
+                        @if(auth()->user()->hasPermissionTo('admin.master.kalender-libur.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.master.kalender-libur.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.master.kalender-libur.index') }}">Kalender Akademik</a>
+                        </li>
+                        @endif
                     </ul>
                 </li>
                 <li class="pc-item pc-hasmenu">
@@ -265,6 +269,16 @@
                         @if(auth()->user()->hasPermissionTo('admin.akademik.absensi.index'))
                         <li class="pc-item {{ request()->routeIs('admin.akademik.absensi.*') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('admin.akademik.absensi.index') }}">Absensi Siswa</a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.akademik.absensi-guru.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.akademik.absensi-guru.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.akademik.absensi-guru.index') }}">Absensi Guru</a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.akademik.pengajuan-izin-guru.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.akademik.pengajuan-izin-guru.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.akademik.pengajuan-izin-guru.index') }}">Izin/Sakit Guru</a>
                         </li>
                         @endif
                         @if(auth()->user()->hasPermissionTo('admin.akademik.nilai.index'))
