@@ -165,9 +165,22 @@ class KelasMobileService
                 $q->where('rombel_id', $jadwal->rombel_id)->orWhereNull('rombel_id');
             })
             ->orderByDesc('tanggal')
-            ->get(['id', 'judul', 'deskripsi', 'file_path', 'file_name', 'url_eksternal', 'tanggal']);
+            ->get(['id', 'judul', 'deskripsi', 'file_path', 'file_name', 'url_eksternal', 'tanggal', 'pertemuan_ke']);
 
-        return ['rpp' => $rpp, 'materi' => $materi];
+        $tanggal = WaktuSekolah::now()->toDateString();
+        $pastMeetings = DB::table('absensi')
+            ->where('rombel_id', $jadwal->rombel_id)
+            ->where('mata_pelajaran_id', $jadwal->mata_pelajaran_id)
+            ->whereDate('tanggal', '<', $tanggal)
+            ->count();
+
+        $pertemuanHariIni = $pastMeetings + 1;
+
+        return [
+            'rpp' => $rpp,
+            'materi' => $materi,
+            'pertemuan_hari_ini' => $pertemuanHariIni,
+        ];
     }
 
     /**

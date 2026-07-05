@@ -17,7 +17,7 @@ class MateriBelajar extends Model
 
     protected $fillable = [
         'lembaga_id', 'guru_id', 'mata_pelajaran_id', 'rombel_id',
-        'tahun_pelajaran_id', 'judul', 'deskripsi',
+        'tahun_pelajaran_id', 'pertemuan_ke', 'judul', 'deskripsi',
         'file_path', 'file_name', 'url_eksternal', 'tanggal', 'status',
         'catatan_revisi', 'diverifikasi_by', 'diverifikasi_at',
     ];
@@ -25,6 +25,7 @@ class MateriBelajar extends Model
     protected $casts = [
         'tanggal'         => 'date',
         'diverifikasi_at' => 'datetime',
+        'pertemuan_ke'    => 'integer',
     ];
 
     public static function statusBadge(string $status): array

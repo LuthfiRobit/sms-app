@@ -25,6 +25,7 @@ class CheckPermission
         'admin.master.guru.akses-mobile.reset-password' => 'admin.master.guru.akses-mobile',
         'admin.master.guru.akses-mobile.toggle-status' => 'admin.master.guru.akses-mobile',
         'admin.master.guru.akses-mobile.revoke-sesi' => 'admin.master.guru.akses-mobile',
+        'admin.master.guru.akses-mobile.reset-wajah' => 'admin.master.guru.akses-mobile',
         'admin.master.jurusan-mapel.show' => 'admin.master.jurusan-mapel.index',
         'admin.master.jurusan-mapel.sync' => 'admin.master.jurusan-mapel.index',
         'admin.master.jadwal-kbm.list' => 'admin.master.jadwal-kbm.index',
@@ -38,6 +39,7 @@ class CheckPermission
 
         // Akademik — helper routes
         'admin.akademik.perangkat-mengajar.list' => 'admin.akademik.perangkat-mengajar.index',
+        'admin.akademik.perangkat-mengajar.guru-mapel' => 'admin.akademik.perangkat-mengajar.index',
         'admin.akademik.materi-belajar.list' => 'admin.akademik.materi-belajar.index',
         'admin.akademik.verifikasi-materi.list' => 'admin.akademik.verifikasi-materi.index',
         'admin.akademik.verifikasi-materi.aksi' => 'admin.akademik.verifikasi-materi.index',

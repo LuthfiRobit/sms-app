@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Akademik;
 
 use App\Http\Controllers\Controller;
 use App\Models\Master\Guru;
+use App\Models\Master\JadwalKbm;
 use App\Models\Master\Lembaga;
 use App\Models\Master\MataPelajaran;
 use App\Models\Master\Semester;
@@ -152,6 +153,27 @@ class PerangkatMengajarController extends Controller
 
         $record = $this->service->update($id, $data, $file);
         return $this->response->success($record, 'Perangkat mengajar berhasil diperbarui.');
+    }
+
+    public function getMapelByGuru(int $guruId)
+    {
+        $activeLembagaId = app('active_lembaga_id');
+
+        $mapelIds = JadwalKbm::where('guru_id', $guruId)
+            ->when($activeLembagaId, fn($q) => $q->where('lembaga_id', $activeLembagaId))
+            ->pluck('mata_pelajaran_id')
+            ->unique()
+            ->all();
+
+        $mapel = MataPelajaran::whereIn('id', $mapelIds)
+            ->aktif()
+            ->orderBy('urutan')
+            ->get(['id', 'nama']);
+
+        return response()->json([
+            'status' => 200,
+            'data' => $mapel
+        ]);
     }
 
     public function destroy(int $id)

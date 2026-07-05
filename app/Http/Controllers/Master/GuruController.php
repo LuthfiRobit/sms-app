@@ -168,4 +168,15 @@ class GuruController extends Controller
             return $this->response->error($e->getMessage(), 422);
         }
     }
+
+    public function aksesMobileResetWajah(int $id)
+    {
+        try {
+            $this->aksesMobileService->resetWajah($id);
+
+            return $this->response->success(null, 'Wajah referensi berhasil dihapus. Guru perlu mendaftar ulang dari aplikasi mobile.');
+        } catch (RuntimeException $e) {
+            return $this->response->error($e->getMessage(), 422);
+        }
+    }
 }

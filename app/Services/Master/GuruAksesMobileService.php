@@ -3,6 +3,7 @@
 namespace App\Services\Master;
 
 use App\Repositories\Master\GuruRepositoryInterface;
+use App\Services\Integrations\FaceRecognitionService;
 use App\Services\Rbac\UserService;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -16,6 +17,7 @@ class GuruAksesMobileService
     public function __construct(
         protected GuruRepositoryInterface $guruRepo,
         protected UserService $userService,
+        protected FaceRecognitionService $faceRecognition,
     ) {}
 
     public function info(int $guruId): array
@@ -29,6 +31,8 @@ class GuruAksesMobileService
             'email' => $guru->user?->email,
             'username' => $guru->user?->username,
             'status' => $guru->user?->status,
+            'wajah_terdaftar' => (bool) $guru->wajah_terdaftar_at,
+            'wajah_terdaftar_at' => $guru->wajah_terdaftar_at?->toIso8601String(),
         ];
     }
 
@@ -55,6 +59,19 @@ class GuruAksesMobileService
         $guru = $this->resolveGuruWithUser($guruId);
 
         $this->userService->revokeTokens($guru->user->id_user);
+    }
+
+    /** Hapus wajah referensi guru — dari layanan verifikasi maupun database lokal. */
+    public function resetWajah(int $guruId): void
+    {
+        $guru = $this->resolveGuruWithUser($guruId, wajibAdaAkun: false);
+
+        if (! $guru->wajah_terdaftar_at) {
+            throw new RuntimeException('Guru ini belum mendaftarkan wajah referensi.');
+        }
+
+        $this->faceRecognition->deleteEnrollment($guru->id);
+        $guru->update(['foto' => null, 'wajah_terdaftar_at' => null]);
     }
 
     private function resolveGuruWithUser(int $guruId, bool $wajibAdaAkun = true)

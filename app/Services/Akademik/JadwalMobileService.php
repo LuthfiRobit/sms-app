@@ -48,7 +48,7 @@ class JadwalMobileService
     {
         return JadwalKbm::with(['mataPelajaran:id,nama', 'rombel:id,nama,tingkat'])
             ->where('guru_id', $guru->id)
-            ->orderByRaw("FIELD(hari,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu')")
+            ->orderByRaw("FIELD(hari,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu')")
             ->orderBy('jam_mulai')
             ->get()
             ->groupBy('hari')

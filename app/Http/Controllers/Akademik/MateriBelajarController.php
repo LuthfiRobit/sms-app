@@ -46,7 +46,7 @@ class MateriBelajarController extends Controller
             ->orderBy('nama')
             ->get(['id', 'lembaga_id', 'nama']);
 
-        $tahunList = TahunPelajaran::orderBy('nama', 'desc')->get(['id', 'nama']);
+        $tahunList = TahunPelajaran::orderBy('nama', 'desc')->get(['id', 'nama', 'status']);
 
         return view('admin.akademik.materi-belajar.index', compact(
             'lembagaList',
@@ -64,6 +64,14 @@ class MateriBelajarController extends Controller
 
         return DataTables::of($query)
             ->addIndexColumn()
+            ->editColumn('judul', function ($r) {
+                $html = '';
+                if ($r->pertemuan_ke) {
+                    $html .= "<span class='badge bg-light-primary text-primary me-1' title='Pertemuan Ke-{$r->pertemuan_ke}'>P-{$r->pertemuan_ke}</span>";
+                }
+                $html .= e($r->judul);
+                return $html;
+            })
             ->addColumn('guru_nama', fn($r) => $r->guru?->nama_lengkap ?? '—')
             ->addColumn('mapel_nama', fn($r) => $r->mataPelajaran?->nama ?? '—')
             ->addColumn('rombel_nama', fn($r) => $r->rombel?->nama ?? 'Semua Rombel')
@@ -72,7 +80,7 @@ class MateriBelajarController extends Controller
                 $parts = [];
                 if ($r->file_path) {
                     $url = asset('storage/' . $r->file_path);
-                    $name = e($r->file_name ?? 'Unduh File');
+                    $name = e($r->file_name ?? 'Download');
                     $parts[] = "<a href='{$url}' target='_blank' class='btn btn-xs btn-light-info mb-1' title='{$name}'><i class='bi bi-file-earmark me-1'></i>File</a>";
                 }
                 if ($r->url_eksternal) {
@@ -95,7 +103,7 @@ class MateriBelajarController extends Controller
                     : '';
                 return $edit . $del;
             })
-            ->rawColumns(['file_link', 'status_badge', 'action'])
+            ->rawColumns(['judul', 'file_link', 'status_badge', 'action'])
             ->make(true);
     }
 
@@ -107,6 +115,7 @@ class MateriBelajarController extends Controller
             'mata_pelajaran_id' => 'required|exists:mata_pelajaran,id',
             'rombel_id'         => 'nullable|exists:rombel,id',
             'tahun_pelajaran_id'=> 'required|exists:tahun_pelajaran,id',
+            'pertemuan_ke'      => 'nullable|integer|min:1|max:100',
             'judul'             => 'required|string|max:255',
             'deskripsi'         => 'nullable|string',
             'file'              => 'nullable|file|max:20480',
@@ -142,6 +151,7 @@ class MateriBelajarController extends Controller
             'mata_pelajaran_id' => 'required|exists:mata_pelajaran,id',
             'rombel_id'         => 'nullable|exists:rombel,id',
             'tahun_pelajaran_id'=> 'required|exists:tahun_pelajaran,id',
+            'pertemuan_ke'      => 'nullable|integer|min:1|max:100',
             'judul'             => 'required|string|max:255',
             'deskripsi'         => 'nullable|string',
             'file'              => 'nullable|file|max:20480',

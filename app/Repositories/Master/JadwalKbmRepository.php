@@ -61,7 +61,7 @@ class JadwalKbmRepository implements JadwalKbmRepositoryInterface
             'mataPelajaran:id,nama,kode',
         ])
             ->where('rombel_id', $rombelId)
-            ->orderByRaw("FIELD(hari,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu')")
+            ->orderByRaw("FIELD(hari,'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu')")
             ->orderBy('jam_mulai')
             ->get();
     }

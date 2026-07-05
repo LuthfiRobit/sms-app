@@ -25,6 +25,11 @@ class Guru extends Model
         'gelar_belakang',
         'jenis_kelamin',
         'status',
+        'wajah_terdaftar_at',
+    ];
+
+    protected $casts = [
+        'wajah_terdaftar_at' => 'datetime',
     ];
 
     /** Supaya nama_lengkap ikut ter-serialize saat model dikembalikan sebagai JSON. */

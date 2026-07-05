@@ -18,6 +18,8 @@ class AbsensiGuru extends Model
         'jam_pulang', 'lat_pulang', 'lng_pulang', 'jarak_pulang_m', 'akurasi_pulang_m', 'selfie_pulang',
         'status', 'flag_mock_location', 'keterangan',
         'is_koreksi_manual', 'dikoreksi_oleh',
+        'face_verified_masuk', 'face_confidence_masuk', 'face_liveness_ok_masuk',
+        'face_verified_pulang', 'face_confidence_pulang', 'face_liveness_ok_pulang',
     ];
 
     protected $casts = [
@@ -28,6 +30,10 @@ class AbsensiGuru extends Model
         'lng_pulang' => 'float',
         'flag_mock_location' => 'boolean',
         'is_koreksi_manual' => 'boolean',
+        'face_confidence_masuk' => 'float',
+        'face_liveness_ok_masuk' => 'boolean',
+        'face_confidence_pulang' => 'float',
+        'face_liveness_ok_pulang' => 'boolean',
     ];
 
     public function guru(): BelongsTo

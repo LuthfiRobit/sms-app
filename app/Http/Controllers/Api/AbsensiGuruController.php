@@ -26,14 +26,14 @@ class AbsensiGuruController extends Controller
         return $this->response->success($this->service->today($guru), 'OK');
     }
 
-    /** Absen masuk (GPS + selfie). */
+    /** Absen masuk (GPS + video liveness). */
     public function masuk(Request $request)
     {
         $guru = $this->resolveGuru($request);
         $data = $this->validateAbsen($request);
 
         try {
-            $absensi = $this->service->absenMasuk($guru, $data, $request->file('selfie'));
+            $absensi = $this->service->absenMasuk($guru, $data, $request->file('video'));
         } catch (RuntimeException $e) {
             return $this->response->error($e->getMessage(), 422);
         }
@@ -57,14 +57,14 @@ class AbsensiGuruController extends Controller
         );
     }
 
-    /** Absen pulang (GPS + selfie). */
+    /** Absen pulang (GPS + video liveness). */
     public function pulang(Request $request)
     {
         $guru = $this->resolveGuru($request);
         $data = $this->validateAbsen($request);
 
         try {
-            $absensi = $this->service->absenPulang($guru, $data, $request->file('selfie'));
+            $absensi = $this->service->absenPulang($guru, $data, $request->file('video'));
         } catch (RuntimeException $e) {
             return $this->response->error($e->getMessage(), 422);
         }
@@ -81,7 +81,10 @@ class AbsensiGuruController extends Controller
             'longitude' => 'required|numeric|between:-180,180',
             'is_mock' => 'sometimes|boolean',
             'accuracy' => 'nullable|numeric|min:0',
-            'selfie' => 'required|image|max:5120', // maks 5MB
+            // Video pendek (~2 detik, tanpa audio) dipakai ganda: bukti audit
+            // + input liveness/face-match. mimetypes (bukan mimes) karena
+            // ekstensi file dari React Native tidak selalu konsisten per platform.
+            'video' => 'required|file|mimetypes:video/mp4,video/quicktime,video/x-m4v,video/3gpp|max:10240',
         ]);
     }
 }

@@ -148,7 +148,7 @@
                             <label class="form-label fw-bold">Hari <span class="text-danger">*</span></label>
                             <select class="form-select" name="hari" required>
                                 <option value="">-- Pilih Hari --</option>
-                                @foreach(['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'] as $h)
+                                @foreach(['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'] as $h)
                                     <option value="{{ $h }}">{{ $h }}</option>
                                 @endforeach
                             </select>
@@ -251,7 +251,7 @@
                             <label class="form-label fw-bold">Hari <span class="text-danger">*</span></label>
                             <select class="form-select" name="hari" id="edit-hari" required>
                                 <option value="">-- Pilih Hari --</option>
-                                @foreach(['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'] as $h)
+                                @foreach(['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'] as $h)
                                     <option value="{{ $h }}">{{ $h }}</option>
                                 @endforeach
                             </select>

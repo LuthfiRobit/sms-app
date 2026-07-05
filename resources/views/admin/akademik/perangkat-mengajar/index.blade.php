@@ -309,10 +309,10 @@ $(document).ready(function () {
         },
     });
 
-    // Filter guru by lembaga on tambah modal
-    function filterGuruByLembaga(lembagaId, guruSelectId, mapelSelectId) {
+    // Filter guru by lembaga on tambah/edit modal
+    function filterGuruByLembaga(lembagaId, guruSelectId) {
         var $guru = $(guruSelectId);
-        var $mapel = $(mapelSelectId);
+        var selectedBefore = $guru.val();
         $guru.find('option[data-lembaga]').each(function () {
             var opt = $(this);
             if (!lembagaId || opt.data('lembaga') == lembagaId) {
@@ -322,19 +322,54 @@ $(document).ready(function () {
                 if (opt.is(':selected')) opt.prop('selected', false);
             }
         });
-        $mapel.find('option[data-lembaga]').each(function () {
-            var opt = $(this);
-            if (!lembagaId || opt.data('lembaga') == lembagaId || opt.data('lembaga') === '') {
-                opt.show();
-            } else {
-                opt.hide();
-                if (opt.is(':selected')) opt.prop('selected', false);
+        if ($guru.val() !== selectedBefore) {
+            $guru.trigger('change');
+        }
+    }
+
+    // Load mata pelajaran by guru (dependent dropdown)
+    function loadMapelByGuru(guruId, targetSelectId, selectedMapelId = null) {
+        var $mapel = $(targetSelectId);
+        $mapel.empty().append('<option value="">-- Memuat Mata Pelajaran... --</option>').prop('disabled', true);
+        
+        if (!guruId) {
+            $mapel.empty().append('<option value="">-- Pilih Guru Terlebih Dahulu --</option>').prop('disabled', true);
+            return;
+        }
+
+        var url = '{{ route("admin.akademik.perangkat-mengajar.guru-mapel", ":guruId") }}'.replace(':guruId', guruId);
+
+        return $.ajax({
+            url: url,
+            type: 'GET',
+            success: function (res) {
+                $mapel.empty().append('<option value="">-- Pilih Mata Pelajaran --</option>').prop('disabled', false);
+                if (res.status === 200) {
+                    var data = res.data;
+                    if (data.length === 0) {
+                        $mapel.empty().append('<option value="">-- Guru tidak memiliki jadwal mengajar --</option>').prop('disabled', true);
+                        return;
+                    }
+                    $.each(data, function (i, item) {
+                        var selected = (selectedMapelId && item.id == selectedMapelId) ? 'selected' : '';
+                        $mapel.append('<option value="' + item.id + '" ' + selected + '>' + item.nama + '</option>');
+                    });
+                } else {
+                    $mapel.empty().append('<option value="">-- Gagal memuat data --</option>');
+                }
+            },
+            error: function () {
+                $mapel.empty().append('<option value="">-- Gagal memuat data --</option>').prop('disabled', true);
             }
         });
     }
 
     $('#tambah-lembaga_id').on('change', function () {
-        filterGuruByLembaga($(this).val(), '#tambah-guru_id', '#tambah-mapel_id');
+        filterGuruByLembaga($(this).val(), '#tambah-guru_id');
+    }).trigger('change');
+
+    $('#tambah-guru_id').on('change', function () {
+        loadMapelByGuru($(this).val(), '#tambah-mapel_id');
     }).trigger('change');
 
     // ── Tambah ─────────────────────────────────────────────────────────────
@@ -399,9 +434,12 @@ $(document).ready(function () {
                 var d = res.data;
                 $('#form-edit').attr('action', '{{ url('admin/akademik/perangkat-mengajar') }}/' + id);
                 $('#edit-lembaga_id').val(d.lembaga_id);
-                filterGuruByLembaga(d.lembaga_id, '#edit-guru_id', '#edit-mapel_id');
+                filterGuruByLembaga(d.lembaga_id, '#edit-guru_id');
                 $('#edit-guru_id').val(d.guru_id);
-                $('#edit-mapel_id').val(d.mata_pelajaran_id);
+                
+                // Load mapel for this guru and select the current mata_pelajaran_id
+                loadMapelByGuru(d.guru_id, '#edit-mapel_id', d.mata_pelajaran_id);
+
                 $('#edit-tahun_id').val(d.tahun_pelajaran_id);
                 $('#edit-semester_id').val(d.semester_id);
                 $('#edit-jenis').val(d.jenis);
@@ -422,7 +460,11 @@ $(document).ready(function () {
     };
 
     $('#edit-lembaga_id').on('change', function () {
-        filterGuruByLembaga($(this).val(), '#edit-guru_id', '#edit-mapel_id');
+        filterGuruByLembaga($(this).val(), '#edit-guru_id');
+    });
+
+    $('#edit-guru_id').on('change', function () {
+        loadMapelByGuru($(this).val(), '#edit-mapel_id');
     });
 
     $('#form-edit').on('submit', function (e) {

@@ -5,7 +5,9 @@ namespace App\Services\Akademik;
 use App\Models\Akademik\AbsensiGuru;
 use App\Models\Master\Guru;
 use App\Repositories\Akademik\AbsensiGuruRepositoryInterface;
+use App\Services\Integrations\FaceRecognitionService;
 use App\Services\LogActivityService;
+use App\Support\WaktuSekolah;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use RuntimeException;
@@ -15,6 +17,7 @@ class AbsensiGuruService
     public function __construct(
         protected AbsensiGuruRepositoryInterface $repo,
         protected LogActivityService $logActivity,
+        protected FaceRecognitionService $faceRecognition,
     ) {}
 
     /**
@@ -22,10 +25,11 @@ class AbsensiGuruService
      */
     public function today(Guru $guru): array
     {
-        $absensi = $this->repo->findByGuruTanggal($guru->id, today()->toDateString());
+        $tanggal = WaktuSekolah::now()->toDateString();
+        $absensi = $this->repo->findByGuruTanggal($guru->id, $tanggal);
 
         return [
-            'tanggal' => today()->toDateString(),
+            'tanggal' => $tanggal,
             'sudah_masuk' => (bool) $absensi?->jam_masuk,
             'sudah_pulang' => (bool) $absensi?->jam_pulang,
             'absensi' => $absensi,
@@ -34,11 +38,13 @@ class AbsensiGuruService
 
     /**
      * Absen masuk. Validasi: belum absen, bukan mock GPS, dalam radius geofence.
-     * Melempar RuntimeException (dengan pesan siap-tampil) jika gagal.
+     * Melempar RuntimeException (dengan pesan siap-tampil) jika gagal. Video
+     * dipakai ganda: disimpan sebagai bukti audit (kolom selfie_masuk) DAN
+     * dikirim ke layanan face-verification untuk cek liveness + kecocokan wajah.
      */
-    public function absenMasuk(Guru $guru, array $payload, UploadedFile $selfie): object
+    public function absenMasuk(Guru $guru, array $payload, UploadedFile $video): object
     {
-        $tanggal = today()->toDateString();
+        $tanggal = WaktuSekolah::now()->toDateString();
         $existing = $this->repo->findByGuruTanggal($guru->id, $tanggal);
 
         if ($existing && $existing->jam_masuk) {
@@ -47,21 +53,23 @@ class AbsensiGuruService
 
         $this->guardMockLocation($payload['is_mock'] ?? false);
         $jarak = $this->guardGeofence($guru, (float) $payload['latitude'], (float) $payload['longitude']);
+        $faceResult = $this->guardFaceMatch($guru, $video, 'masuk');
 
-        $path = $this->storeSelfie($selfie, $guru->id, 'masuk');
+        $path = $this->storeMedia($video, $guru->id, 'masuk');
         $status = $this->tentukanStatusMasuk($guru);
 
         $data = [
             'guru_id' => $guru->id,
             'lembaga_id' => $guru->lembaga_id,
             'tanggal' => $tanggal,
-            'jam_masuk' => now()->format('H:i:s'),
+            'jam_masuk' => WaktuSekolah::now()->format('H:i:s'),
             'lat_masuk' => $payload['latitude'],
             'lng_masuk' => $payload['longitude'],
             'jarak_masuk_m' => $jarak,
             'akurasi_masuk_m' => isset($payload['accuracy']) ? (int) round($payload['accuracy']) : null,
             'selfie_masuk' => $path,
             'status' => $status,
+            ...$faceResult,
         ];
 
         // findByGuruTanggal + create: unique(guru_id,tanggal) sudah menjaga duplikat.
@@ -69,7 +77,7 @@ class AbsensiGuruService
             ? $this->repo->update($existing, $data)
             : $this->repo->create($data);
 
-        $this->logActivity->log('Absen Masuk Guru', "{$guru->nama_lengkap} absen masuk ({$status}) — jarak {$jarak}m.");
+        $this->logActivity->log('Absen Masuk Guru', "{$guru->nama_lengkap} absen masuk ({$status}) — jarak {$jarak}m, wajah: {$faceResult['face_verified_masuk']}.");
 
         return $absensi;
     }
@@ -77,9 +85,9 @@ class AbsensiGuruService
     /**
      * Absen pulang. Harus sudah absen masuk lebih dulu.
      */
-    public function absenPulang(Guru $guru, array $payload, UploadedFile $selfie): object
+    public function absenPulang(Guru $guru, array $payload, UploadedFile $video): object
     {
-        $tanggal = today()->toDateString();
+        $tanggal = WaktuSekolah::now()->toDateString();
         $existing = $this->repo->findByGuruTanggal($guru->id, $tanggal);
 
         if (! $existing || ! $existing->jam_masuk) {
@@ -92,19 +100,21 @@ class AbsensiGuruService
 
         $this->guardMockLocation($payload['is_mock'] ?? false);
         $jarak = $this->guardGeofence($guru, (float) $payload['latitude'], (float) $payload['longitude']);
+        $faceResult = $this->guardFaceMatch($guru, $video, 'pulang');
 
-        $path = $this->storeSelfie($selfie, $guru->id, 'pulang');
+        $path = $this->storeMedia($video, $guru->id, 'pulang');
 
         $absensi = $this->repo->update($existing, [
-            'jam_pulang' => now()->format('H:i:s'),
+            'jam_pulang' => WaktuSekolah::now()->format('H:i:s'),
             'lat_pulang' => $payload['latitude'],
             'lng_pulang' => $payload['longitude'],
             'jarak_pulang_m' => $jarak,
             'akurasi_pulang_m' => isset($payload['accuracy']) ? (int) round($payload['accuracy']) : null,
             'selfie_pulang' => $path,
+            ...$faceResult,
         ]);
 
-        $this->logActivity->log('Absen Pulang Guru', "{$guru->nama_lengkap} absen pulang — jarak {$jarak}m.");
+        $this->logActivity->log('Absen Pulang Guru', "{$guru->nama_lengkap} absen pulang — jarak {$jarak}m, wajah: {$faceResult['face_verified_pulang']}.");
 
         return $absensi;
     }
@@ -224,6 +234,46 @@ class AbsensiGuruService
         return (int) round($earth * 2 * asin(min(1.0, sqrt($a))));
     }
 
+    /**
+     * Verifikasi wajah (liveness + face-match) via layanan eksternal —
+     * BEDA dari guard lain, method ini TIDAK PERNAH throw. Sesuai
+     * kebijakan fail-mode permisif: absen selalu diizinkan lanjut, hasil
+     * verifikasi cuma ditandai untuk direview admin, bukan dipakai untuk
+     * memblokir. Mengembalikan array (key ber-suffix _masuk/_pulang) untuk
+     * digabung ke data absensi_guru — kolom terpisah per sesi karena masuk
+     * dan pulang adalah dua kejadian independen yang masing-masing
+     * dievaluasi sendiri (satu kolom gabungan akan membuat hasil masuk
+     * tertimpa saat pulang, atau sebaliknya).
+     */
+    protected function guardFaceMatch(Guru $guru, UploadedFile $video, string $sesi): array
+    {
+        $result = $this->faceRecognition->verify($guru, $video);
+
+        $mapped = match ($result['status']) {
+            'ok' => [
+                'face_verified' => ($result['liveness_ok'] && $result['match_ok']) ? 'cocok' : 'tidak_cocok',
+                'face_confidence' => $result['confidence'],
+                'face_liveness_ok' => $result['liveness_ok'],
+            ],
+            'not_enrolled' => [
+                'face_verified' => 'tidak_terdaftar',
+                'face_confidence' => null,
+                'face_liveness_ok' => null,
+            ],
+            default => [
+                'face_verified' => 'layanan_error',
+                'face_confidence' => null,
+                'face_liveness_ok' => null,
+            ],
+        };
+
+        return [
+            "face_verified_{$sesi}" => $mapped['face_verified'],
+            "face_confidence_{$sesi}" => $mapped['face_confidence'],
+            "face_liveness_ok_{$sesi}" => $mapped['face_liveness_ok'],
+        ];
+    }
+
     /** Hadir vs terlambat berdasarkan jam_masuk_batas lembaga. */
     protected function tentukanStatusMasuk(Guru $guru): string
     {
@@ -233,12 +283,13 @@ class AbsensiGuruService
             return 'hadir';
         }
 
-        $batasWaktu = Carbon::parse(today()->toDateString().' '.$batas);
+        $now = WaktuSekolah::now();
+        $batasWaktu = Carbon::parse($now->toDateString().' '.$batas, config('sekolah.timezone'));
 
-        return now()->greaterThan($batasWaktu) ? 'terlambat' : 'hadir';
+        return $now->greaterThan($batasWaktu) ? 'terlambat' : 'hadir';
     }
 
-    protected function storeSelfie(UploadedFile $file, int $guruId, string $sesi): string
+    protected function storeMedia(UploadedFile $file, int $guruId, string $sesi): string
     {
         return $file->store("absensi-guru/{$guruId}/{$sesi}", 'public');
     }

@@ -385,6 +385,9 @@ $(function () {
             const statusBadge = d.status === 'active'
                 ? '<span class="badge bg-light-success text-success">Aktif</span>'
                 : '<span class="badge bg-light-secondary text-secondary">Non-Aktif</span>';
+            const wajahBadge = d.wajah_terdaftar
+                ? '<span class="badge bg-light-success text-success">Terdaftar</span>'
+                : '<span class="badge bg-light-secondary text-secondary">Belum Daftar</span>';
 
             $('#akses-mobile-body').html(
                 `<dl class="row mb-3">
@@ -392,6 +395,7 @@ $(function () {
                     <dt class="col-sm-4">Email Login</dt><dd class="col-sm-8"><code>${d.email}</code></dd>
                     <dt class="col-sm-4">Username</dt><dd class="col-sm-8"><code>${d.username}</code></dd>
                     <dt class="col-sm-4">Status Akun</dt><dd class="col-sm-8">${statusBadge}</dd>
+                    <dt class="col-sm-4">Wajah Referensi</dt><dd class="col-sm-8">${wajahBadge}</dd>
                 </dl>
                 <hr>
                 <div class="d-flex flex-column gap-2">
@@ -407,6 +411,11 @@ $(function () {
                         <i class="bi bi-box-arrow-right me-1"></i>Cabut Sesi Login
                         <small class="d-block text-muted">Paksa logout dari HP yang sedang login — guru harus login ulang.</small>
                     </button>
+                    ${d.wajah_terdaftar ? `
+                    <button type="button" class="btn btn-sm btn-outline-danger text-start" id="btn-reset-wajah">
+                        <i class="bi bi-person-bounding-box me-1"></i>Reset Wajah Referensi
+                        <small class="d-block text-muted">Hapus wajah terdaftar — guru wajib daftar ulang dari aplikasi mobile sebelum absen bisa diverifikasi lagi.</small>
+                    </button>` : ''}
                 </div>`
             );
 
@@ -459,6 +468,28 @@ $(function () {
                     $.post(`{{ url('admin/master/guru') }}/${id}/akses-mobile/revoke-sesi`, { _token: '{{ csrf_token() }}' }, function (res) {
                         if (res.status === 200) {
                             Swal.fire({ icon: 'success', title: res.message, timer: 2000, showConfirmButton: false });
+                        }
+                    }).fail(xhr => {
+                        Swal.fire({ icon: 'error', title: 'Gagal', text: xhr.responseJSON?.message ?? 'Terjadi kesalahan.' });
+                    });
+                });
+            });
+
+            $('#btn-reset-wajah').on('click', function () {
+                Swal.fire({
+                    title: 'Reset wajah referensi guru ini?',
+                    text: 'Guru wajib mendaftar ulang wajahnya dari aplikasi mobile sebelum absen bisa diverifikasi lagi.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    confirmButtonText: 'Ya, Reset',
+                    cancelButtonText: 'Batal',
+                }).then(result => {
+                    if (!result.isConfirmed) return;
+                    $.post(`{{ url('admin/master/guru') }}/${id}/akses-mobile/reset-wajah`, { _token: '{{ csrf_token() }}' }, function (res) {
+                        if (res.status === 200) {
+                            Swal.fire({ icon: 'success', title: res.message, timer: 2500, showConfirmButton: false });
+                            muatAksesMobile(id);
                         }
                     }).fail(xhr => {
                         Swal.fire({ icon: 'error', title: 'Gagal', text: xhr.responseJSON?.message ?? 'Terjadi kesalahan.' });

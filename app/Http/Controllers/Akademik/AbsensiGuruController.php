@@ -89,6 +89,26 @@ class AbsensiGuruController extends Controller
             ->addColumn('koreksi_badge', fn ($r) => $r->is_koreksi_manual
                 ? "<span class='badge bg-light-warning text-warning' title='Dikoreksi oleh {$r->dikoreksiOleh?->name}'>Dikoreksi</span>"
                 : '')
+            ->addColumn('face_badge', function ($r) {
+                $map = [
+                    // 'cocok'/'belum_dicek' sengaja tidak dipetakan — tidak perlu badge
+                    // untuk kasus normal, supaya kolom tidak penuh noise visual.
+                    'tidak_cocok' => ['danger', 'Tidak Cocok'],
+                    'layanan_error' => ['light-warning text-warning', 'Error'],
+                    'tidak_terdaftar' => ['light-secondary text-secondary', 'Belum Enroll'],
+                ];
+
+                $badges = '';
+                foreach (['Masuk' => $r->face_verified_masuk, 'Pulang' => $r->face_verified_pulang] as $label => $status) {
+                    if (! isset($map[$status])) {
+                        continue;
+                    }
+                    [$color, $text] = $map[$status];
+                    $badges .= "<span class='badge bg-{$color} me-1' title='{$label}'>".substr($label, 0, 1)." {$text}</span>";
+                }
+
+                return $badges;
+            })
             ->addColumn('action', function ($r) {
                 $detail = "<button class='btn btn-xs btn-icon btn-light-info me-1' onclick='lihatDetailAbsensiGuru({$r->id})' title='Detail'><i class='bi bi-eye'></i></button>";
                 $edit = auth()->user()->hasPermissionTo('admin.akademik.absensi-guru.update')
@@ -100,7 +120,7 @@ class AbsensiGuruController extends Controller
 
                 return $detail.$edit.$del;
             })
-            ->rawColumns(['status_badge', 'mock_flag', 'koreksi_badge', 'action'])
+            ->rawColumns(['status_badge', 'mock_flag', 'koreksi_badge', 'face_badge', 'action'])
             ->make(true);
     }
 

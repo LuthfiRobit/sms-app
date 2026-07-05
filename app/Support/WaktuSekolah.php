@@ -31,6 +31,7 @@ class WaktuSekolah
             4 => 'Kamis',
             5 => 'Jumat',
             6 => 'Sabtu',
+            7 => 'Minggu',
         ][$waktu->dayOfWeekIso] ?? null;
     }
 }

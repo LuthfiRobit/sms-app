@@ -24,7 +24,10 @@
 
     <!-- [Legacy Libraries: DataTables CSS] -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
-    
+
+    <!-- [Legacy Libraries: Toastr CSS] -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+
     @stack('styles')
 </head>
 

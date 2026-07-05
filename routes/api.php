@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\DeviceTokenController;
 use App\Http\Controllers\Api\JadwalController;
 use App\Http\Controllers\Api\KelasController;
 use App\Http\Controllers\Api\PengajuanIzinGuruController;
+use App\Http\Controllers\Api\WajahReferensiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,6 +37,12 @@ Route::prefix('v1')->group(function () {
             Route::get('riwayat', [AbsensiGuruController::class, 'riwayat']);
             Route::post('masuk', [AbsensiGuruController::class, 'masuk']);
             Route::post('pulang', [AbsensiGuruController::class, 'pulang']);
+        });
+
+        // Wajah Referensi (enrollment untuk face verification absensi)
+        Route::prefix('wajah-referensi')->group(function () {
+            Route::get('/', [WajahReferensiController::class, 'show']);
+            Route::post('/', [WajahReferensiController::class, 'store']);
         });
 
         // Pengajuan Izin/Sakit

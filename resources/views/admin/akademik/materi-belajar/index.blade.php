@@ -97,14 +97,18 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <label class="form-label fw-bold">Tahun Pelajaran <span class="text-danger">*</span></label>
                             <select class="form-select" name="tahun_pelajaran_id" required>
                                 <option value="">-- Pilih --</option>
                                 @foreach($tahunList as $t)
-                                    <option value="{{ $t->id }}">{{ $t->nama }}</option>
+                                    <option value="{{ $t->id }}" {{ $t->status === 'aktif' ? 'selected' : '' }}>{{ $t->nama }}</option>
                                 @endforeach
                             </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Pertemuan Ke</label>
+                            <input type="number" class="form-control" name="pertemuan_ke" min="1" max="100" placeholder="Contoh: 1">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-bold">Tanggal <span class="text-danger">*</span></label>
@@ -113,8 +117,9 @@
                         <div class="col-md-3">
                             <label class="form-label fw-bold">Status <span class="text-danger">*</span></label>
                             <select class="form-select" name="status" required>
-                                <option value="aktif" selected>Aktif</option>
-                                <option value="nonaktif">Non-Aktif</option>
+                                <option value="pending" selected>Menunggu Verifikasi</option>
+                                <option value="disetujui">Disetujui</option>
+                                <option value="ditolak">Ditolak</option>
                             </select>
                         </div>
                         <div class="col-md-12">
@@ -122,8 +127,8 @@
                             <input type="text" class="form-control" name="judul" maxlength="255" required placeholder="Judul materi">
                         </div>
                         <div class="col-md-12">
-                            <label class="form-label fw-bold">Deskripsi</label>
-                            <textarea class="form-control" name="deskripsi" rows="2" placeholder="Keterangan singkat (opsional)"></textarea>
+                            <label class="form-label fw-bold">Deskripsi / RPP Terstruktur</label>
+                            <textarea class="form-control" name="deskripsi" id="tambah-deskripsi" rows="4" placeholder="Ketik ringkasan materi atau RPP pertemuan ini"></textarea>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">File Materi</label>
@@ -199,7 +204,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <label class="form-label fw-bold">Tahun Pelajaran <span class="text-danger">*</span></label>
                             <select class="form-select" name="tahun_pelajaran_id" id="edit-tahun" required>
                                 <option value="">-- Pilih --</option>
@@ -209,14 +214,19 @@
                             </select>
                         </div>
                         <div class="col-md-3">
+                            <label class="form-label fw-bold">Pertemuan Ke</label>
+                            <input type="number" class="form-control" name="pertemuan_ke" id="edit-pertemuan" min="1" max="100" placeholder="Contoh: 1">
+                        </div>
+                        <div class="col-md-3">
                             <label class="form-label fw-bold">Tanggal <span class="text-danger">*</span></label>
                             <input type="date" class="form-control" name="tanggal" id="edit-tanggal" required>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-bold">Status <span class="text-danger">*</span></label>
                             <select class="form-select" name="status" id="edit-status" required>
-                                <option value="aktif">Aktif</option>
-                                <option value="nonaktif">Non-Aktif</option>
+                                <option value="pending">Menunggu Verifikasi</option>
+                                <option value="disetujui">Disetujui</option>
+                                <option value="ditolak">Ditolak</option>
                             </select>
                         </div>
                         <div class="col-md-12">
@@ -224,8 +234,8 @@
                             <input type="text" class="form-control" name="judul" id="edit-judul" maxlength="255" required>
                         </div>
                         <div class="col-md-12">
-                            <label class="form-label fw-bold">Deskripsi</label>
-                            <textarea class="form-control" name="deskripsi" id="edit-deskripsi" rows="2"></textarea>
+                            <label class="form-label fw-bold">Deskripsi / RPP Terstruktur</label>
+                            <textarea class="form-control" name="deskripsi" id="edit-deskripsi" rows="4"></textarea>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">File Baru</label>
@@ -252,9 +262,36 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
 <script>
 $(document).ready(function () {
     var _successMsg = null;
+    let tambahEditor;
+    let editEditor;
+
+    // Initialize CKEditor 5 for Tambah
+    ClassicEditor
+        .create(document.querySelector('#tambah-deskripsi'), {
+            toolbar: [ 'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote' ]
+        })
+        .then(editor => {
+            tambahEditor = editor;
+        })
+        .catch(error => {
+            console.error(error);
+        });
+
+    // Initialize CKEditor 5 for Edit
+    ClassicEditor
+        .create(document.querySelector('#edit-deskripsi'), {
+            toolbar: [ 'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote' ]
+        })
+        .then(editor => {
+            editEditor = editor;
+        })
+        .catch(error => {
+            console.error(error);
+        });
 
     var table = $('#materi-table').DataTable({
         processing: true,
@@ -281,19 +318,64 @@ $(document).ready(function () {
     });
 
     function filterByLembaga(lembagaId, prefix) {
-        ['guru', 'mapel', 'rombel'].forEach(function (key) {
+        ['guru', 'rombel'].forEach(function (key) {
             var $sel = $('#' + prefix + '-' + key);
+            var selectedBefore = $sel.val();
             $sel.find('option[data-lembaga]').each(function () {
                 var show = !lembagaId || $(this).data('lembaga') == lembagaId;
                 $(this).prop('hidden', !show);
                 if (!show && $(this).is(':selected')) $sel.val('');
             });
+            if ($sel.val() !== selectedBefore) {
+                $sel.trigger('change');
+            }
+        });
+    }
+
+    // Load mata pelajaran by guru (dependent dropdown)
+    function loadMapelByGuru(guruId, targetSelectId, selectedMapelId = null) {
+        var $mapel = $(targetSelectId);
+        $mapel.empty().append('<option value="">-- Memuat Mata Pelajaran... --</option>').prop('disabled', true);
+        
+        if (!guruId) {
+            $mapel.empty().append('<option value="">-- Pilih Guru Terlebih Dahulu --</option>').prop('disabled', true);
+            return;
+        }
+
+        var url = '{{ route("admin.akademik.perangkat-mengajar.guru-mapel", ":guruId") }}'.replace(':guruId', guruId);
+
+        return $.ajax({
+            url: url,
+            type: 'GET',
+            success: function (res) {
+                $mapel.empty().append('<option value="">-- Pilih Mata Pelajaran --</option>').prop('disabled', false);
+                if (res.status === 200) {
+                    var data = res.data;
+                    if (data.length === 0) {
+                        $mapel.empty().append('<option value="">-- Guru tidak memiliki jadwal mengajar --</option>').prop('disabled', true);
+                        return;
+                    }
+                    $.each(data, function (i, item) {
+                        var selected = (selectedMapelId && item.id == selectedMapelId) ? 'selected' : '';
+                        $mapel.append('<option value="' + item.id + '" ' + selected + '>' + item.nama + '</option>');
+                    });
+                } else {
+                    $mapel.empty().append('<option value="">-- Gagal memuat data --</option>');
+                }
+            },
+            error: function () {
+                $mapel.empty().append('<option value="">-- Gagal memuat data --</option>').prop('disabled', true);
+            }
         });
     }
 
     $('#tambah-lembaga').on('change', function () {
         filterByLembaga($(this).val(), 'tambah');
     }).trigger('change');
+
+    $('#tambah-guru').on('change', function () {
+        loadMapelByGuru($(this).val(), '#tambah-mapel');
+    });
 
     // ── Tambah ─────────────────────────────────────────────────────────────
     $('#modal-tambah').on('hidden.bs.modal', function () {
@@ -305,6 +387,12 @@ $(document).ready(function () {
 
     $('#form-tambah').on('submit', function (e) {
         e.preventDefault();
+        
+        // Sync CKEditor data to textarea
+        if (tambahEditor) {
+            $('#tambah-deskripsi').val(tambahEditor.getData());
+        }
+
         var $btn = $('#btn-tambah').prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i>Menyimpan...');
         var formData = new FormData(this);
         $.ajax({
@@ -318,6 +406,9 @@ $(document).ready(function () {
                     _successMsg = res.message || 'Materi berhasil ditambahkan.';
                     bootstrap.Modal.getInstance(document.getElementById('modal-tambah')).hide();
                     document.getElementById('form-tambah').reset();
+                    if (tambahEditor) {
+                        tambahEditor.setData('');
+                    }
                     table.ajax.reload();
                 } else {
                     showAlert('#tambah-alert', 'danger', res.message);
@@ -352,15 +443,23 @@ $(document).ready(function () {
                 filterByLembaga(d.lembaga_id, 'edit');
                 setTimeout(function () {
                     $('#edit-guru').val(d.guru_id);
-                    $('#edit-mapel').val(d.mata_pelajaran_id);
+                    loadMapelByGuru(d.guru_id, '#edit-mapel', d.mata_pelajaran_id);
                     $('#edit-rombel').val(d.rombel_id);
                 }, 50);
                 $('#edit-tahun').val(d.tahun_pelajaran_id);
                 $('#edit-tanggal').val(d.tanggal ? d.tanggal.substring(0, 10) : '');
                 $('#edit-status').val(d.status);
                 $('#edit-judul').val(d.judul);
-                $('#edit-deskripsi').val(d.deskripsi);
+                $('#edit-pertemuan').val(d.pertemuan_ke);
                 $('#edit-url').val(d.url_eksternal);
+
+                // Populate CKEditor
+                if (editEditor) {
+                    editEditor.setData(d.deskripsi ?? '');
+                } else {
+                    $('#edit-deskripsi').val(d.deskripsi);
+                }
+
                 $('#edit-alert').addClass('d-none');
                 $('#modal-edit').modal('show');
             }
@@ -371,8 +470,18 @@ $(document).ready(function () {
         filterByLembaga($(this).val(), 'edit');
     });
 
+    $('#edit-guru').on('change', function () {
+        loadMapelByGuru($(this).val(), '#edit-mapel');
+    });
+
     $('#form-edit').on('submit', function (e) {
         e.preventDefault();
+        
+        // Sync CKEditor data to textarea
+        if (editEditor) {
+            $('#edit-deskripsi').val(editEditor.getData());
+        }
+
         var $btn = $('#btn-edit').prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i>Menyimpan...');
         var formData = new FormData(this);
         formData.append('_method', 'PUT');

@@ -171,6 +171,7 @@ Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
             Route::post('guru/{id}/akses-mobile/reset-password', [GuruController::class, 'aksesMobileResetPassword'])->name('guru.akses-mobile.reset-password');
             Route::post('guru/{id}/akses-mobile/toggle-status', [GuruController::class, 'aksesMobileToggleStatus'])->name('guru.akses-mobile.toggle-status');
             Route::post('guru/{id}/akses-mobile/revoke-sesi', [GuruController::class, 'aksesMobileRevokeSesi'])->name('guru.akses-mobile.revoke-sesi');
+            Route::post('guru/{id}/akses-mobile/reset-wajah', [GuruController::class, 'aksesMobileResetWajah'])->name('guru.akses-mobile.reset-wajah');
             Route::resource('guru', GuruController::class)->except(['create', 'edit']);
 
             // Mapping Jurusan ↔ Mata Pelajaran
@@ -200,6 +201,7 @@ Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
         Route::prefix('akademik')->name('akademik.')->group(function () {
             // Perangkat Mengajar
             Route::get('perangkat-mengajar/list', [PerangkatMengajarController::class, 'list'])->name('perangkat-mengajar.list');
+            Route::get('perangkat-mengajar/guru/{guruId}/mapel', [PerangkatMengajarController::class, 'getMapelByGuru'])->name('perangkat-mengajar.guru-mapel');
             Route::resource('perangkat-mengajar', PerangkatMengajarController::class)->except(['create', 'edit']);
 
             // Materi Belajar

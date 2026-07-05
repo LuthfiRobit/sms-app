@@ -1,3 +1,12 @@
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+@endpush
+@push('vendor-scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+@endpush
+
 <form id="lembaga-form">
     <input type="hidden" id="lembaga-id" name="id">
     <div class="row g-3">
@@ -55,6 +64,37 @@
             <label class="form-label">Logo</label>
             <input type="file" class="form-control" id="f-logo" name="logo" accept="image/*">
             <div class="form-text">Format: JPG/PNG, maks 2MB</div>
+        </div>
+
+        <div class="col-md-12">
+            <hr class="my-1">
+            <label class="form-label mb-0">Titik Lokasi Sekolah</label>
+            <div class="form-text mt-0 mb-2">Dipakai untuk memvalidasi jarak guru saat absen (geofence). Kosongkan jika belum ingin mengaktifkan validasi lokasi untuk lembaga ini.</div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Latitude</label>
+            <input type="number" step="any" class="form-control" id="f-latitude" name="latitude" placeholder="-7.858300">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Longitude</label>
+            <input type="number" step="any" class="form-control" id="f-longitude" name="longitude" placeholder="113.378200">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Radius (meter)</label>
+            <input type="number" step="1" min="10" max="5000" class="form-control" id="f-radius" name="radius_meter" placeholder="100">
+        </div>
+        <div class="col-md-12">
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-ambil-lokasi">
+                <i class="bi bi-geo-alt"></i> Ambil Lokasi Saat Ini
+            </button>
+            <a href="#" target="_blank" id="link-lihat-peta" class="btn btn-outline-secondary btn-sm d-none">
+                <i class="bi bi-map"></i> Lihat di Google Maps
+            </a>
+            <div class="form-text">Buka halaman ini dari HP/laptop yang sedang berada di lokasi sekolah, lalu klik tombol di atas untuk mengisi koordinat secara otomatis. Atau klik/geser pin langsung di peta di bawah.</div>
+        </div>
+        <div class="col-md-12">
+            <div id="map-lokasi" style="height: 260px; border-radius: 8px;"></div>
+            <div class="form-text mt-1" id="lokasi-nama"></div>
         </div>
     </div>
 </form>

@@ -103,6 +103,7 @@
                                 <th width="9%">Status</th>
                                 <th width="6%">Flag</th>
                                 <th width="8%">Koreksi</th>
+                                <th width="10%">Wajah</th>
                                 <th width="8%">Aksi</th>
                             </tr>
                         </thead>
@@ -268,6 +269,7 @@ $(document).ready(function () {
             { data: 'status_badge', orderable: false },
             { data: 'mock_flag', orderable: false, searchable: false },
             { data: 'koreksi_badge', orderable: false, searchable: false },
+            { data: 'face_badge', orderable: false, searchable: false },
             { data: 'action', orderable: false, searchable: false },
         ],
         language: {
@@ -351,8 +353,8 @@ $(document).ready(function () {
                 '</dl>';
 
             html += '<div class="row g-3">';
-            html += buildSesiCard('Absen Masuk', d.jam_masuk, d.lat_masuk, d.lng_masuk, d.jarak_masuk_m, d.akurasi_masuk_m, d.selfie_masuk);
-            html += buildSesiCard('Absen Pulang', d.jam_pulang, d.lat_pulang, d.lng_pulang, d.jarak_pulang_m, d.akurasi_pulang_m, d.selfie_pulang);
+            html += buildSesiCard('Absen Masuk', d.jam_masuk, d.lat_masuk, d.lng_masuk, d.jarak_masuk_m, d.akurasi_masuk_m, d.selfie_masuk, d.face_verified_masuk, d.face_confidence_masuk, d.face_liveness_ok_masuk);
+            html += buildSesiCard('Absen Pulang', d.jam_pulang, d.lat_pulang, d.lng_pulang, d.jarak_pulang_m, d.akurasi_pulang_m, d.selfie_pulang, d.face_verified_pulang, d.face_confidence_pulang, d.face_liveness_ok_pulang);
             html += '</div>';
 
             if (d.keterangan) {
@@ -363,22 +365,33 @@ $(document).ready(function () {
         });
     };
 
-    function buildSesiCard(judul, jam, lat, lng, jarak, akurasi, selfiePath) {
+    function buildSesiCard(judul, jam, lat, lng, jarak, akurasi, selfiePath, faceVerified, faceConfidence, faceLivenessOk) {
         if (!jam) {
             return '<div class="col-md-6"><div class="card h-100"><div class="card-body text-center text-muted py-4">' +
                 '<i class="bi bi-dash-circle fs-3 d-block mb-2 opacity-50"></i>' + judul + ' belum dilakukan</div></div></div>';
         }
         var mapsUrl = (lat && lng) ? 'https://www.google.com/maps?q=' + lat + ',' + lng : null;
-        var fotoUrl = selfiePath ? '{{ url('storage') }}/' + selfiePath : null;
+        var videoUrl = selfiePath ? '{{ url('storage') }}/' + selfiePath : null;
+        var faceMap = {
+            cocok: ['success', 'Wajah Cocok'],
+            tidak_cocok: ['danger', 'Wajah Tidak Cocok'],
+            layanan_error: ['warning text-dark', 'Verifikasi Error (Layanan Mati)'],
+            tidak_terdaftar: ['secondary', 'Guru Belum Enroll Wajah'],
+            belum_dicek: ['secondary', 'Belum Dicek'],
+        };
+        var faceEntry = faceMap[faceVerified] || faceMap.belum_dicek;
 
         var html = '<div class="col-md-6"><div class="card h-100">';
         html += '<div class="card-header bg-light py-2"><strong>' + judul + '</strong> — ' + jam.substring(0, 5) + '</div>';
         html += '<div class="card-body">';
-        if (fotoUrl) {
-            html += '<img src="' + fotoUrl + '" class="img-fluid rounded mb-2" style="max-height:220px;object-fit:cover;width:100%" alt="Selfie ' + judul + '">';
+        if (videoUrl) {
+            html += '<video src="' + videoUrl + '" class="rounded mb-2" style="max-height:220px;width:100%;background:#000" controls muted playsinline></video>';
         } else {
-            html += '<div class="text-muted small mb-2">Tidak ada foto.</div>';
+            html += '<div class="text-muted small mb-2">Tidak ada video.</div>';
         }
+        html += '<div class="mb-2"><span class="badge bg-' + faceEntry[0] + '">' + faceEntry[1] + '</span>' +
+            (faceConfidence != null ? ' <span class="text-muted small">(kemiripan ' + Math.round(faceConfidence * 100) + '%, kedipan ' + (faceLivenessOk ? 'terdeteksi' : 'tidak terdeteksi') + ')</span>' : '') +
+            '</div>';
         html += '<div class="small text-muted">Jarak ke sekolah: <strong>' + (jarak ?? '—') + ' m</strong></div>';
         html += '<div class="small text-muted">Akurasi GPS: <strong>' + (akurasi ? '±' + akurasi + ' m' : '—') + '</strong></div>';
         if (mapsUrl) {
