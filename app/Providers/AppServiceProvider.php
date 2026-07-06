@@ -25,6 +25,14 @@ use App\Repositories\Akademik\PengajuanRaportRepository;
 use App\Repositories\Akademik\PengajuanRaportRepositoryInterface;
 use App\Repositories\Akademik\PerangkatMengajarRepository;
 use App\Repositories\Akademik\PerangkatMengajarRepositoryInterface;
+use App\Repositories\Akademik\RppBagianRepository;
+use App\Repositories\Akademik\RppBagianRepositoryInterface;
+use App\Repositories\Akademik\RppMasterOpsiRepository;
+use App\Repositories\Akademik\RppMasterOpsiRepositoryInterface;
+use App\Repositories\Akademik\RppPoinRepository;
+use App\Repositories\Akademik\RppPoinRepositoryInterface;
+use App\Repositories\Akademik\RppRepository;
+use App\Repositories\Akademik\RppRepositoryInterface;
 use App\Repositories\DeviceTokenRepository;
 use App\Repositories\DeviceTokenRepositoryInterface;
 use App\Repositories\Kinerja\KpiRepository;
@@ -42,6 +50,8 @@ use App\Repositories\Master\LembagaRepository;
 use App\Repositories\Master\LembagaRepositoryInterface;
 use App\Repositories\Master\MataPelajaranRepository;
 use App\Repositories\Master\MataPelajaranRepositoryInterface;
+use App\Repositories\Master\ModelPembelajaranRepository;
+use App\Repositories\Master\ModelPembelajaranRepositoryInterface;
 use App\Repositories\Master\ProfilSekolahRepository;
 // Cluster Ppdb
 use App\Repositories\Master\ProfilSekolahRepositoryInterface;
@@ -145,10 +155,15 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(RombelRepositoryInterface::class, RombelRepository::class);
         $this->app->bind(GuruRepositoryInterface::class, GuruRepository::class);
         $this->app->bind(JadwalKbmRepositoryInterface::class, JadwalKbmRepository::class);
+        $this->app->bind(ModelPembelajaranRepositoryInterface::class, ModelPembelajaranRepository::class);
 
         // Cluster Akademik
         $this->app->bind(PerangkatMengajarRepositoryInterface::class, PerangkatMengajarRepository::class);
         $this->app->bind(MateriBelajarRepositoryInterface::class, MateriBelajarRepository::class);
+        $this->app->bind(RppRepositoryInterface::class, RppRepository::class);
+        $this->app->bind(RppBagianRepositoryInterface::class, RppBagianRepository::class);
+        $this->app->bind(RppPoinRepositoryInterface::class, RppPoinRepository::class);
+        $this->app->bind(RppMasterOpsiRepositoryInterface::class, RppMasterOpsiRepository::class);
         $this->app->bind(AbsensiRepositoryInterface::class, AbsensiRepository::class);
         $this->app->bind(AbsensiGuruRepositoryInterface::class, AbsensiGuruRepository::class);
         $this->app->bind(DeviceTokenRepositoryInterface::class, DeviceTokenRepository::class);

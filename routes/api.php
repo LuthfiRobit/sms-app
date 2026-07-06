@@ -37,6 +37,7 @@ Route::prefix('v1')->group(function () {
             Route::get('riwayat', [AbsensiGuruController::class, 'riwayat']);
             Route::post('masuk', [AbsensiGuruController::class, 'masuk']);
             Route::post('pulang', [AbsensiGuruController::class, 'pulang']);
+            Route::post('cek-wajah', [AbsensiGuruController::class, 'cekWajah']);
         });
 
         // Wajah Referensi (enrollment untuk face verification absensi)

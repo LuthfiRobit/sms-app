@@ -2,6 +2,7 @@
 
 namespace App\Services\Akademik;
 
+use App\Exceptions\AbsensiRejectedException;
 use App\Models\Akademik\AbsensiGuru;
 use App\Models\Master\Guru;
 use App\Repositories\Akademik\AbsensiGuruRepositoryInterface;
@@ -48,7 +49,7 @@ class AbsensiGuruService
         $existing = $this->repo->findByGuruTanggal($guru->id, $tanggal);
 
         if ($existing && $existing->jam_masuk) {
-            throw new RuntimeException('Anda sudah melakukan absen masuk hari ini.');
+            throw new AbsensiRejectedException('Anda sudah melakukan absen masuk hari ini.', 'sudah_absen_masuk');
         }
 
         $this->guardMockLocation($payload['is_mock'] ?? false);
@@ -91,11 +92,11 @@ class AbsensiGuruService
         $existing = $this->repo->findByGuruTanggal($guru->id, $tanggal);
 
         if (! $existing || ! $existing->jam_masuk) {
-            throw new RuntimeException('Anda belum melakukan absen masuk hari ini.');
+            throw new AbsensiRejectedException('Anda belum melakukan absen masuk hari ini.', 'belum_absen_masuk');
         }
 
         if ($existing->jam_pulang) {
-            throw new RuntimeException('Anda sudah melakukan absen pulang hari ini.');
+            throw new AbsensiRejectedException('Anda sudah melakukan absen pulang hari ini.', 'sudah_absen_pulang');
         }
 
         $this->guardMockLocation($payload['is_mock'] ?? false);
@@ -195,7 +196,7 @@ class AbsensiGuruService
     protected function guardMockLocation(bool $isMock): void
     {
         if ($isMock) {
-            throw new RuntimeException('Lokasi palsu terdeteksi. Nonaktifkan mock location untuk absen.');
+            throw new AbsensiRejectedException('Lokasi palsu terdeteksi. Nonaktifkan mock location untuk absen.', 'mock_location');
         }
     }
 
@@ -208,14 +209,14 @@ class AbsensiGuruService
         $lembaga = $guru->lembaga;
 
         if (! $lembaga || $lembaga->latitude === null || $lembaga->longitude === null) {
-            throw new RuntimeException('Titik lokasi sekolah belum diatur. Hubungi admin.');
+            throw new AbsensiRejectedException('Titik lokasi sekolah belum diatur. Hubungi admin.', 'lokasi_sekolah_belum_diatur');
         }
 
         $jarak = $this->haversine((float) $lembaga->latitude, (float) $lembaga->longitude, $lat, $lng);
         $radius = (int) ($lembaga->radius_meter ?: 100);
 
         if ($jarak > $radius) {
-            throw new RuntimeException("Anda berada di luar area sekolah (jarak {$jarak}m, maksimal {$radius}m).");
+            throw new AbsensiRejectedException("Anda berada di luar area sekolah (jarak {$jarak}m, maksimal {$radius}m).", 'di_luar_radius');
         }
 
         return $jarak;
@@ -247,9 +248,39 @@ class AbsensiGuruService
      */
     protected function guardFaceMatch(Guru $guru, UploadedFile $video, string $sesi): array
     {
-        $result = $this->faceRecognition->verify($guru, $video);
+        $mapped = $this->mapFaceResult($this->faceRecognition->verify($guru, $video));
 
-        $mapped = match ($result['status']) {
+        return [
+            "face_verified_{$sesi}" => $mapped['face_verified'],
+            "face_confidence_{$sesi}" => $mapped['face_confidence'],
+            "face_liveness_ok_{$sesi}" => $mapped['face_liveness_ok'],
+        ];
+    }
+
+    /**
+     * Cek kecocokan wajah SAJA, tanpa membuat/mengubah baris absensi apapun —
+     * dipakai mobile untuk pre-check sebelum guru memutuskan "kirim absen"
+     * atau "rekam ulang". Ekstraksi terpisah dari guardFaceMatch supaya
+     * pemetaan status (cocok/tidak_cocok/tidak_terdaftar/layanan_error)
+     * hanya ditulis sekali di satu tempat untuk kedua alur (pre-check &
+     * penyimpanan asli) — tidak boleh berbeda logika antara keduanya.
+     */
+    public function cekWajah(Guru $guru, UploadedFile $video): array
+    {
+        $mapped = $this->mapFaceResult($this->faceRecognition->verify($guru, $video));
+
+        return [
+            'face_verified' => $mapped['face_verified'],
+            'face_confidence' => $mapped['face_confidence'],
+            'face_liveness_ok' => $mapped['face_liveness_ok'],
+            'boleh_lanjut_otomatis' => $mapped['face_verified'] === 'cocok',
+        ];
+    }
+
+    /** @return array{face_verified: string, face_confidence: float|null, face_liveness_ok: bool|null} */
+    protected function mapFaceResult(array $result): array
+    {
+        return match ($result['status']) {
             'ok' => [
                 'face_verified' => ($result['liveness_ok'] && $result['match_ok']) ? 'cocok' : 'tidak_cocok',
                 'face_confidence' => $result['confidence'],
@@ -266,12 +297,6 @@ class AbsensiGuruService
                 'face_liveness_ok' => null,
             ],
         };
-
-        return [
-            "face_verified_{$sesi}" => $mapped['face_verified'],
-            "face_confidence_{$sesi}" => $mapped['face_confidence'],
-            "face_liveness_ok_{$sesi}" => $mapped['face_liveness_ok'],
-        ];
     }
 
     /** Hadir vs terlambat berdasarkan jam_masuk_batas lembaga. */

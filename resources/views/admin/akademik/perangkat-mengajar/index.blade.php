@@ -120,12 +120,12 @@
                             <label class="form-label fw-bold">Jenis <span class="text-danger">*</span></label>
                             <select class="form-select" name="jenis" required>
                                 <option value="">-- Pilih Jenis --</option>
-                                <option value="RPP">RPP</option>
                                 <option value="Silabus">Silabus</option>
                                 <option value="Prota">Prota</option>
                                 <option value="Prosem">Prosem</option>
                                 <option value="Modul Ajar">Modul Ajar</option>
                             </select>
+                            <div class="form-text">RPP kini disusun terstruktur lewat menu <a href="{{ route('admin.akademik.rpp.index') }}">RPP</a>.</div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold">Status <span class="text-danger">*</span></label>

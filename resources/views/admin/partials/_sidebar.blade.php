@@ -68,6 +68,11 @@
                                 <a class="pc-link" href="{{ route('admin.master.kurikulum.index') }}">Kurikulum</a>
                             </li>
                         @endif
+                        @if(auth()->user()->hasPermissionTo('admin.master.model-pembelajaran.index'))
+                            <li class="pc-item {{ request()->routeIs('admin.master.model-pembelajaran.*') ? 'active' : '' }}">
+                                <a class="pc-link" href="{{ route('admin.master.model-pembelajaran.index') }}">Model Pembelajaran</a>
+                            </li>
+                        @endif
                         <li class="pc-item"><a class="pc-link" href="#">Referensi Wilayah</a></li>
                     </ul>
                 </li>
@@ -309,6 +314,21 @@
                         @if(auth()->user()->hasPermissionTo('admin.akademik.materi-belajar.index'))
                         <li class="pc-item {{ request()->routeIs('admin.akademik.materi-belajar.*') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('admin.akademik.materi-belajar.index') }}">Materi Belajar</a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.akademik.rpp.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.akademik.rpp.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.akademik.rpp.index') }}">RPP</a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.akademik.verifikasi-rpp.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.akademik.verifikasi-rpp.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.akademik.verifikasi-rpp.index') }}">Verifikasi RPP</a>
+                        </li>
+                        @endif
+                        @if(auth()->user()->hasPermissionTo('admin.akademik.rpp-template.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.akademik.rpp-template.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.akademik.rpp-template.index') }}">Kelola Bagian &amp; Poin RPP</a>
                         </li>
                         @endif
                         <li class="pc-item"><a class="pc-link" href="#">E-Rapor</a></li>

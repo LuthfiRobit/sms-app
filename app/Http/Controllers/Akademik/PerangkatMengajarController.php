@@ -110,7 +110,11 @@ class PerangkatMengajarController extends Controller
             'mata_pelajaran_id' => 'required|exists:mata_pelajaran,id',
             'tahun_pelajaran_id'=> 'required|exists:tahun_pelajaran,id',
             'semester_id'       => 'required|exists:semester,id',
-            'jenis'             => 'required|in:Silabus,RPP,Prota,Prosem,Modul Ajar',
+            // 'RPP' sengaja tidak ditawarkan untuk perangkat BARU — sudah pindah
+            // ke modul RPP terstruktur (lihat RppController). Baris jenis=RPP
+            // lama tetap bisa diedit (lihat update() di bawah, yang masih
+            // mengizinkannya) supaya tidak ada data lama yang jadi tidak bisa disimpan.
+            'jenis'             => 'required|in:Silabus,Prota,Prosem,Modul Ajar',
             'judul'             => 'required|string|max:255',
             'deskripsi'         => 'nullable|string',
             'file'              => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,xls,xlsx|max:10240',
@@ -141,6 +145,9 @@ class PerangkatMengajarController extends Controller
             'mata_pelajaran_id' => 'required|exists:mata_pelajaran,id',
             'tahun_pelajaran_id'=> 'required|exists:tahun_pelajaran,id',
             'semester_id'       => 'required|exists:semester,id',
+            // Beda dari store(): 'RPP' TETAP diizinkan di sini supaya baris
+            // legacy jenis=RPP (dari sebelum modul RPP terstruktur ada) masih
+            // bisa disunting/disimpan tanpa dipaksa ganti jenis.
             'jenis'             => 'required|in:Silabus,RPP,Prota,Prosem,Modul Ajar',
             'judul'             => 'required|string|max:255',
             'deskripsi'         => 'nullable|string',

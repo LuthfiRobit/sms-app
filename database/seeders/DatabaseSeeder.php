@@ -35,6 +35,7 @@ class DatabaseSeeder extends Seeder
             PpdbDemoTestDataSeeder::class,   // SMK Ma'arif Gending
             PpdbAllLembagaSeeder::class,     // 6 lembaga lainnya
             KelasMobileDemoSeeder::class,    // rombel + siswa + jadwal_kbm (Fase 2/3 mobile)
+            RppTemplateSeeder::class,        // bagian/poin/master opsi RPP + Model Pembelajaran default
         ]);
     }
 }

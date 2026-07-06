@@ -4,6 +4,7 @@ namespace App\Services\Akademik;
 
 use App\Models\Akademik\MateriBelajar;
 use App\Models\Akademik\PerangkatMengajar;
+use App\Models\Akademik\Rpp;
 use App\Models\Master\Guru;
 use App\Models\Master\JadwalKbm;
 use App\Models\Master\Semester;
@@ -149,14 +150,56 @@ class KelasMobileService
         return ['peserta_id' => $siswa->peserta_id, 'nama' => $siswa->nama, 'status' => 'hadir', 'sudah_tercatat' => false];
     }
 
-    /** RPP (perangkat mengajar) + materi ajar disetujui untuk mapel & rombel jadwal ini. */
+    /** RPP (perangkat mengajar legacy + RPP terstruktur disetujui) + materi ajar disetujui untuk mapel & rombel jadwal ini. */
     public function materi(JadwalKbm $jadwal): array
     {
-        $rpp = PerangkatMengajar::where('guru_id', $jadwal->guru_id)
+        // Perangkat mengajar lama (Silabus/Prota/Prosem/Modul Ajar, dan RPP
+        // historis dari sebelum modul RPP terstruktur ada) — jenis 'RPP' baru
+        // sudah tidak lagi dibuat lewat sini, tapi baris lama tetap tampil.
+        $legacyRpp = PerangkatMengajar::where('guru_id', $jadwal->guru_id)
             ->where('mata_pelajaran_id', $jadwal->mata_pelajaran_id)
             ->where('tahun_pelajaran_id', $jadwal->tahun_pelajaran_id)
             ->orderByDesc('id')
             ->get(['id', 'jenis', 'judul', 'deskripsi', 'file_path', 'file_name']);
+
+        // RPP terstruktur — hanya yang sudah disetujui yang boleh tampil ke
+        // guru (mirror aturan MateriBelajar di bawah: draft/pending tidak bocor).
+        // Tiap SUBMATERI (bukan RPP-nya) jadi satu entri terpisah di sini —
+        // itu yang guru pilih di app untuk sesi hari ini — semuanya menunjuk
+        // ke PDF RPP induk yang sama. RPP tanpa submateri (guru belum isi/RPP
+        // satu sesi) jatuh balik memakai judul RPP itu sendiri sebagai satu entri.
+        $rppTerstruktur = Rpp::where('guru_id', $jadwal->guru_id)
+            ->where('mata_pelajaran_id', $jadwal->mata_pelajaran_id)
+            ->where('tahun_pelajaran_id', $jadwal->tahun_pelajaran_id)
+            ->where('status', 'disetujui')
+            ->with('submateri')
+            ->orderByDesc('id')
+            ->get(['id', 'materi', 'file_path', 'file_name'])
+            ->flatMap(function ($r) {
+                $daftar = $r->submateri->isNotEmpty() ? $r->submateri->pluck('teks') : collect([$r->materi]);
+
+                return $daftar->values()->map(fn ($judul, $i) => (object) [
+                    // Komposit supaya tiap submateri dari RPP yang sama tetap unik
+                    // sebagai list-key di mobile, tapi tetap satu angka (integer)
+                    // sesuai kontrak field `id` yang sudah ada. Offset dibalik
+                    // (999-$i, bukan $i) supaya urutan submateri 1,2,3,... tetap
+                    // benar setelah sortByDesc('id') di bawah — bukan malah kebalik.
+                    'id' => ($r->id * 1000) + (999 - $i),
+                    'jenis' => 'RPP',
+                    'judul' => $judul,
+                    // Isi RPP terstruktur tersebar di rpp_poin_value (per-poin), tidak
+                    // ada satu kolom "deskripsi" ringkas — cukup null di sini, guru
+                    // baca isinya lewat file PDF yang sudah dirangkai.
+                    'deskripsi' => null,
+                    'file_path' => $r->file_path,
+                    'file_name' => $r->file_name,
+                ]);
+            });
+
+        // toBase(): Collection Eloquent punya merge() sendiri yang berasumsi
+        // semua item punya getKey() (model) — pecah dulu ke Collection biasa
+        // supaya bisa digabung dengan hasil map() yang berupa stdClass.
+        $rpp = $legacyRpp->toBase()->merge($rppTerstruktur)->sortByDesc('id')->values();
 
         $materi = MateriBelajar::where('guru_id', $jadwal->guru_id)
             ->where('mata_pelajaran_id', $jadwal->mata_pelajaran_id)

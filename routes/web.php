@@ -11,8 +11,11 @@ use App\Http\Controllers\Akademik\NilaiController;
 use App\Http\Controllers\Akademik\PengajuanIzinGuruController;
 use App\Http\Controllers\Akademik\PengajuanRaportController;
 use App\Http\Controllers\Akademik\PerangkatMengajarController;
+use App\Http\Controllers\Akademik\RppController;
+use App\Http\Controllers\Akademik\RppTemplateController;
 use App\Http\Controllers\Akademik\VerifikasiMateriController;
 use App\Http\Controllers\Akademik\VerifikasiRaportController;
+use App\Http\Controllers\Akademik\VerifikasiRppController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Kinerja\KinerjaController;
 use App\Http\Controllers\Master\GuruController;
@@ -23,6 +26,7 @@ use App\Http\Controllers\Master\KalenderLiburController;
 use App\Http\Controllers\Master\KurikulumController;
 use App\Http\Controllers\Master\LembagaController;
 use App\Http\Controllers\Master\MataPelajaranController;
+use App\Http\Controllers\Master\ModelPembelajaranController;
 use App\Http\Controllers\Master\ProfilSekolahController;
 use App\Http\Controllers\Master\RombelController;
 use App\Http\Controllers\Master\RombelSiswaController;
@@ -160,6 +164,12 @@ Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
             Route::get('mata-pelajaran/list', [MataPelajaranController::class, 'list'])->name('mata-pelajaran.list');
             Route::resource('mata-pelajaran', MataPelajaranController::class)->except(['create', 'edit']);
 
+            // Model Pembelajaran (master, dipakai bagian Inti pada RPP terstruktur)
+            Route::get('model-pembelajaran/list', [ModelPembelajaranController::class, 'list'])->name('model-pembelajaran.list');
+            Route::get('model-pembelajaran/{id}/sintaks', [ModelPembelajaranController::class, 'sintaks'])->name('model-pembelajaran.sintaks');
+            Route::post('model-pembelajaran/{id}/sintaks', [ModelPembelajaranController::class, 'syncSintaks'])->name('model-pembelajaran.sintaks.sync');
+            Route::resource('model-pembelajaran', ModelPembelajaranController::class)->except(['create', 'edit']);
+
             // Rombel / Kelas
             Route::get('rombel/list', [RombelController::class, 'list'])->name('rombel.list');
             Route::get('rombel/guru/{lembaga}', [RombelController::class, 'guruByLembaga'])->name('rombel.guru-by-lembaga');
@@ -212,6 +222,32 @@ Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
             Route::get('verifikasi-materi', [VerifikasiMateriController::class, 'index'])->name('verifikasi-materi.index');
             Route::get('verifikasi-materi/list', [VerifikasiMateriController::class, 'list'])->name('verifikasi-materi.list');
             Route::post('verifikasi-materi/{id}/aksi', [VerifikasiMateriController::class, 'verifikasi'])->name('verifikasi-materi.aksi');
+
+            // RPP Terstruktur
+            Route::get('rpp/list', [RppController::class, 'list'])->name('rpp.list');
+            Route::get('rpp/guru/{guruId}/mapel', [RppController::class, 'getMapelByGuru'])->name('rpp.guru-mapel');
+            Route::resource('rpp', RppController::class);
+
+            // Kelola Bagian & Poin RPP (templat dinamis)
+            Route::prefix('rpp-template')->name('rpp-template.')->group(function () {
+                Route::get('/', [RppTemplateController::class, 'index'])->name('index');
+                Route::post('bagian', [RppTemplateController::class, 'storeBagian'])->name('bagian.store');
+                Route::put('bagian/{id}', [RppTemplateController::class, 'updateBagian'])->name('bagian.update');
+                Route::delete('bagian/{id}', [RppTemplateController::class, 'destroyBagian'])->name('bagian.destroy');
+                Route::post('poin', [RppTemplateController::class, 'storePoin'])->name('poin.store');
+                Route::put('poin/{id}', [RppTemplateController::class, 'updatePoin'])->name('poin.update');
+                Route::delete('poin/{id}', [RppTemplateController::class, 'destroyPoin'])->name('poin.destroy');
+                Route::post('poin/reorder', [RppTemplateController::class, 'reorderPoin'])->name('poin.reorder');
+                Route::get('opsi/{kategori}', [RppTemplateController::class, 'opsiIndex'])->name('opsi.index');
+                Route::post('opsi', [RppTemplateController::class, 'storeOpsi'])->name('opsi.store');
+                Route::put('opsi/{id}', [RppTemplateController::class, 'updateOpsi'])->name('opsi.update');
+                Route::delete('opsi/{id}', [RppTemplateController::class, 'destroyOpsi'])->name('opsi.destroy');
+            });
+
+            // Verifikasi RPP
+            Route::get('verifikasi-rpp', [VerifikasiRppController::class, 'index'])->name('verifikasi-rpp.index');
+            Route::get('verifikasi-rpp/list', [VerifikasiRppController::class, 'list'])->name('verifikasi-rpp.list');
+            Route::post('verifikasi-rpp/{id}/aksi', [VerifikasiRppController::class, 'verifikasi'])->name('verifikasi-rpp.aksi');
 
             // Absensi Siswa
             Route::get('absensi/rekap', [AbsensiController::class, 'rekap'])->name('absensi.rekap');

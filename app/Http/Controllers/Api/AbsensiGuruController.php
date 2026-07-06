@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\AbsensiRejectedException;
 use App\Http\Controllers\Api\Concerns\ResolvesGuru;
 use App\Http\Controllers\Controller;
 use App\Services\Akademik\AbsensiGuruService;
@@ -34,11 +35,33 @@ class AbsensiGuruController extends Controller
 
         try {
             $absensi = $this->service->absenMasuk($guru, $data, $request->file('video'));
+        } catch (AbsensiRejectedException $e) {
+            return $this->response->error($e->getMessage(), 422, ['code' => $e->errorCode]);
         } catch (RuntimeException $e) {
             return $this->response->error($e->getMessage(), 422);
         }
 
         return $this->response->success($absensi, 'Absen masuk berhasil.');
+    }
+
+    /**
+     * Cek kecocokan wajah SAJA dari video, tanpa mencatat absensi apapun —
+     * dipanggil mobile sebelum submit final supaya guru bisa memilih
+     * "rekam ulang" atau "tetap kirim" saat wajah tidak cocok/tidak
+     * terdeteksi kedipan, alih-alih baru tahu setelah absen benar-benar
+     * tersimpan.
+     */
+    public function cekWajah(Request $request)
+    {
+        $guru = $this->resolveGuru($request);
+
+        $data = $request->validate([
+            'video' => 'required|file|mimetypes:video/mp4,video/quicktime,video/x-m4v,video/3gpp|max:10240',
+        ]);
+
+        $hasil = $this->service->cekWajah($guru, $request->file('video'));
+
+        return $this->response->success($hasil, 'Pemeriksaan wajah selesai.');
     }
 
     /** Riwayat absensi guru sendiri untuk satu bulan. */
@@ -65,6 +88,8 @@ class AbsensiGuruController extends Controller
 
         try {
             $absensi = $this->service->absenPulang($guru, $data, $request->file('video'));
+        } catch (AbsensiRejectedException $e) {
+            return $this->response->error($e->getMessage(), 422, ['code' => $e->errorCode]);
         } catch (RuntimeException $e) {
             return $this->response->error($e->getMessage(), 422);
         }

@@ -45,10 +45,12 @@ class ResponseService
     }
 
     /**
-     * Return an error response for any unexpected issues.
+     * Return an error response for any unexpected issues. $data lets callers
+     * attach a machine-readable payload (mis. ['code' => 'di_luar_radius'])
+     * so clients can branch without string-matching the message.
      */
-    public function error($message = 'An error occurred', $statusCode = self::STATUS_ERROR): JsonResponse
+    public function error($message = 'An error occurred', $statusCode = self::STATUS_ERROR, $data = null): JsonResponse
     {
-        return $this->response(null, $statusCode, $message);
+        return $this->response($data, $statusCode, $message);
     }
 }
