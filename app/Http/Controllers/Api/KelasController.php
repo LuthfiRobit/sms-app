@@ -86,7 +86,6 @@ class KelasController extends Controller
         $data = $request->validate([
             'rows' => 'required|array|min:1',
             'rows.*.peserta_id' => 'required|integer',
-            'rows.*.nilai_harian' => 'nullable|numeric|min:0|max:100',
             'rows.*.nilai_uts' => 'nullable|numeric|min:0|max:100',
             'rows.*.nilai_uas' => 'nullable|numeric|min:0|max:100',
         ]);
@@ -97,7 +96,43 @@ class KelasController extends Controller
             return $this->response->error($e->getMessage(), 423);
         }
 
-        return $this->response->success(null, 'Nilai berhasil disimpan.');
+        return $this->response->success(null, 'Nilai UTS/UAS berhasil disimpan.');
+    }
+
+    /** Riwayat nilai harian (per sesi) + rata-rata berjalan untuk jadwal ini. */
+    public function nilaiHarianIndex(Request $request, int $jadwal)
+    {
+        $jadwal = $this->resolveJadwal($request, $jadwal);
+
+        try {
+            $riwayat = $this->service->nilaiHarianRiwayat($jadwal);
+        } catch (RuntimeException $e) {
+            return $this->response->error($e->getMessage(), 423);
+        }
+
+        return $this->response->success($riwayat, 'OK');
+    }
+
+    /** Tambah nilai harian baru untuk sesi hari ini (menambah riwayat, bukan menimpa). */
+    public function nilaiHarianStore(Request $request, int $jadwal)
+    {
+        $jadwal = $this->resolveJadwal($request, $jadwal);
+
+        $data = $request->validate([
+            'keterangan' => 'nullable|string|max:255',
+            'rows' => 'required|array|min:1',
+            'rows.*.peserta_id' => 'required|integer',
+            'rows.*.nilai' => 'required|numeric|min:0|max:100',
+            'rows.*.keterangan' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            $this->service->tambahNilaiHarian($jadwal, $data['rows'], $data['keterangan'] ?? null);
+        } catch (RuntimeException $e) {
+            return $this->response->error($e->getMessage(), 423);
+        }
+
+        return $this->response->success(null, 'Nilai harian berhasil disimpan.');
     }
 
     /** Resolve jadwal & pastikan milik guru yang login. */

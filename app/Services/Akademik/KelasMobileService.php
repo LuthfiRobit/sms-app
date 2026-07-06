@@ -10,10 +10,12 @@ use App\Models\Master\JadwalKbm;
 use App\Models\Master\Semester;
 use App\Repositories\Akademik\AbsensiRepositoryInterface;
 use App\Repositories\Akademik\AkademikSettingRepositoryInterface;
+use App\Repositories\Akademik\NilaiHarianLogRepositoryInterface;
 use App\Repositories\Akademik\NilaiRepositoryInterface;
 use App\Services\LogActivityService;
 use App\Support\QrToken;
 use App\Support\WaktuSekolah;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -27,6 +29,7 @@ class KelasMobileService
     public function __construct(
         protected AbsensiRepositoryInterface $absensiRepo,
         protected NilaiRepositoryInterface $nilaiRepo,
+        protected NilaiHarianLogRepositoryInterface $nilaiHarianLogRepo,
         protected LogActivityService $logActivity,
     ) {}
 
@@ -60,6 +63,8 @@ class KelasMobileService
      */
     public function simpanAbsensi(JadwalKbm $jadwal, Guru $guru, array $detail): object
     {
+        $this->guardJadwalSudahMulai($jadwal);
+
         $tanggal = WaktuSekolah::now()->toDateString();
         $siswaIds = $this->siswaRombel($jadwal->rombel_id)->pluck('peserta_id')->all();
 
@@ -94,6 +99,8 @@ class KelasMobileService
      */
     public function scanQr(JadwalKbm $jadwal, Guru $guru, string $token): array
     {
+        $this->guardJadwalSudahMulai($jadwal);
+
         $payload = QrToken::verify($token);
 
         if (! $payload) {
@@ -150,65 +157,37 @@ class KelasMobileService
         return ['peserta_id' => $siswa->peserta_id, 'nama' => $siswa->nama, 'status' => 'hadir', 'sudah_tercatat' => false];
     }
 
-    /** RPP (perangkat mengajar legacy + RPP terstruktur disetujui) + materi ajar disetujui untuk mapel & rombel jadwal ini. */
+    /**
+     * RPP terstruktur untuk sesi HARI INI + perangkat mengajar legacy +
+     * materi ajar disetujui, untuk mapel & rombel jadwal ini.
+     *
+     * Submateri RPP dianggap 1:1 dengan pertemuan (submateri ke-1 = pertemuan
+     * ke-1, dst — urutan kolom `urutan`), jadi guru cuma disodori SATU
+     * submateri yang relevan untuk pertemuan hari ini, bukan daftar lengkap
+     * semua submateri RPP (yang membingungkan — sebagian besar tidak relevan
+     * untuk sesi hari ini). Kalau pertemuan hari ini melebihi jumlah
+     * submateri yang direncanakan, jatuh balik ke submateri TERAKHIR
+     * (`total_pertemuan` dikirim balik supaya mobile bisa menandai
+     * ketidaksesuaian ini ke guru, bukan diam-diam menampilkan yang salah).
+     */
     public function materi(JadwalKbm $jadwal): array
     {
         // Perangkat mengajar lama (Silabus/Prota/Prosem/Modul Ajar, dan RPP
         // historis dari sebelum modul RPP terstruktur ada) — jenis 'RPP' baru
         // sudah tidak lagi dibuat lewat sini, tapi baris lama tetap tampil.
-        $legacyRpp = PerangkatMengajar::where('guru_id', $jadwal->guru_id)
+        $perangkatMengajar = PerangkatMengajar::where('guru_id', $jadwal->guru_id)
             ->where('mata_pelajaran_id', $jadwal->mata_pelajaran_id)
             ->where('tahun_pelajaran_id', $jadwal->tahun_pelajaran_id)
             ->orderByDesc('id')
-            ->get(['id', 'jenis', 'judul', 'deskripsi', 'file_path', 'file_name']);
-
-        // RPP terstruktur — hanya yang sudah disetujui yang boleh tampil ke
-        // guru (mirror aturan MateriBelajar di bawah: draft/pending tidak bocor).
-        // Tiap SUBMATERI (bukan RPP-nya) jadi satu entri terpisah di sini —
-        // itu yang guru pilih di app untuk sesi hari ini — semuanya menunjuk
-        // ke PDF RPP induk yang sama. RPP tanpa submateri (guru belum isi/RPP
-        // satu sesi) jatuh balik memakai judul RPP itu sendiri sebagai satu entri.
-        $rppTerstruktur = Rpp::where('guru_id', $jadwal->guru_id)
-            ->where('mata_pelajaran_id', $jadwal->mata_pelajaran_id)
-            ->where('tahun_pelajaran_id', $jadwal->tahun_pelajaran_id)
-            ->where('status', 'disetujui')
-            ->with('submateri')
-            ->orderByDesc('id')
-            ->get(['id', 'materi', 'file_path', 'file_name'])
-            ->flatMap(function ($r) {
-                $daftar = $r->submateri->isNotEmpty() ? $r->submateri->pluck('teks') : collect([$r->materi]);
-
-                return $daftar->values()->map(fn ($judul, $i) => (object) [
-                    // Komposit supaya tiap submateri dari RPP yang sama tetap unik
-                    // sebagai list-key di mobile, tapi tetap satu angka (integer)
-                    // sesuai kontrak field `id` yang sudah ada. Offset dibalik
-                    // (999-$i, bukan $i) supaya urutan submateri 1,2,3,... tetap
-                    // benar setelah sortByDesc('id') di bawah — bukan malah kebalik.
-                    'id' => ($r->id * 1000) + (999 - $i),
-                    'jenis' => 'RPP',
-                    'judul' => $judul,
-                    // Isi RPP terstruktur tersebar di rpp_poin_value (per-poin), tidak
-                    // ada satu kolom "deskripsi" ringkas — cukup null di sini, guru
-                    // baca isinya lewat file PDF yang sudah dirangkai.
-                    'deskripsi' => null,
-                    'file_path' => $r->file_path,
-                    'file_name' => $r->file_name,
-                ]);
-            });
-
-        // toBase(): Collection Eloquent punya merge() sendiri yang berasumsi
-        // semua item punya getKey() (model) — pecah dulu ke Collection biasa
-        // supaya bisa digabung dengan hasil map() yang berupa stdClass.
-        $rpp = $legacyRpp->toBase()->merge($rppTerstruktur)->sortByDesc('id')->values();
-
-        $materi = MateriBelajar::where('guru_id', $jadwal->guru_id)
-            ->where('mata_pelajaran_id', $jadwal->mata_pelajaran_id)
-            ->where('status', 'disetujui')
-            ->where(function ($q) use ($jadwal) {
-                $q->where('rombel_id', $jadwal->rombel_id)->orWhereNull('rombel_id');
-            })
-            ->orderByDesc('tanggal')
-            ->get(['id', 'judul', 'deskripsi', 'file_path', 'file_name', 'url_eksternal', 'tanggal', 'pertemuan_ke']);
+            ->get(['id', 'jenis', 'judul', 'deskripsi', 'file_path', 'file_name'])
+            ->map(fn ($p) => [
+                'id' => $p->id,
+                'jenis' => $p->jenis,
+                'judul' => $p->judul,
+                'deskripsi' => $p->deskripsi,
+                'file_url' => $p->file_path ? asset('storage/'.$p->file_path) : null,
+                'file_name' => $p->file_name,
+            ]);
 
         $tanggal = WaktuSekolah::now()->toDateString();
         $pastMeetings = DB::table('absensi')
@@ -219,16 +198,122 @@ class KelasMobileService
 
         $pertemuanHariIni = $pastMeetings + 1;
 
+        // RPP terstruktur — hanya yang sudah disetujui yang boleh tampil ke
+        // guru. Kalau guru punya beberapa RPP disetujui utk mapel yang sama
+        // (topik berbeda sepanjang tahun), yang paling baru (id terbesar)
+        // dianggap yang sedang berjalan.
+        $rppAktif = Rpp::where('guru_id', $jadwal->guru_id)
+            ->where('mata_pelajaran_id', $jadwal->mata_pelajaran_id)
+            ->where('tahun_pelajaran_id', $jadwal->tahun_pelajaran_id)
+            ->where('status', 'disetujui')
+            ->with(['nilaiPoin.poin', 'inti.sintaks', 'submateri', 'modelPembelajaran'])
+            ->orderByDesc('id')
+            ->first();
+
+        $rppHariIni = $rppAktif ? $this->buildRppHariIni($rppAktif, $pertemuanHariIni) : null;
+
+        $materi = MateriBelajar::where('guru_id', $jadwal->guru_id)
+            ->where('mata_pelajaran_id', $jadwal->mata_pelajaran_id)
+            ->where('status', 'disetujui')
+            ->where(function ($q) use ($jadwal) {
+                $q->where('rombel_id', $jadwal->rombel_id)->orWhereNull('rombel_id');
+            })
+            ->orderByDesc('tanggal')
+            ->get(['id', 'judul', 'deskripsi', 'file_path', 'file_name', 'url_eksternal', 'tanggal', 'pertemuan_ke'])
+            ->map(fn ($m) => [
+                'id' => $m->id,
+                'judul' => $m->judul,
+                'deskripsi' => $m->deskripsi,
+                'file_url' => $m->file_path ? asset('storage/'.$m->file_path) : null,
+                'file_name' => $m->file_name,
+                'url_eksternal' => $m->url_eksternal,
+                'tanggal' => $m->tanggal,
+                'pertemuan_ke' => $m->pertemuan_ke,
+            ]);
+
         return [
-            'rpp' => $rpp,
+            'rpp_hari_ini' => $rppHariIni,
+            'perangkat_mengajar' => $perangkatMengajar,
             'materi' => $materi,
             'pertemuan_hari_ini' => $pertemuanHariIni,
         ];
     }
 
     /**
-     * Lembar nilai untuk jadwal ini. Terkunci (RuntimeException) jika absensi
-     * siswa untuk sesi ini belum dibuat.
+     * Rangkai satu RPP + submateri pertemuan hari ini jadi struktur ringkas
+     * siap-tampil di HP guru — cukup untuk pegangan mengajar (tujuan,
+     * indikator, urutan kegiatan, pertanyaan pemantik), bukan dump seluruh
+     * poin (dokumen lengkap termasuk rubrik/soal tetap di PDF, lebih nyaman
+     * dibaca di sana daripada di-scroll di layar kecil).
+     */
+    protected function buildRppHariIni(Rpp $rpp, int $pertemuanHariIni): array
+    {
+        $submateriList = $rpp->submateri; // sudah terurut oleh relasi (orderBy urutan)
+        $totalPertemuan = $submateriList->count();
+
+        if ($totalPertemuan > 0) {
+            $index = min($pertemuanHariIni, $totalPertemuan) - 1;
+            $submateriTerpilih = $submateriList->values()->get($index);
+            $submateriTeks = $submateriTerpilih?->teks;
+            $pertemuanEfektif = $submateriTerpilih?->urutan ?? $pertemuanHariIni;
+        } else {
+            // RPP satu sesi (guru tidak memecah submateri) — berlaku untuk pertemuan manapun.
+            $submateriTeks = null;
+            $pertemuanEfektif = $pertemuanHariIni;
+        }
+
+        $intiByFase = $rpp->inti->groupBy(fn ($i) => $i->sintaks?->meta_fase);
+        $inti = collect(['Memahami', 'Mengaplikasi', 'Merefleksi'])
+            ->map(function ($fase) use ($intiByFase) {
+                $items = ($intiByFase[$fase] ?? collect())->sortBy('urutan')->values();
+
+                if ($items->isEmpty()) {
+                    return null;
+                }
+
+                return [
+                    'fase' => $fase,
+                    'sintaks' => $items->map(fn ($i) => [
+                        'nama' => $i->sintaks?->nama_sintaks,
+                        'kegiatan' => $i->konten ?? [],
+                    ])->values()->all(),
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+
+        return [
+            'id' => $rpp->id,
+            'materi' => $rpp->materi,
+            'submateri' => $submateriTeks,
+            'pertemuan_ke' => $pertemuanEfektif,
+            'total_pertemuan' => $totalPertemuan,
+            'fase_kelas' => $rpp->fase_kelas,
+            'alokasi_waktu' => $rpp->alokasi_waktu,
+            'model_pembelajaran' => $rpp->modelPembelajaran?->nama,
+            'tujuan_pembelajaran' => $this->nilaiPoinByKode($rpp, 'tujuan_pembelajaran')?->value_teks,
+            'iktp' => $this->nilaiPoinByKode($rpp, 'iktp')?->value_json ?? [],
+            'pendahuluan' => $this->nilaiPoinByKode($rpp, 'pendahuluan')?->value_json ?? [],
+            'inti' => $inti,
+            'penutup' => $this->nilaiPoinByKode($rpp, 'penutup')?->value_json ?? [],
+            'pertanyaan_pemantik' => $this->nilaiPoinByKode($rpp, 'formatif_awal')?->value_json ?? [],
+            'file_url' => $rpp->file_path ? asset('storage/'.$rpp->file_path) : null,
+            'file_name' => $rpp->file_name,
+        ];
+    }
+
+    protected function nilaiPoinByKode(Rpp $rpp, string $kode)
+    {
+        return $rpp->nilaiPoin->first(fn ($v) => $v->poin?->kode === $kode);
+    }
+
+    /**
+     * Lembar nilai UTS/UAS untuk jadwal ini. `nilai_harian` ikut ditampilkan
+     * (baca-saja, sebagai konteks) tapi TIDAK lagi diedit dari sini — nilai
+     * harian sekarang berbasis riwayat per sesi, lihat nilaiHarianRiwayat()/
+     * tambahNilaiHarian(). Terkunci (RuntimeException) jika absensi siswa
+     * untuk sesi ini belum dibuat.
      */
     public function nilaiSheet(JadwalKbm $jadwal): array
     {
@@ -250,7 +335,10 @@ class KelasMobileService
         ])->all();
     }
 
-    /** Simpan nilai. Terkunci sama seperti nilaiSheet(). */
+    /**
+     * Simpan nilai UTS/UAS SAJA — nilai_harian tidak disentuh di sini (lihat
+     * tambahNilaiHarian()). Terkunci sama seperti nilaiSheet().
+     */
     public function simpanNilai(JadwalKbm $jadwal, array $rows): void
     {
         $this->guardAbsensiSelesai($jadwal);
@@ -262,16 +350,27 @@ class KelasMobileService
         $bobotU = ($setting?->bobot_uts ?? 30) / 100;
         $bobotA = ($setting?->bobot_uas ?? 30) / 100;
 
+        $existing = $this->nilaiRepo->getByRombelMapelSemester($jadwal->rombel_id, $jadwal->mata_pelajaran_id, $semester->id)
+            ->keyBy('peserta_id');
+
         $upsertRows = [];
         foreach ($rows as $row) {
-            $h = isset($row['nilai_harian']) && $row['nilai_harian'] !== '' ? (float) $row['nilai_harian'] : null;
+            $pesertaId = (int) $row['peserta_id'];
+            $existingRow = $existing->get($pesertaId);
+
+            // nilai_harian & catatan sengaja dipertahankan dari nilai lama —
+            // upsert() MySQL memakai NULL utk kolom yg tidak ikut disertakan
+            // di baris insert (ON DUPLICATE KEY UPDATE col=VALUES(col)), jadi
+            // tanpa ini nilai harian yg sudah terhitung dari riwayat bisa
+            // tertimpa NULL setiap kali guru simpan UTS/UAS.
+            $h = $existingRow?->nilai_harian;
             $u = isset($row['nilai_uts']) && $row['nilai_uts'] !== '' ? (float) $row['nilai_uts'] : null;
             $a = isset($row['nilai_uas']) && $row['nilai_uas'] !== '' ? (float) $row['nilai_uas'] : null;
 
             $upsertRows[] = [
                 'lembaga_id' => $jadwal->lembaga_id,
                 'rombel_id' => $jadwal->rombel_id,
-                'peserta_id' => (int) $row['peserta_id'],
+                'peserta_id' => $pesertaId,
                 'mata_pelajaran_id' => $jadwal->mata_pelajaran_id,
                 'semester_id' => $semester->id,
                 'tahun_pelajaran_id' => $jadwal->tahun_pelajaran_id,
@@ -281,14 +380,166 @@ class KelasMobileService
                 'nilai_akhir' => ($h !== null && $u !== null && $a !== null)
                     ? round(($h * $bobotH) + ($u * $bobotU) + ($a * $bobotA), 2)
                     : null,
+                'catatan' => $existingRow?->catatan,
             ];
         }
 
         $this->nilaiRepo->upsert($upsertRows);
-        $this->logActivity->log('Input Nilai (Mobile)', "Nilai rombel_id={$jadwal->rombel_id} mapel_id={$jadwal->mata_pelajaran_id} disimpan via mobile (".count($upsertRows).' siswa).');
+        $this->logActivity->log('Input Nilai UTS/UAS (Mobile)', "Nilai UTS/UAS rombel_id={$jadwal->rombel_id} mapel_id={$jadwal->mata_pelajaran_id} disimpan via mobile (".count($upsertRows).' siswa).');
+    }
+
+    /**
+     * Riwayat nilai harian (satu baris per sesi/tugas) + rata-rata berjalan
+     * per siswa, untuk rombel+mapel+semester jadwal ini. Terkunci sama
+     * seperti nilaiSheet().
+     */
+    public function nilaiHarianRiwayat(JadwalKbm $jadwal): array
+    {
+        $this->guardAbsensiSelesai($jadwal);
+
+        $semester = $this->semesterAktif($jadwal->tahun_pelajaran_id);
+        $siswa = $this->siswaRombel($jadwal->rombel_id);
+        $semuaLog = $this->nilaiHarianLogRepo
+            ->getByRombelMapelSemester($jadwal->rombel_id, $jadwal->mata_pelajaran_id, $semester->id)
+            ->groupBy('peserta_id');
+        $rataRata = $this->nilaiHarianLogRepo
+            ->averagesByRombelMapelSemester($jadwal->rombel_id, $jadwal->mata_pelajaran_id, $semester->id);
+
+        return $siswa->map(fn ($s) => [
+            'peserta_id' => $s->peserta_id,
+            'nama' => $s->nama,
+            'no_absen' => $s->no_absen,
+            'rata_rata' => $rataRata->get($s->peserta_id)?->rata_rata !== null
+                ? round((float) $rataRata->get($s->peserta_id)->rata_rata, 2)
+                : null,
+            'riwayat' => ($semuaLog->get($s->peserta_id) ?? collect())->map(fn ($log) => [
+                'id' => $log->id,
+                'tanggal' => $log->tanggal->toDateString(),
+                'pertemuan_ke' => $log->pertemuan_ke,
+                'keterangan' => $log->keterangan,
+                'nilai' => $log->nilai,
+            ])->values()->all(),
+        ])->all();
+    }
+
+    /**
+     * Tambah nilai harian baru untuk sesi HARI INI — MENAMBAH baris riwayat
+     * (bukan menimpa). `nilai.nilai_harian`/`nilai_akhir` otomatis dihitung
+     * ulang setelahnya (rata-rata seluruh riwayat). Terkunci sama seperti
+     * nilaiSheet().
+     */
+    public function tambahNilaiHarian(JadwalKbm $jadwal, array $rows, ?string $keteranganDefault): void
+    {
+        $this->guardAbsensiSelesai($jadwal);
+
+        $tanggal = WaktuSekolah::now()->toDateString();
+        $semester = $this->semesterAktif($jadwal->tahun_pelajaran_id);
+
+        $pastMeetings = DB::table('absensi')
+            ->where('rombel_id', $jadwal->rombel_id)
+            ->where('mata_pelajaran_id', $jadwal->mata_pelajaran_id)
+            ->whereDate('tanggal', '<', $tanggal)
+            ->count();
+        $pertemuanKe = $pastMeetings + 1;
+
+        $now = now();
+        $logRows = [];
+        $pesertaIds = [];
+        foreach ($rows as $row) {
+            $pesertaId = (int) $row['peserta_id'];
+            $pesertaIds[] = $pesertaId;
+            $logRows[] = [
+                'lembaga_id' => $jadwal->lembaga_id,
+                'rombel_id' => $jadwal->rombel_id,
+                'peserta_id' => $pesertaId,
+                'mata_pelajaran_id' => $jadwal->mata_pelajaran_id,
+                'semester_id' => $semester->id,
+                'tahun_pelajaran_id' => $jadwal->tahun_pelajaran_id,
+                'tanggal' => $tanggal,
+                'pertemuan_ke' => $pertemuanKe,
+                'keterangan' => $row['keterangan'] ?? $keteranganDefault,
+                'nilai' => (float) $row['nilai'],
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        if (empty($logRows)) {
+            throw new RuntimeException('Tidak ada nilai yang diisi.');
+        }
+
+        $this->nilaiHarianLogRepo->createMany($logRows);
+        $this->recalcNilaiHarian($jadwal, $semester, array_unique($pesertaIds));
+
+        $this->logActivity->log(
+            'Input Nilai Harian (Mobile)',
+            "Nilai harian rombel_id={$jadwal->rombel_id} mapel_id={$jadwal->mata_pelajaran_id} pertemuan ke-{$pertemuanKe} disimpan via mobile (".count($logRows).' siswa).'
+        );
+    }
+
+    /** Hitung ulang nilai_harian (rata-rata riwayat) + nilai_akhir untuk peserta yang baru dapat entri harian. */
+    protected function recalcNilaiHarian(JadwalKbm $jadwal, Semester $semester, array $pesertaIds): void
+    {
+        $rataRata = $this->nilaiHarianLogRepo
+            ->averagesByRombelMapelSemester($jadwal->rombel_id, $jadwal->mata_pelajaran_id, $semester->id);
+        $existing = $this->nilaiRepo
+            ->getByRombelMapelSemester($jadwal->rombel_id, $jadwal->mata_pelajaran_id, $semester->id)
+            ->keyBy('peserta_id');
+        $setting = app(AkademikSettingRepositoryInterface::class)->findByLembaga($jadwal->lembaga_id);
+
+        $bobotH = ($setting?->bobot_harian ?? 40) / 100;
+        $bobotU = ($setting?->bobot_uts ?? 30) / 100;
+        $bobotA = ($setting?->bobot_uas ?? 30) / 100;
+
+        $upsertRows = [];
+        foreach ($pesertaIds as $pesertaId) {
+            $existingRow = $existing->get($pesertaId);
+            $h = $rataRata->get($pesertaId)?->rata_rata !== null
+                ? round((float) $rataRata->get($pesertaId)->rata_rata, 2)
+                : null;
+            $u = $existingRow?->nilai_uts;
+            $a = $existingRow?->nilai_uas;
+
+            $upsertRows[] = [
+                'lembaga_id' => $jadwal->lembaga_id,
+                'rombel_id' => $jadwal->rombel_id,
+                'peserta_id' => $pesertaId,
+                'mata_pelajaran_id' => $jadwal->mata_pelajaran_id,
+                'semester_id' => $semester->id,
+                'tahun_pelajaran_id' => $jadwal->tahun_pelajaran_id,
+                'nilai_harian' => $h,
+                'nilai_uts' => $u,
+                'nilai_uas' => $a,
+                'nilai_akhir' => ($h !== null && $u !== null && $a !== null)
+                    ? round(($h * $bobotH) + ($u * $bobotU) + ($a * $bobotA), 2)
+                    : null,
+                'catatan' => $existingRow?->catatan,
+            ];
+        }
+
+        $this->nilaiRepo->upsert($upsertRows);
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────
+
+    /**
+     * Tolak absensi (form maupun scan QR) kalau jadwal ini belum waktunya
+     * dimulai — mencegah guru mencatat kehadiran untuk sesi yang belum
+     * berlangsung (status 'akan_datang' di listing Jadwal Hari Ini). Guard
+     * ini yang sesungguhnya menegakkan aturan, bukan sekadar menonaktifkan
+     * tombol di mobile (yang cuma UX, bisa dilewati kalau request dikirim
+     * langsung ke API).
+     */
+    protected function guardJadwalSudahMulai(JadwalKbm $jadwal): void
+    {
+        $sekarang = WaktuSekolah::now();
+        $mulai = Carbon::parse($sekarang->toDateString().' '.$jadwal->jam_mulai, config('sekolah.timezone'));
+
+        if ($sekarang->lt($mulai)) {
+            $jamMulai = substr((string) $jadwal->jam_mulai, 0, 5);
+            throw new RuntimeException("Jadwal ini belum dimulai (mulai pukul {$jamMulai}). Absensi baru bisa diisi setelah jam pelajaran dimulai.");
+        }
+    }
 
     /** Nilai/RPP terkunci sampai sesi absensi untuk rombel+mapel hari ini dibuat. */
     protected function guardAbsensiSelesai(JadwalKbm $jadwal): void

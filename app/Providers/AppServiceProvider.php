@@ -17,6 +17,8 @@ use App\Repositories\Akademik\KalenderLiburRepository;
 use App\Repositories\Akademik\KalenderLiburRepositoryInterface;
 use App\Repositories\Akademik\MateriBelajarRepository;
 use App\Repositories\Akademik\MateriBelajarRepositoryInterface;
+use App\Repositories\Akademik\NilaiHarianLogRepository;
+use App\Repositories\Akademik\NilaiHarianLogRepositoryInterface;
 use App\Repositories\Akademik\NilaiRepository;
 use App\Repositories\Akademik\NilaiRepositoryInterface;
 use App\Repositories\Akademik\PengajuanIzinGuruRepository;
@@ -168,6 +170,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AbsensiGuruRepositoryInterface::class, AbsensiGuruRepository::class);
         $this->app->bind(DeviceTokenRepositoryInterface::class, DeviceTokenRepository::class);
         $this->app->bind(NilaiRepositoryInterface::class, NilaiRepository::class);
+        $this->app->bind(NilaiHarianLogRepositoryInterface::class, NilaiHarianLogRepository::class);
         $this->app->bind(AkademikSettingRepositoryInterface::class, AkademikSettingRepository::class);
         $this->app->bind(PengajuanRaportRepositoryInterface::class, PengajuanRaportRepository::class);
         $this->app->bind(KalenderLiburRepositoryInterface::class, KalenderLiburRepository::class);

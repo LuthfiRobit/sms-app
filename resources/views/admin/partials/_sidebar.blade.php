@@ -393,6 +393,10 @@
                                     class="pc-link" href="{{ route('admin.system.log-activity.index') }}">Log Aktivitas
                                     Sistem</a></li>
                         @endif
+                        @if(auth()->check() && auth()->user()->hasPermissionTo('admin.system.whatsapp.index'))
+                            <li class="pc-item {{ request()->routeIs('admin.system.whatsapp.*') ? 'active' : '' }}"><a
+                                    class="pc-link" href="{{ route('admin.system.whatsapp.index') }}">Uji WhatsApp Fonnte</a></li>
+                        @endif
                         <li class="pc-item"><a class="pc-link" href="#">Rekap Laporan</a></li>
                         <li class="pc-item"><a class="pc-link" href="#">Laporan Akademik</a></li>
                         <li class="pc-item"><a class="pc-link" href="#">Laporan Kesiswaan</a></li>

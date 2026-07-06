@@ -68,6 +68,8 @@ Route::prefix('v1')->group(function () {
             Route::get('materi', [KelasController::class, 'materi']);
             Route::get('nilai', [KelasController::class, 'nilaiSheet']);
             Route::post('nilai', [KelasController::class, 'nilaiStore']);
+            Route::get('nilai-harian', [KelasController::class, 'nilaiHarianIndex']);
+            Route::post('nilai-harian', [KelasController::class, 'nilaiHarianStore']);
         });
     });
 });

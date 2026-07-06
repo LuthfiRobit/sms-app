@@ -59,6 +59,7 @@ use App\Http\Controllers\Rbac\RoleController;
 use App\Http\Controllers\Rbac\UserController;
 use App\Http\Controllers\System\LogActivityController;
 use App\Http\Controllers\System\PermissionSyncController;
+use App\Http\Controllers\System\WhatsappController;
 use App\Http\Controllers\Transaksi\PembayaranController;
 use App\Http\Controllers\Transaksi\PendaftaranController;
 use App\Http\Controllers\Transaksi\SeleksiController;
@@ -111,6 +112,13 @@ Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
             Route::get('log-activity/list', [LogActivityController::class, 'list'])->name('log-activity.list');
             Route::delete('log-activity/delete-all', [LogActivityController::class, 'deleteAll'])->name('log-activity.delete-all');
             Route::resource('log-activity', LogActivityController::class)->only(['index', 'show']);
+
+            // WhatsApp Testing Routes
+            Route::prefix('whatsapp')->name('whatsapp.')->group(function () {
+                Route::get('/', [WhatsappController::class, 'index'])->name('index');
+                Route::get('/status', [WhatsappController::class, 'status'])->name('status');
+                Route::post('/send', [WhatsappController::class, 'send'])->name('send');
+            });
         });
 
         // Notifikasi Routes

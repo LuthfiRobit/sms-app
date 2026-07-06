@@ -142,6 +142,10 @@ class CheckPermission
         'admin.kinerja.destroy' => 'admin.kinerja.index',
         'admin.kinerja.inputRealisasi' => 'admin.kinerja.index',
         'admin.kinerja.syncAuto' => 'admin.kinerja.index',
+
+        // WhatsApp Testing helper routes
+        'admin.system.whatsapp.status' => 'admin.system.whatsapp.index',
+        'admin.system.whatsapp.send' => 'admin.system.whatsapp.index',
     ];
 
     public function handle(Request $request, Closure $next): Response
