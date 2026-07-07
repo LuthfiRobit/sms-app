@@ -91,7 +91,7 @@
                         <div class="dropdown-header">
                             <h4>Halo, <span
                                     class="small text-muted">{{ auth()->user()->name ?? 'Admin Sekolah' }}</span></h4>
-                            <p class="text-muted">Administrator</p>
+                            <p class="text-muted">{{ auth()->user()->roles->pluck('display_name')->implode(', ') ?: 'User' }}</p>
                             <hr />
                             <a href="#" class="dropdown-item"
                                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

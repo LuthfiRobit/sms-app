@@ -37,6 +37,9 @@ class CheckPermission
         'admin.master.siswa.stats' => 'admin.master.siswa.index',
         'admin.master.siswa.export' => 'admin.master.siswa.index',
 
+        // Peserta — helper routes
+        'admin.peserta.orang-tua.update' => 'admin.peserta.update',
+
         // Akademik — helper routes
         'admin.akademik.perangkat-mengajar.list' => 'admin.akademik.perangkat-mengajar.index',
         'admin.akademik.perangkat-mengajar.guru-mapel' => 'admin.akademik.perangkat-mengajar.index',

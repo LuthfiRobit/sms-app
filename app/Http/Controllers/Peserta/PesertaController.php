@@ -217,6 +217,36 @@ class PesertaController extends Controller
     }
 
     // -------------------------------------------------------------------------
+    // UPDATE ORANG TUA KONTAK — Edit ringan nama + No. WA satu tipe ortu
+    // -------------------------------------------------------------------------
+
+    public function updateOrangTuaKontak(Request $request, int $id, string $tipe): JsonResponse
+    {
+        if (!in_array($tipe, ['ayah', 'ibu', 'wali'], true)) {
+            return $this->responseService->error('Tipe kontak tidak valid.', 422);
+        }
+
+        $data = $request->validate([
+            'nama' => 'required|string|max:150',
+            // Sengaja longgar (bukan digits-only) — admin kadang menyalin nomor
+            // dengan spasi/tanda hubung/kode negara (+62); dirapikan saat dipakai kirim WA.
+            'no_hp' => ['nullable', 'string', 'max:20', 'regex:/^[0-9+\-\s]+$/'],
+        ]);
+
+        try {
+            $this->pesertaService->updateOrangTuaKontak($id, $tipe, $data);
+            $nama = auth()->user()->name ?? 'Admin';
+            $this->logActivity->log(
+                "Admin {$nama} update kontak orang tua peserta",
+                "Admin {$nama} memperbarui kontak {$tipe} untuk peserta ID #{$id}."
+            );
+            return $this->responseService->success(null, 'Kontak berhasil diperbarui.');
+        } catch (Exception $e) {
+            return $this->responseService->error('Gagal memperbarui kontak: ' . $e->getMessage());
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // DESTROY — Hapus peserta (soft delete)
     // -------------------------------------------------------------------------
 

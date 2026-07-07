@@ -388,6 +388,7 @@ Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
             Route::post('/', [PesertaController::class, 'store'])->name('store');
             Route::get('/{id}', [PesertaController::class, 'show'])->name('show');
             Route::put('/{id}', [PesertaController::class, 'update'])->name('update');
+            Route::put('/{id}/orang-tua/{tipe}', [PesertaController::class, 'updateOrangTuaKontak'])->name('orang-tua.update');
             Route::delete('/{id}', [PesertaController::class, 'destroy'])->name('destroy');
         });
 

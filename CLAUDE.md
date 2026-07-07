@@ -12,12 +12,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 composer dev
 ```
+The `queue` process here is not optional for PPDB notifications (email/in-app) — those are dispatched as queued jobs (`onQueue('notifikasi')`) and only actually send once a worker listening on that queue name processes them. Without it, the app still reports "success" (the job was queued) even though nothing was delivered. (Attendance WhatsApp notifications are sent synchronously, not queued — see `KirimAbsensiWhatsappJob`'s docblock for why.) See [docs/PANDUAN_MENJALANKAN_APLIKASI.md](docs/PANDUAN_MENJALANKAN_APLIKASI.md) for the full runbook, verification steps, and troubleshooting stuck/failed jobs.
 
 **Individual services:**
 ```bash
 php artisan serve
 npm run dev
-php artisan queue:listen --tries=1
+php artisan queue:listen --queue=default,notifikasi --tries=1
 ```
 
 **Build frontend assets:**

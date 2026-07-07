@@ -6,8 +6,8 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Hash;
 
 class RbacSeeder extends Seeder
 {
@@ -51,6 +51,42 @@ class RbacSeeder extends Seeder
         // 4. Attach semua permission aktif ke role super_admin
         $superAdminRole->permissions()->syncWithoutDetaching($activePermissions);
 
+        // 4b. Attach default permissions ke role guru
+        $guruRole = Role::where('name', 'guru')->first();
+        if ($guruRole) {
+            $guruPermissions = Permission::whereIn('permission_name', [
+                'admin.dashboard',
+                'admin.notifikasi.index',
+                'admin.notifikasi.unread-count',
+                'admin.notifikasi.read',
+                'admin.notifikasi.mark-all-read',
+                'admin.akademik.absensi.index',
+                'admin.akademik.nilai.index',
+                'admin.akademik.rpp.index',
+                'admin.akademik.rpp.create',
+                'admin.akademik.rpp.store',
+                'admin.akademik.rpp.show',
+                'admin.akademik.rpp.edit',
+                'admin.akademik.rpp.update',
+                'admin.akademik.rpp.destroy',
+            ])->pluck('id');
+            $guruRole->permissions()->sync($guruPermissions);
+        }
+
+        // 4c. Attach default permissions ke kepala_sekolah, wakasek, & wali_kelas agar tidak 403 saat login
+        $otherRoles = Role::whereIn('name', ['kepala_sekolah', 'wakasek_kurikulum', 'wali_kelas'])->get();
+        $basicPermissions = Permission::whereIn('permission_name', [
+            'admin.dashboard',
+            'admin.notifikasi.index',
+            'admin.notifikasi.unread-count',
+            'admin.notifikasi.read',
+            'admin.notifikasi.mark-all-read',
+        ])->pluck('id');
+
+        foreach ($otherRoles as $role) {
+            $role->permissions()->sync($basicPermissions);
+        }
+
         // 5. Buat user superadmin jika belum ada
         $developerUser = User::firstOrCreate(
             ['email' => 'superadmin@sms.com'],
@@ -58,7 +94,7 @@ class RbacSeeder extends Seeder
                 'name' => 'Super Admin',
                 'username' => 'superadmin',
                 'password' => Hash::make('password'),
-                'status' => 'active'
+                'status' => 'active',
             ]
         );
 

@@ -135,6 +135,25 @@ class KelasController extends Controller
         return $this->response->success(null, 'Nilai harian berhasil disimpan.');
     }
 
+    /**
+     * Tandai sesi hari ini "selesai" dan kirim notifikasi WhatsApp ke wali
+     * murid tiap siswa (status kehadiran + submateri + nilai jika ada).
+     * Dipicu manual oleh guru, bukan otomatis — lihat docblock
+     * KelasMobileService::kirimNotifikasiSelesai().
+     */
+    public function notifikasiSelesai(Request $request, int $jadwal)
+    {
+        $jadwal = $this->resolveJadwal($request, $jadwal);
+
+        try {
+            $ringkasan = $this->service->kirimNotifikasiSelesai($jadwal);
+        } catch (RuntimeException $e) {
+            return $this->response->error($e->getMessage(), 422);
+        }
+
+        return $this->response->success($ringkasan, "Notifikasi terkirim ke {$ringkasan['terkirim']} wali murid.");
+    }
+
     /** Resolve jadwal & pastikan milik guru yang login. */
     private function resolveJadwal(Request $request, int $jadwalId): JadwalKbm
     {

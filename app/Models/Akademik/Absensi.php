@@ -16,10 +16,10 @@ class Absensi extends Model
 
     protected $fillable = [
         'lembaga_id', 'rombel_id', 'guru_id', 'mata_pelajaran_id',
-        'tanggal', 'jam_ke', 'keterangan',
+        'tanggal', 'jam_ke', 'keterangan', 'notifikasi_terkirim_at',
     ];
 
-    protected $casts = ['tanggal' => 'date'];
+    protected $casts = ['tanggal' => 'date', 'notifikasi_terkirim_at' => 'datetime'];
 
     public function lembaga(): BelongsTo        { return $this->belongsTo(Lembaga::class); }
     public function rombel(): BelongsTo         { return $this->belongsTo(Rombel::class); }

@@ -70,6 +70,7 @@ Route::prefix('v1')->group(function () {
             Route::post('nilai', [KelasController::class, 'nilaiStore']);
             Route::get('nilai-harian', [KelasController::class, 'nilaiHarianIndex']);
             Route::post('nilai-harian', [KelasController::class, 'nilaiHarianStore']);
+            Route::post('notifikasi-selesai', [KelasController::class, 'notifikasiSelesai']);
         });
     });
 });

@@ -2,12 +2,15 @@
 
 namespace App\Services\Akademik;
 
+use App\Jobs\KirimAbsensiWhatsappJob;
 use App\Models\Akademik\MateriBelajar;
 use App\Models\Akademik\PerangkatMengajar;
 use App\Models\Akademik\Rpp;
 use App\Models\Master\Guru;
 use App\Models\Master\JadwalKbm;
 use App\Models\Master\Semester;
+use App\Models\Peserta\Peserta;
+use App\Models\Peserta\PesertaOrangTua;
 use App\Repositories\Akademik\AbsensiRepositoryInterface;
 use App\Repositories\Akademik\AkademikSettingRepositoryInterface;
 use App\Repositories\Akademik\NilaiHarianLogRepositoryInterface;
@@ -190,25 +193,13 @@ class KelasMobileService
             ]);
 
         $tanggal = WaktuSekolah::now()->toDateString();
-        $pastMeetings = DB::table('absensi')
-            ->where('rombel_id', $jadwal->rombel_id)
-            ->where('mata_pelajaran_id', $jadwal->mata_pelajaran_id)
-            ->whereDate('tanggal', '<', $tanggal)
-            ->count();
-
-        $pertemuanHariIni = $pastMeetings + 1;
+        $pertemuanHariIni = $this->hitungPertemuanHariIni($jadwal, $tanggal);
 
         // RPP terstruktur — hanya yang sudah disetujui yang boleh tampil ke
         // guru. Kalau guru punya beberapa RPP disetujui utk mapel yang sama
         // (topik berbeda sepanjang tahun), yang paling baru (id terbesar)
         // dianggap yang sedang berjalan.
-        $rppAktif = Rpp::where('guru_id', $jadwal->guru_id)
-            ->where('mata_pelajaran_id', $jadwal->mata_pelajaran_id)
-            ->where('tahun_pelajaran_id', $jadwal->tahun_pelajaran_id)
-            ->where('status', 'disetujui')
-            ->with(['nilaiPoin.poin', 'inti.sintaks', 'submateri', 'modelPembelajaran'])
-            ->orderByDesc('id')
-            ->first();
+        $rppAktif = $this->findRppAktif($jadwal, ['nilaiPoin.poin', 'inti.sintaks', 'submateri', 'modelPembelajaran']);
 
         $rppHariIni = $rppAktif ? $this->buildRppHariIni($rppAktif, $pertemuanHariIni) : null;
 
@@ -248,19 +239,7 @@ class KelasMobileService
      */
     protected function buildRppHariIni(Rpp $rpp, int $pertemuanHariIni): array
     {
-        $submateriList = $rpp->submateri; // sudah terurut oleh relasi (orderBy urutan)
-        $totalPertemuan = $submateriList->count();
-
-        if ($totalPertemuan > 0) {
-            $index = min($pertemuanHariIni, $totalPertemuan) - 1;
-            $submateriTerpilih = $submateriList->values()->get($index);
-            $submateriTeks = $submateriTerpilih?->teks;
-            $pertemuanEfektif = $submateriTerpilih?->urutan ?? $pertemuanHariIni;
-        } else {
-            // RPP satu sesi (guru tidak memecah submateri) — berlaku untuk pertemuan manapun.
-            $submateriTeks = null;
-            $pertemuanEfektif = $pertemuanHariIni;
-        }
+        [$submateriTeks, $totalPertemuan, $pertemuanEfektif] = $this->pilihSubmateri($rpp->submateri, $pertemuanHariIni);
 
         $intiByFase = $rpp->inti->groupBy(fn ($i) => $i->sintaks?->meta_fase);
         $inti = collect(['Memahami', 'Mengaplikasi', 'Merefleksi'])
@@ -306,6 +285,190 @@ class KelasMobileService
     protected function nilaiPoinByKode(Rpp $rpp, string $kode)
     {
         return $rpp->nilaiPoin->first(fn ($v) => $v->poin?->kode === $kode);
+    }
+
+    /**
+     * Submateri dianggap 1:1 dengan pertemuan (submateri ke-N = pertemuan
+     * ke-N) — dipakai bareng oleh buildRppHariIni() (tampilan mobile) dan
+     * kirimNotifikasiSelesai() (isi pesan WhatsApp) supaya keduanya SELALU
+     * menunjuk submateri yang sama untuk pertemuan yang sama.
+     *
+     * @return array{0: ?string, 1: int, 2: int} [teks submateri, total pertemuan, pertemuan efektif]
+     */
+    protected function pilihSubmateri($submateriList, int $pertemuanHariIni): array
+    {
+        $total = $submateriList->count();
+
+        if ($total === 0) {
+            // RPP satu sesi (guru tidak memecah submateri) — berlaku untuk pertemuan manapun.
+            return [null, 0, $pertemuanHariIni];
+        }
+
+        $index = min($pertemuanHariIni, $total) - 1;
+        $terpilih = $submateriList->values()->get($index);
+
+        return [$terpilih?->teks, $total, $terpilih?->urutan ?? $pertemuanHariIni];
+    }
+
+    /** RPP disetujui paling baru untuk guru+mapel+tahun ini — dianggap yang sedang aktif diajarkan. */
+    protected function findRppAktif(JadwalKbm $jadwal, array $with = ['submateri']): ?Rpp
+    {
+        return Rpp::where('guru_id', $jadwal->guru_id)
+            ->where('mata_pelajaran_id', $jadwal->mata_pelajaran_id)
+            ->where('tahun_pelajaran_id', $jadwal->tahun_pelajaran_id)
+            ->where('status', 'disetujui')
+            ->with($with)
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    /** Hitung "pertemuan ke berapa hari ini" dari jumlah sesi absensi sebelumnya. */
+    protected function hitungPertemuanHariIni(JadwalKbm $jadwal, string $tanggal): int
+    {
+        $pastMeetings = DB::table('absensi')
+            ->where('rombel_id', $jadwal->rombel_id)
+            ->where('mata_pelajaran_id', $jadwal->mata_pelajaran_id)
+            ->whereDate('tanggal', '<', $tanggal)
+            ->count();
+
+        return $pastMeetings + 1;
+    }
+
+    /**
+     * Kirim notifikasi WhatsApp ke wali murid tiap siswa di kelas ini,
+     * melaporkan status kehadiran (+ submateri & nilai kalau ada) untuk
+     * sesi HARI INI. Dipicu eksplisit oleh guru (tombol "Selesai Mengajar")
+     * — sengaja BUKAN otomatis saat absensi disimpan, karena nilai baru
+     * mungkin diisi belakangan (lihat tambahNilaiHarian()), dan supaya guru
+     * sendiri yang menentukan kapan sesi benar-benar selesai sebelum pesan
+     * terkirim ke orang tua siswa.
+     *
+     * @return array{terkirim: int, gagal_kirim: int, tanpa_nomor: int, total_siswa: int}
+     */
+    public function kirimNotifikasiSelesai(JadwalKbm $jadwal): array
+    {
+        $tanggal = WaktuSekolah::now()->toDateString();
+        $absensi = $this->absensiRepo->findByRombelMapelTanggal($jadwal->rombel_id, $jadwal->mata_pelajaran_id, $tanggal);
+
+        if (! $absensi) {
+            throw new RuntimeException('Selesaikan absensi siswa terlebih dahulu sebelum mengirim notifikasi.');
+        }
+
+        if ($absensi->notifikasi_terkirim_at) {
+            $waktu = $absensi->notifikasi_terkirim_at->locale('id')->isoFormat('D MMMM YYYY, HH:mm');
+            throw new RuntimeException("Notifikasi untuk sesi ini sudah pernah dikirim pada {$waktu}.");
+        }
+
+        $absensi->load('detail.peserta.orangTua');
+
+        $pertemuanKe = $this->hitungPertemuanHariIni($jadwal, $tanggal);
+        $rpp = $this->findRppAktif($jadwal);
+        [$submateri] = $this->pilihSubmateri($rpp?->submateri ?? collect(), $pertemuanKe);
+
+        $semester = $this->semesterAktif($jadwal->tahun_pelajaran_id);
+        $nilaiHariIni = DB::table('nilai_harian_log')
+            ->where('rombel_id', $jadwal->rombel_id)
+            ->where('mata_pelajaran_id', $jadwal->mata_pelajaran_id)
+            ->where('semester_id', $semester->id)
+            ->where('tanggal', $tanggal)
+            ->orderByDesc('id')
+            ->get()
+            ->unique('peserta_id')
+            ->keyBy('peserta_id');
+
+        $tanggalFormatted = Carbon::parse($tanggal)->locale('id')->isoFormat('dddd, D MMMM YYYY');
+
+        $terkirim = 0;
+        $gagalKirim = 0;
+        $tanpaNomor = 0;
+
+        foreach ($absensi->detail as $detail) {
+            $peserta = $detail->peserta;
+            if (! $peserta) {
+                continue;
+            }
+
+            $wali = $this->resolveWaliKontak($peserta);
+            if (! $wali) {
+                $tanpaNomor++;
+                continue;
+            }
+
+            $nilai = $detail->status === 'hadir' ? $nilaiHariIni->get($peserta->id)?->nilai : null;
+
+            $pesan = $this->buildPesanAbsensi(
+                $wali->nama,
+                $peserta->nama_lengkap,
+                $detail->status,
+                $tanggalFormatted,
+                $detail->status === 'hadir' ? $submateri : null,
+                $nilai !== null ? (float) $nilai : null,
+            );
+
+            // dispatchSync() (BUKAN dispatch()+onQueue) — kirim langsung saat
+            // ini juga, tidak bergantung queue worker terpisah yang harus
+            // selalu aktif (lihat docblock KirimAbsensiWhatsappJob). Dibungkus
+            // try/catch PER SISWA supaya satu nomor bermasalah tidak
+            // menggagalkan pengiriman ke siswa lain dalam kelas yang sama.
+            try {
+                KirimAbsensiWhatsappJob::dispatchSync($peserta->id, $peserta->nama_lengkap, $wali->no_hp, $pesan);
+                $terkirim++;
+            } catch (\Throwable $e) {
+                $gagalKirim++;
+            }
+        }
+
+        $absensi->update(['notifikasi_terkirim_at' => now()]);
+
+        $this->logActivity->log(
+            'Kirim Notifikasi Absensi (Mobile)',
+            "Notifikasi WA rombel_id={$jadwal->rombel_id} mapel_id={$jadwal->mata_pelajaran_id} tanggal={$tanggal}: {$terkirim} terkirim, {$gagalKirim} gagal, {$tanpaNomor} tanpa nomor HP wali."
+        );
+
+        return [
+            'terkirim' => $terkirim,
+            'gagal_kirim' => $gagalKirim,
+            'tanpa_nomor' => $tanpaNomor,
+            'total_siswa' => $absensi->detail->count(),
+        ];
+    }
+
+    /** Prioritas kontak: wali > ayah > ibu — kirim ke SATU nomor saja per siswa (hemat, tidak dobel). */
+    protected function resolveWaliKontak(Peserta $peserta): ?PesertaOrangTua
+    {
+        $adaNoHp = fn ($tipe) => $peserta->orangTua->first(fn ($o) => $o->tipe === $tipe && filled($o->no_hp));
+
+        return $adaNoHp(PesertaOrangTua::TIPE_WALI)
+            ?? $adaNoHp(PesertaOrangTua::TIPE_AYAH)
+            ?? $adaNoHp(PesertaOrangTua::TIPE_IBU);
+    }
+
+    /** Susun teks pesan WhatsApp sesuai status kehadiran. */
+    protected function buildPesanAbsensi(
+        string $namaWali,
+        string $namaSiswa,
+        string $status,
+        string $tanggalFormatted,
+        ?string $submateri,
+        ?float $nilai,
+    ): string {
+        $isi = match ($status) {
+            'hadir' => "Disampaikan kepada Bapak/Ibu {$namaWali}, bahwa ananda {$namaSiswa} telah HADIR mengikuti pembelajaran di kelas pada {$tanggalFormatted}"
+                .($submateri ? " dengan materi \"{$submateri}\"" : '')
+                .($nilai !== null ? ' dengan nilai '.$this->formatNilaiTampil($nilai) : '')
+                .'. Terima kasih.',
+            'sakit' => "Disampaikan kepada Bapak/Ibu {$namaWali}, bahwa ananda {$namaSiswa} tidak dapat mengikuti pembelajaran di kelas pada {$tanggalFormatted} dikarenakan SAKIT. Semoga lekas sembuh. Terima kasih.",
+            'izin' => "Disampaikan kepada Bapak/Ibu {$namaWali}, bahwa ananda {$namaSiswa} tidak dapat mengikuti pembelajaran di kelas pada {$tanggalFormatted} dikarenakan IZIN. Terima kasih.",
+            default => "Disampaikan kepada Bapak/Ibu {$namaWali}, bahwa ananda {$namaSiswa} TIDAK HADIR (Alpa) mengikuti pembelajaran di kelas pada {$tanggalFormatted} tanpa keterangan. Mohon menjadi perhatian Bapak/Ibu. Terima kasih.",
+        };
+
+        return "Assalamu'alaikum Wr. Wb.\n{$isi}\nWassalamu'alaikum Wr. Wb.";
+    }
+
+    /** "93.00" -> "93", "88.50" -> "88.5" — nilai bulat tidak perlu tampil ".00". */
+    protected function formatNilaiTampil(float $nilai): string
+    {
+        return rtrim(rtrim(sprintf('%.2f', $nilai), '0'), '.');
     }
 
     /**

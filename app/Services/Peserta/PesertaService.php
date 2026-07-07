@@ -333,6 +333,34 @@ class PesertaService
     }
 
     // =========================================================================
+    // UPDATE ORANG TUA KONTAK — Edit ringan nama+no_hp SATU tipe (ayah/ibu/wali)
+    // =========================================================================
+
+    /**
+     * Edit cepat kontak (nama + no. WhatsApp) satu jenis orang tua, tanpa
+     * lewat form edit peserta lengkap. Dipakai dari halaman Detail Peserta
+     * supaya admin bisa langsung melengkapi/memperbaiki nomor WA wali murid
+     * (dipakai fitur notifikasi WhatsApp absensi) tanpa membuka modal edit
+     * peserta yang penuh field lain yang tidak relevan.
+     *
+     * @throws \Exception Jika peserta tidak ditemukan
+     */
+    public function updateOrangTuaKontak(int $pesertaId, string $tipe, array $data): void
+    {
+        $peserta = $this->pesertaRepo->findById($pesertaId);
+        if (!$peserta) {
+            throw new Exception("Peserta dengan ID {$pesertaId} tidak ditemukan.");
+        }
+
+        $this->orangTuaRepo->upsertByTipe($pesertaId, $tipe, $data);
+
+        $this->logActivity->log(
+            'Update Kontak Orang Tua Peserta',
+            "Memperbarui kontak {$tipe} peserta {$peserta->nama_lengkap} (ID: {$pesertaId})"
+        );
+    }
+
+    // =========================================================================
     // DESTROY — Soft delete peserta (cek tidak ada pendaftaran aktif)
     // =========================================================================
 

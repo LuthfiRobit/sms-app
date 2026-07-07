@@ -298,8 +298,16 @@
                 @php $ot = $ortu[$tipe] ?? null; @endphp
                 <div class="col-md-4">
                     <div class="card h-100 ortu-card {{ $tipe }}">
-                        <div class="card-header bg-{{ $color }} bg-opacity-10 py-2">
+                        <div class="card-header bg-{{ $color }} bg-opacity-10 py-2 d-flex justify-content-between align-items-center">
                             <strong><i class="bi {{ $icon }} text-{{ $color }} me-1"></i> {{ $label }}</strong>
+                            @if(auth()->user()->hasPermissionTo('admin.peserta.update'))
+                            <button type="button" class="btn btn-sm btn-outline-{{ $color }} btn-edit-ortu-kontak"
+                                data-tipe="{{ $tipe }}" data-label="{{ $label }}"
+                                data-nama="{{ e($ot['nama'] ?? '') }}" data-nohp="{{ e($ot['no_hp'] ?? '') }}"
+                                title="Edit Nama &amp; No. WhatsApp {{ $label }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            @endif
                         </div>
                         <div class="card-body">
                             @if($ot)
@@ -549,6 +557,58 @@
         btn.addEventListener('shown.bs.tab', e => {
             const target = e.target.getAttribute('data-bs-target');
             history.replaceState(null, '', target.replace('#panel-', '#'));
+        });
+    });
+
+    // Edit ringan Nama + No. WhatsApp orang tua (ayah/ibu/wali) — dipakai
+    // terutama untuk melengkapi nomor WA wali murid tanpa buka form edit
+    // peserta lengkap. Lihat PesertaController::updateOrangTuaKontak().
+    $(document).on('click', '.btn-edit-ortu-kontak', function () {
+        const tipe = $(this).data('tipe');
+        const label = $(this).data('label');
+        const namaLama = $(this).data('nama') || '';
+        const noHpLama = $(this).data('nohp') || '';
+
+        Swal.fire({
+            title: `Edit Kontak ${label}`,
+            html: `
+                <div class="text-start">
+                    <label class="form-label small fw-semibold mb-1">Nama</label>
+                    <input type="text" id="swal-ortu-nama" class="form-control mb-3" value="${namaLama}" placeholder="Nama ${label}">
+                    <label class="form-label small fw-semibold mb-1">No. WhatsApp</label>
+                    <input type="text" id="swal-ortu-nohp" class="form-control" value="${noHpLama}" placeholder="08xxxxxxxxxx">
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Simpan',
+            cancelButtonText: 'Batal',
+            focusConfirm: false,
+            preConfirm: () => {
+                const nama = document.getElementById('swal-ortu-nama').value.trim();
+                const noHp = document.getElementById('swal-ortu-nohp').value.trim();
+                if (!nama) {
+                    Swal.showValidationMessage('Nama wajib diisi.');
+                    return false;
+                }
+                return { nama, no_hp: noHp };
+            },
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            $.ajax({
+                url: `{{ url('admin/peserta/'.$pribadi['id'].'/orang-tua') }}/${tipe}`,
+                method: 'PUT',
+                data: { _token: '{{ csrf_token() }}', ...result.value },
+                success: function (res) {
+                    Swal.fire('Berhasil', res.message, 'success').then(() => location.reload());
+                },
+                error: function (xhr) {
+                    const msg = xhr.responseJSON?.errors
+                        ? Object.values(xhr.responseJSON.errors).flat().join('<br>')
+                        : (xhr.responseJSON?.message || 'Gagal memperbarui kontak.');
+                    Swal.fire('Gagal', msg, 'error');
+                },
+            });
         });
     });
 </script>
