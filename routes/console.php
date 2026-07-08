@@ -21,3 +21,7 @@ Schedule::command('absensi-guru:tandai-alpa')
 // Pengingat belum absen masuk — dicek tiap menit (per lembaga, jendela lead-time
 // sebelum jam_masuk_batas berbeda-beda); service menjaga idempoten.
 Schedule::command('notif:belum-absen-masuk')->everyMinute()->withoutOverlapping();
+
+// Pengingat belum input absensi siswa — dicek tiap menit (banyak jam_selesai
+// berbeda sepanjang hari); service menjaga idempoten via notifikasi_jadwal_log.
+Schedule::command('notif:belum-input-absensi')->everyMinute()->withoutOverlapping();

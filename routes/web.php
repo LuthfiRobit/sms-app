@@ -11,6 +11,7 @@ use App\Http\Controllers\Akademik\NilaiController;
 use App\Http\Controllers\Akademik\PengajuanIzinGuruController;
 use App\Http\Controllers\Akademik\PengajuanRaportController;
 use App\Http\Controllers\Akademik\PerangkatMengajarController;
+use App\Http\Controllers\Akademik\RppComplianceController;
 use App\Http\Controllers\Akademik\RppController;
 use App\Http\Controllers\Akademik\RppTemplateController;
 use App\Http\Controllers\Akademik\VerifikasiMateriController;
@@ -234,6 +235,7 @@ Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
             // RPP Terstruktur
             Route::get('rpp/list', [RppController::class, 'list'])->name('rpp.list');
             Route::get('rpp/guru/{guruId}/mapel', [RppController::class, 'getMapelByGuru'])->name('rpp.guru-mapel');
+            Route::post('rpp/{id}/duplicate', [RppController::class, 'duplicate'])->name('rpp.duplicate');
             Route::resource('rpp', RppController::class);
 
             // Kelola Bagian & Poin RPP (templat dinamis)
@@ -251,6 +253,10 @@ Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
                 Route::put('opsi/{id}', [RppTemplateController::class, 'updateOpsi'])->name('opsi.update');
                 Route::delete('opsi/{id}', [RppTemplateController::class, 'destroyOpsi'])->name('opsi.destroy');
             });
+
+            // Kepatuhan RPP (laporan read-only)
+            Route::get('rpp-compliance', [RppComplianceController::class, 'index'])->name('rpp-compliance.index');
+            Route::get('rpp-compliance/list', [RppComplianceController::class, 'list'])->name('rpp-compliance.list');
 
             // Verifikasi RPP
             Route::get('verifikasi-rpp', [VerifikasiRppController::class, 'index'])->name('verifikasi-rpp.index');

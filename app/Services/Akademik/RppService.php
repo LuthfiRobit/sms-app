@@ -93,6 +93,66 @@ class RppService
         });
     }
 
+    /**
+     * Salin RPP jadi draft baru — guru mulai dari konten yang sudah ada
+     * (mis. RPP tahun lalu) daripada mengisi dari kosong. Tahun ajaran &
+     * semester SENGAJA jadi parameter (bukan ikut nilai sumbernya) karena
+     * kasus paling umum adalah menyalin RPP tahun lalu untuk tahun baru.
+     * Status selalu direset ke 'pending' walau sumbernya sudah disetujui —
+     * konten hasil salinan tetap perlu diverifikasi ulang.
+     */
+    public function duplicate(int $id, int $tahunPelajaranId, int $semesterId): Rpp
+    {
+        return DB::transaction(function () use ($id, $tahunPelajaranId, $semesterId) {
+            $sumber = $this->find($id);
+            $sumber->load('nilaiPoin', 'inti', 'submateri');
+
+            $salinan = $this->repo->create([
+                'lembaga_id' => $sumber->lembaga_id,
+                'guru_id' => $sumber->guru_id,
+                'mata_pelajaran_id' => $sumber->mata_pelajaran_id,
+                'tahun_pelajaran_id' => $tahunPelajaranId,
+                'semester_id' => $semesterId,
+                'model_pembelajaran_id' => $sumber->model_pembelajaran_id,
+                'fase_kelas' => $sumber->fase_kelas,
+                'materi' => $sumber->materi.' (Salinan)',
+                'alokasi_waktu' => $sumber->alokasi_waktu,
+                'status' => 'pending',
+            ]);
+
+            foreach ($sumber->nilaiPoin as $nilai) {
+                RppPoinValue::create([
+                    'rpp_id' => $salinan->id,
+                    'rpp_poin_id' => $nilai->rpp_poin_id,
+                    'value_teks' => $nilai->value_teks,
+                    'value_json' => $nilai->value_json,
+                ]);
+            }
+
+            foreach ($sumber->inti as $inti) {
+                RppInti::create([
+                    'rpp_id' => $salinan->id,
+                    'model_pembelajaran_sintaks_id' => $inti->model_pembelajaran_sintaks_id,
+                    'konten' => $inti->konten,
+                    'urutan' => $inti->urutan,
+                ]);
+            }
+
+            foreach ($sumber->submateri as $submateri) {
+                $salinan->submateri()->create([
+                    'teks' => $submateri->teks,
+                    'urutan' => $submateri->urutan,
+                ]);
+            }
+
+            $this->generateDanSimpanPdf($salinan);
+
+            $this->logActivity->log('Duplikat RPP', "RPP '{$sumber->materi}' (ID #{$sumber->id}) diduplikat menjadi '{$salinan->materi}' (ID #{$salinan->id}).");
+
+            return $salinan->fresh();
+        });
+    }
+
     public function destroy(int $id): void
     {
         $rpp = $this->repo->findById($id);

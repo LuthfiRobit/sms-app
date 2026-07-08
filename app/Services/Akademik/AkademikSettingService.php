@@ -33,6 +33,7 @@ class AkademikSettingService
         $default->bobot_uts           = 30.00;
         $default->bobot_uas           = 30.00;
         $default->kkm_default         = 70;
+        $default->alpa_beruntun_threshold = 3;
 
         return $default;
     }
@@ -61,6 +62,7 @@ class AkademikSettingService
             'bobot_uts'          => $bobotUts,
             'bobot_uas'          => $bobotUas,
             'kkm_default'        => (int) ($data['kkm_default'] ?? 70),
+            'alpa_beruntun_threshold' => (int) ($data['alpa_beruntun_threshold'] ?? 3),
         ]);
 
         $this->logActivity->log(

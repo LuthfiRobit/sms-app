@@ -205,6 +205,11 @@ class AppServiceProvider extends ServiceProvider
             //     new \App\Dashboard\Widgets\Akademik\AbsensiWidget(),
             // );
 
+            // ── Modul Akademik: Kepatuhan RPP (aktif) ──────────────────────
+            $registry->register(
+                new \App\Dashboard\Widgets\Akademik\RppComplianceWidget,
+            );
+
             // ── Modul Keuangan (uncomment ketika siap) ─────────────────────
             // $registry->register(
             //     new \App\Dashboard\Widgets\Keuangan\RekapSppWidget(),

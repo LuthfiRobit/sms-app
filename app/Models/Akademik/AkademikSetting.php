@@ -17,6 +17,7 @@ class AkademikSetting extends Model
         'bobot_uts',
         'bobot_uas',
         'kkm_default',
+        'alpa_beruntun_threshold',
     ];
 
     protected $casts = [
@@ -25,6 +26,7 @@ class AkademikSetting extends Model
         'bobot_uts'          => 'float',
         'bobot_uas'          => 'float',
         'kkm_default'        => 'integer',
+        'alpa_beruntun_threshold' => 'integer',
     ];
 
     public function lembaga(): BelongsTo
@@ -40,6 +42,7 @@ class AkademikSetting extends Model
         $instance->bobot_uts          = 30.00;
         $instance->bobot_uas          = 30.00;
         $instance->kkm_default        = 70;
+        $instance->alpa_beruntun_threshold = 3;
 
         return $instance;
     }

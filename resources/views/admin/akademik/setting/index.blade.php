@@ -12,6 +12,7 @@
             'bobot_uts'          => (float) $s->bobot_uts,
             'bobot_uas'          => (float) $s->bobot_uas,
             'kkm_default'        => (int) $s->kkm_default,
+            'alpa_beruntun_threshold' => (int) ($s->alpa_beruntun_threshold ?? 3),
         ];
     })->toJson();
 @endphp
@@ -243,6 +244,39 @@
                     </div>
                 </div>
 
+                {{-- Section 4: Alpa Beruntun --}}
+                <div class="col-12">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <h6 class="mb-0 text-dark fw-semibold">
+                                <i class="bi bi-exclamation-triangle me-2 text-danger"></i>Deteksi Alpa Berturut-turut
+                            </h6>
+                            <small class="text-muted">
+                                Ambang batas jumlah alpa berturut-turut (per mata pelajaran) sebelum wali murid diberi notifikasi WhatsApp otomatis.
+                            </small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <label class="form-label fw-medium">
+                                        Ambang Alpa Beruntun <span class="text-danger">*</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        class="form-control"
+                                        id="alpa-beruntun-threshold"
+                                        name="alpa_beruntun_threshold"
+                                        min="2" max="10"
+                                        value="{{ $activeSetting->alpa_beruntun_threshold ?? 3 }}"
+                                        required
+                                    >
+                                    <small class="text-muted">Minimal 2x, maksimal 10x berturut-turut.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Save Button --}}
                 <div class="col-12">
                     <div class="d-flex justify-content-end gap-2">
@@ -279,6 +313,7 @@
             bobot_uas:          parseFloat($('#bobot-uas').val())    || 0,
             kkm_default:        parseInt($('#kkm-default').val())    || 0,
             allow_manual_nilai: $('#allow-manual-nilai').is(':checked') ? 1 : 0,
+            alpa_beruntun_threshold: parseInt($('#alpa-beruntun-threshold').val()) || 3,
         };
     }
 
@@ -317,6 +352,7 @@
         $('#bobot-uts').val(s.bobot_uts);
         $('#bobot-uas').val(s.bobot_uas);
         $('#kkm-default').val(s.kkm_default);
+        $('#alpa-beruntun-threshold').val(s.alpa_beruntun_threshold);
         $('#allow-manual-nilai').prop('checked', s.allow_manual_nilai);
         $('#lbl-manual-nilai').text(s.allow_manual_nilai ? 'Aktif' : 'Nonaktif');
         updateBobotUI();
@@ -385,6 +421,7 @@
                 bobot_uas:          vals.bobot_uas,
                 kkm_default:        vals.kkm_default,
                 allow_manual_nilai: vals.allow_manual_nilai,
+                alpa_beruntun_threshold: vals.alpa_beruntun_threshold,
             }),
             success: function (res) {
                 if (res.status === 200) {
@@ -395,6 +432,7 @@
                         bobot_uts:          vals.bobot_uts,
                         bobot_uas:          vals.bobot_uas,
                         kkm_default:        vals.kkm_default,
+                        alpa_beruntun_threshold: vals.alpa_beruntun_threshold,
                     };
                     Swal.fire({
                         icon:              'success',

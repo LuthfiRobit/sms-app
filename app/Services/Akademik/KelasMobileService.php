@@ -34,6 +34,7 @@ class KelasMobileService
         protected NilaiRepositoryInterface $nilaiRepo,
         protected NilaiHarianLogRepositoryInterface $nilaiHarianLogRepo,
         protected LogActivityService $logActivity,
+        protected AlpaStreakNotifikasiService $alpaStreak,
     ) {}
 
     /** Daftar siswa rombel + status kehadiran hari ini (jika sesi absensi sudah dibuat). */
@@ -197,11 +198,15 @@ class KelasMobileService
 
         // RPP terstruktur — hanya yang sudah disetujui yang boleh tampil ke
         // guru. Kalau guru punya beberapa RPP disetujui utk mapel yang sama
-        // (topik berbeda sepanjang tahun), yang paling baru (id terbesar)
-        // dianggap yang sedang berjalan.
-        $rppAktif = $this->findRppAktif($jadwal, ['nilaiPoin.poin', 'inti.sintaks', 'submateri', 'modelPembelajaran']);
+        // (topik berurutan sepanjang tahun), resolveRppUntukPertemuan() jalan
+        // kumulatif per submateri supaya RPP topik berikutnya yang disiapkan
+        // lebih awal tidak "menang" duluan sebelum topik sebelumnya tuntas.
+        $resolved = $this->resolveRppUntukPertemuan($jadwal, $pertemuanHariIni);
+        $resolved['rpp']?->load(['nilaiPoin.poin', 'inti.sintaks', 'modelPembelajaran']);
 
-        $rppHariIni = $rppAktif ? $this->buildRppHariIni($rppAktif, $pertemuanHariIni) : null;
+        $rppHariIni = $resolved['rpp']
+            ? $this->buildRppHariIni($resolved['rpp'], $resolved['pertemuan_ke'], $resolved['submateri'], $resolved['total_pertemuan'])
+            : null;
 
         $materi = MateriBelajar::where('guru_id', $jadwal->guru_id)
             ->where('mata_pelajaran_id', $jadwal->mata_pelajaran_id)
@@ -237,10 +242,8 @@ class KelasMobileService
      * poin (dokumen lengkap termasuk rubrik/soal tetap di PDF, lebih nyaman
      * dibaca di sana daripada di-scroll di layar kecil).
      */
-    protected function buildRppHariIni(Rpp $rpp, int $pertemuanHariIni): array
+    protected function buildRppHariIni(Rpp $rpp, int $pertemuanKe, ?string $submateriTeks, int $totalPertemuan): array
     {
-        [$submateriTeks, $totalPertemuan, $pertemuanEfektif] = $this->pilihSubmateri($rpp->submateri, $pertemuanHariIni);
-
         $intiByFase = $rpp->inti->groupBy(fn ($i) => $i->sintaks?->meta_fase);
         $inti = collect(['Memahami', 'Mengaplikasi', 'Merefleksi'])
             ->map(function ($fase) use ($intiByFase) {
@@ -266,7 +269,7 @@ class KelasMobileService
             'id' => $rpp->id,
             'materi' => $rpp->materi,
             'submateri' => $submateriTeks,
-            'pertemuan_ke' => $pertemuanEfektif,
+            'pertemuan_ke' => $pertemuanKe,
             'total_pertemuan' => $totalPertemuan,
             'fase_kelas' => $rpp->fase_kelas,
             'alokasi_waktu' => $rpp->alokasi_waktu,
@@ -310,16 +313,68 @@ class KelasMobileService
         return [$terpilih?->teks, $total, $terpilih?->urutan ?? $pertemuanHariIni];
     }
 
-    /** RPP disetujui paling baru untuk guru+mapel+tahun ini — dianggap yang sedang aktif diajarkan. */
-    protected function findRppAktif(JadwalKbm $jadwal, array $with = ['submateri']): ?Rpp
+    /**
+     * Pilih RPP + submateri yang cocok untuk pertemuan hari ini, di antara
+     * SEMUA RPP disetujui guru+mapel+tahun ini — bukan cuma yang id-nya
+     * terbesar. Kalau guru punya beberapa RPP topik berurutan (mis. RPP
+     * topik 2 sudah disiapkan sebelum topik 1 tuntas), `id` ascending di
+     * antara RPP berstatus disetujui dipakai sebagai proxy urutan mengajar,
+     * lalu jumlah submateri tiap RPP dijumlahkan kumulatif (submateri ke-N
+     * RPP pertama = pertemuan ke-N, lanjut ke RPP berikutnya setelah RPP
+     * sebelumnya habis submaterinya) — supaya `materi()` (tampilan mobile)
+     * dan kirimNotifikasiSelesai() (isi pesan WhatsApp) SELALU melaporkan
+     * topik yang benar-benar sedang berjalan, bukan topik yang dibuat
+     * paling akhir.
+     *
+     * Keterbatasan v1: kalau RPP topik 2 dibuat SEBELUM RPP topik 1 (urutan
+     * id terbalik dari urutan mengajar), ini tidak menolong — butuh kolom
+     * urutan eksplisit yang sengaja belum ditambahkan sampai kasusnya benar
+     * terjadi di lapangan.
+     *
+     * @return array{rpp: ?Rpp, submateri: ?string, total_pertemuan: int, pertemuan_ke: int}
+     */
+    protected function resolveRppUntukPertemuan(JadwalKbm $jadwal, int $pertemuanHariIni): array
     {
-        return Rpp::where('guru_id', $jadwal->guru_id)
+        $rppList = Rpp::where('guru_id', $jadwal->guru_id)
             ->where('mata_pelajaran_id', $jadwal->mata_pelajaran_id)
             ->where('tahun_pelajaran_id', $jadwal->tahun_pelajaran_id)
             ->where('status', 'disetujui')
-            ->with($with)
-            ->orderByDesc('id')
-            ->first();
+            ->with('submateri')
+            ->orderBy('id')
+            ->get();
+
+        if ($rppList->isEmpty()) {
+            return ['rpp' => null, 'submateri' => null, 'total_pertemuan' => 0, 'pertemuan_ke' => $pertemuanHariIni];
+        }
+
+        // Fast path: 1 RPP saja — mayoritas kasus nyata.
+        if ($rppList->count() === 1) {
+            $rpp = $rppList->first();
+            [$submateri, $total, $pertemuanKe] = $this->pilihSubmateri($rpp->submateri, $pertemuanHariIni);
+
+            return ['rpp' => $rpp, 'submateri' => $submateri, 'total_pertemuan' => $total, 'pertemuan_ke' => $pertemuanKe];
+        }
+
+        // Multi-RPP: jalan kumulatif per submateri.
+        $cursor = 0;
+        foreach ($rppList as $rpp) {
+            $sesiCount = max($rpp->submateri->count(), 1); // RPP tanpa submateri = 1 sesi
+            $rangeEnd = $cursor + $sesiCount;
+
+            if ($pertemuanHariIni >= $cursor + 1 && $pertemuanHariIni <= $rangeEnd) {
+                $lokal = $pertemuanHariIni - $cursor;
+                [$submateri, $total, $pertemuanKe] = $this->pilihSubmateri($rpp->submateri, $lokal);
+
+                return ['rpp' => $rpp, 'submateri' => $submateri, 'total_pertemuan' => $total, 'pertemuan_ke' => $pertemuanKe];
+            }
+            $cursor = $rangeEnd;
+        }
+
+        // Melebihi total semua RPP -> fallback ke RPP TERAKHIR, clamp ke submateri terakhirnya.
+        $last = $rppList->last();
+        [$submateri, $total, $pertemuanKe] = $this->pilihSubmateri($last->submateri, PHP_INT_MAX);
+
+        return ['rpp' => $last, 'submateri' => $submateri, 'total_pertemuan' => $total, 'pertemuan_ke' => $pertemuanKe];
     }
 
     /** Hitung "pertemuan ke berapa hari ini" dari jumlah sesi absensi sebelumnya. */
@@ -361,9 +416,9 @@ class KelasMobileService
 
         $absensi->load('detail.peserta.orangTua');
 
-        $pertemuanKe = $this->hitungPertemuanHariIni($jadwal, $tanggal);
-        $rpp = $this->findRppAktif($jadwal);
-        [$submateri] = $this->pilihSubmateri($rpp?->submateri ?? collect(), $pertemuanKe);
+        $pertemuanHariIni = $this->hitungPertemuanHariIni($jadwal, $tanggal);
+        $resolved = $this->resolveRppUntukPertemuan($jadwal, $pertemuanHariIni);
+        $submateri = $resolved['submateri'];
 
         $semester = $this->semesterAktif($jadwal->tahun_pelajaran_id);
         $nilaiHariIni = DB::table('nilai_harian_log')
@@ -377,6 +432,7 @@ class KelasMobileService
             ->keyBy('peserta_id');
 
         $tanggalFormatted = Carbon::parse($tanggal)->locale('id')->isoFormat('dddd, D MMMM YYYY');
+        $mapelNama = $jadwal->mataPelajaran?->nama ?? 'mata pelajaran';
 
         $terkirim = 0;
         $gagalKirim = 0;
@@ -415,6 +471,19 @@ class KelasMobileService
                 $terkirim++;
             } catch (\Throwable $e) {
                 $gagalKirim++;
+            }
+
+            // Deteksi alpa berturut-turut — notifikasi TERPISAH dari pesan
+            // rutin di atas, dikirim hanya kalau sudah mencapai ambang batas
+            // (lihat AlpaStreakNotifikasiService). Dibungkus try/catch supaya
+            // kegagalan di sini tidak menggagalkan notifikasi rutin yang
+            // sudah terkirim.
+            if ($detail->status === 'alpa') {
+                try {
+                    $this->alpaStreak->cekDanNotifikasi($peserta, $jadwal->mata_pelajaran_id, $jadwal->lembaga_id, $mapelNama);
+                } catch (\Throwable $e) {
+                    // sengaja diabaikan — lihat komentar di atas.
+                }
             }
         }
 

@@ -17,7 +17,7 @@
                 <li class="pc-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                     <a href="{{ route('admin.dashboard') }}" class="pc-link">
                         <span class="pc-micon"><i class="bi bi-speedometer2"></i></span>
-                        <span class="pc-mtext">Akademik</span>
+                        <span class="pc-mtext">Dashboard</span>
                     </a>
                 </li>
                 <li class="pc-item">
@@ -55,7 +55,7 @@
                     'admin.master.kalender-libur.index'
                 ]))
                 <li class="pc-item pc-caption"><label>Data Master</label><i class="bi bi-database"></i></li>
-                
+
                 @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasAnyPermission([
                     'admin.master.lembaga.index',
                     'admin.master.profil-sekolah.index',
@@ -70,9 +70,7 @@
                     <ul class="pc-submenu">
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.master.lembaga.index'))
                             <li class="pc-item {{ request()->routeIs('admin.master.lembaga.*') ? 'active' : '' }}">
-                                <a class="pc-link" href="{{ route('admin.master.lembaga.index') }}">
-                                    <i class="bi bi-buildings me-1"></i> Data Lembaga
-                                </a>
+                                <a class="pc-link" href="{{ route('admin.master.lembaga.index') }}">Data Lembaga</a>
                             </li>
                         @endif
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.master.profil-sekolah.index'))
@@ -114,7 +112,7 @@
                 ]))
                 <li class="pc-item pc-hasmenu">
                     <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-mortarboard"></i></span><span
-                            class="pc-mtext">Org. &
+                            class="pc-mtext">Organisasi &
                             Akademik</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
                     <ul class="pc-submenu">
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.master.jurusan.index'))
@@ -139,7 +137,7 @@
                         @endif
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.master.jurusan-mapel.index'))
                         <li class="pc-item {{ request()->routeIs('admin.master.jurusan-mapel.*') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('admin.master.jurusan-mapel.index') }}">Mapping Jurusan ↔ Mapel</a>
+                            <a class="pc-link" href="{{ route('admin.master.jurusan-mapel.index') }}">Pemetaan Jurusan & Mata Pelajaran</a>
                         </li>
                         @endif
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.master.jadwal-kbm.index'))
@@ -176,7 +174,7 @@
                 <li class="pc-item pc-hasmenu">
                     <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-shield-shaded"></i></span><span
                             class="pc-mtext">Kedisiplinan &
-                            Pres.</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
+                            Prestasi</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
                     <ul class="pc-submenu">
                         <li class="pc-item"><a class="pc-link" href="#">Jenis Pelanggaran</a></li>
                         <li class="pc-item"><a class="pc-link" href="#">Jenis Prestasi</a></li>
@@ -233,7 +231,7 @@
                         <ul class="pc-submenu">
                             @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.rbac.role.list'))
                                 <li class="pc-item {{ request()->routeIs('admin.rbac.role.*') ? 'active' : '' }}"><a
-                                        class="pc-link" href="{{ route('admin.rbac.role.index') }}">Role Management</a></li>
+                                        class="pc-link" href="{{ route('admin.rbac.role.index') }}">Manajemen Role</a></li>
                             @endif
                             @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.rbac.permission.list'))
                                 <li class="pc-item {{ request()->routeIs('admin.rbac.permission.*') ? 'active' : '' }}"><a
@@ -274,7 +272,7 @@
                     'admin.akademik.rpp-template.index'
                 ]))
                 <li class="pc-item pc-caption"><label>Operasional</label><i class="bi bi-briefcase"></i></li>
-                
+
                 @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasAnyPermission([
                     'admin.ppdb.pembukaan.index',
                     'admin.ppdb.jalur.index',
@@ -384,12 +382,12 @@
                         @endif
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.master.siswa.index'))
                         <li class="pc-item {{ request()->routeIs('admin.master.siswa.*') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('admin.master.siswa.index') }}"><i class="bi bi-person-badge me-1"></i>Daftar Siswa Aktif</a>
+                            <a class="pc-link" href="{{ route('admin.master.siswa.index') }}">Daftar Siswa Aktif</a>
                         </li>
                         @endif
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.akademik.setting.index'))
                         <li class="pc-item {{ request()->routeIs('admin.akademik.setting.*') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('admin.akademik.setting.index') }}"><span class="pc-micon"><i class="bi bi-gear"></i></span><span class="pc-mtext">Setting Akademik</span></a>
+                            <a class="pc-link" href="{{ route('admin.akademik.setting.index') }}">Pengaturan Akademik</a>
                         </li>
                         @endif
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.akademik.absensi.index'))
@@ -404,7 +402,7 @@
                         @endif
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.akademik.pengajuan-izin-guru.index'))
                         <li class="pc-item {{ request()->routeIs('admin.akademik.pengajuan-izin-guru.*') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('admin.akademik.pengajuan-izin-guru.index') }}">Izin/Sakit Guru</a>
+                            <a class="pc-link" href="{{ route('admin.akademik.pengajuan-izin-guru.index') }}">Izin / Sakit Guru</a>
                         </li>
                         @endif
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.akademik.nilai.index'))
@@ -414,17 +412,17 @@
                         @endif
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.akademik.raport.pengajuan.index'))
                         <li class="pc-item {{ request()->routeIs('admin.akademik.raport.pengajuan.*') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('admin.akademik.raport.pengajuan.index') }}"><span class="pc-micon"><i class="bi bi-journal-bookmark"></i></span><span class="pc-mtext">Pengajuan Raport</span></a>
+                            <a class="pc-link" href="{{ route('admin.akademik.raport.pengajuan.index') }}">Pengajuan Rapor</a>
                         </li>
                         @endif
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.akademik.raport.verifikasi.index'))
                         <li class="pc-item {{ request()->routeIs('admin.akademik.raport.verifikasi.*') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('admin.akademik.raport.verifikasi.index') }}"><span class="pc-micon"><i class="bi bi-patch-check"></i></span><span class="pc-mtext">Verifikasi Raport</span></a>
+                            <a class="pc-link" href="{{ route('admin.akademik.raport.verifikasi.index') }}">Verifikasi Rapor</a>
                         </li>
                         @endif
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.akademik.raport.approval.index'))
                         <li class="pc-item {{ request()->routeIs('admin.akademik.raport.approval.*') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('admin.akademik.raport.approval.index') }}"><span class="pc-micon"><i class="bi bi-check-circle"></i></span><span class="pc-mtext">Approval Raport</span></a>
+                            <a class="pc-link" href="{{ route('admin.akademik.raport.approval.index') }}">Persetujuan Rapor</a>
                         </li>
                         @endif
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.akademik.perangkat-mengajar.index'))
@@ -442,6 +440,11 @@
                             <a class="pc-link" href="{{ route('admin.akademik.rpp.index') }}">RPP</a>
                         </li>
                         @endif
+                        @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.akademik.rpp.index'))
+                        <li class="pc-item {{ request()->routeIs('admin.akademik.rpp-compliance.*') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('admin.akademik.rpp-compliance.index') }}">Kepatuhan RPP</a>
+                        </li>
+                        @endif
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.akademik.verifikasi-rpp.index'))
                         <li class="pc-item {{ request()->routeIs('admin.akademik.verifikasi-rpp.*') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('admin.akademik.verifikasi-rpp.index') }}">Verifikasi RPP</a>
@@ -449,7 +452,7 @@
                         @endif
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.akademik.rpp-template.index'))
                         <li class="pc-item {{ request()->routeIs('admin.akademik.rpp-template.*') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('admin.akademik.rpp-template.index') }}">Kelola Bagian &amp; Poin RPP</a>
+                            <a class="pc-link" href="{{ route('admin.akademik.rpp-template.index') }}">Kelola Bagian & Poin RPP</a>
                         </li>
                         @endif
                         @if(auth()->user()->hasRole('super_admin'))
@@ -476,7 +479,7 @@
                 @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.kesiswaan.index'))
                 <li class="pc-item pc-hasmenu">
                     <a href="#!" class="pc-link"><span class="pc-micon"><i
-                                class="bi bi-emoji-smile-fill"></i></span><span class="pc-mtext">Kesiswaan</span><span
+                                class="bi bi-person-lines-fill"></i></span><span class="pc-mtext">Kesiswaan</span><span
                             class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
                     <ul class="pc-submenu">
                         <li class="pc-item"><a class="pc-link" href="#">Profil & Riwayat</a></li>
@@ -496,7 +499,7 @@
                     <a href="#!" class="pc-link"><span class="pc-micon"><i class="bi bi-clipboard2-check"></i></span><span class="pc-mtext">Program Kerja</span><span class="pc-arrow"><i class="bi bi-chevron-right"></i></span></a>
                     <ul class="pc-submenu">
                         <li class="pc-item {{ request()->routeIs('admin.program-kerja.index') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('admin.program-kerja.index') }}"><span class="pc-micon"><i class="bi bi-list-task"></i></span><span class="pc-mtext">Semua Program</span></a>
+                            <a class="pc-link" href="{{ route('admin.program-kerja.index') }}">Semua Program</a>
                         </li>
                     </ul>
                 </li>
@@ -532,7 +535,7 @@
                         @endif
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.system.whatsapp.index'))
                             <li class="pc-item {{ request()->routeIs('admin.system.whatsapp.*') ? 'active' : '' }}"><a
-                                    class="pc-link" href="{{ route('admin.system.whatsapp.index') }}">Uji WhatsApp Fonnte</a></li>
+                                    class="pc-link" href="{{ route('admin.system.whatsapp.index') }}">Uji Coba WhatsApp (Fonnte)</a></li>
                         @endif
                         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasPermissionTo('admin.reports.rekap.index'))
                             <li class="pc-item"><a class="pc-link" href="#">Rekap Laporan</a></li>
@@ -560,8 +563,8 @@
                                 class="bi bi-chevron-right"></i></span></a>
                     <ul class="pc-submenu">
                         <li class="pc-item"><a class="pc-link" href="#">Konfigurasi Sistem</a></li>
-                        <li class="pc-item"><a class="pc-link" href="#">Profile Pengguna</a></li>
-                        <li class="pc-item"><a class="pc-link" href="#">Database Maintenance</a></li>
+                        <li class="pc-item"><a class="pc-link" href="#">Profil Pengguna</a></li>
+                        <li class="pc-item"><a class="pc-link" href="#">Pemeliharaan Database</a></li>
                     </ul>
                 </li>
                 @endif

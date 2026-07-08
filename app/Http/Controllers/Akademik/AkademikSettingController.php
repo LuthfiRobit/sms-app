@@ -55,6 +55,7 @@ class AkademikSettingController extends Controller
             'bobot_uas'          => 'required|numeric|min:1|max:98',
             'kkm_default'        => 'required|integer|min:0|max:100',
             'allow_manual_nilai' => 'boolean',
+            'alpa_beruntun_threshold' => 'required|integer|min:2|max:10',
         ]);
 
         $data['allow_manual_nilai'] = $request->boolean('allow_manual_nilai');

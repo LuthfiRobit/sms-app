@@ -104,6 +104,49 @@ $(document).ready(function () {
         table.ajax.reload();
     });
 
+    window.duplikatRpp = function (id, judul) {
+        var tahunOptions = `@foreach($tahunList as $t)<option value="{{ $t->id }}" {{ ($t->status ?? null) === 'aktif' ? 'selected' : '' }}>{{ $t->nama }}</option>@endforeach`;
+        var semesterOptions = `@foreach($semesterList as $s)<option value="{{ $s->id }}" {{ ($s->status ?? null) === 'aktif' ? 'selected' : '' }}>{{ $s->nama }}</option>@endforeach`;
+
+        Swal.fire({
+            title: 'Duplikat RPP',
+            html:
+                '<p class="text-start text-muted small">RPP "' + judul + '" akan disalin menjadi draft baru (status kembali "Menunggu Verifikasi"). Pilih tahun ajaran & semester untuk salinannya:</p>' +
+                '<div class="mb-2 text-start">' +
+                '<label class="form-label small mb-1">Tahun Pelajaran</label>' +
+                '<select id="swal-duplikat-tahun" class="form-select form-select-sm">' + tahunOptions + '</select>' +
+                '</div>' +
+                '<div class="text-start">' +
+                '<label class="form-label small mb-1">Semester</label>' +
+                '<select id="swal-duplikat-semester" class="form-select form-select-sm">' + semesterOptions + '</select>' +
+                '</div>',
+            showCancelButton: true,
+            confirmButtonText: 'Duplikat',
+            cancelButtonText: 'Batal',
+            preConfirm: function () {
+                return {
+                    tahun_pelajaran_id: $('#swal-duplikat-tahun').val(),
+                    semester_id: $('#swal-duplikat-semester').val(),
+                };
+            },
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+            $.ajax({
+                url: '{{ url('admin/akademik/rpp') }}/' + id + '/duplicate',
+                type: 'POST',
+                data: { _token: '{{ csrf_token() }}', ...result.value },
+                success: function (res) {
+                    Swal.fire('Berhasil', res.message, 'success').then(function () {
+                        window.location.href = '{{ url('admin/akademik/rpp') }}/' + res.data.id + '/edit';
+                    });
+                },
+                error: function (xhr) {
+                    toastr.error(xhr.responseJSON?.message ?? 'Gagal menduplikat RPP.');
+                },
+            });
+        });
+    };
+
     window.hapusRpp = function (id, judul) {
         Swal.fire({
             title: 'Hapus RPP?',

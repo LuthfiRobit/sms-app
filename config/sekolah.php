@@ -29,4 +29,13 @@ return [
     */
     'notif_belum_absen_lead_minutes' => (int) env('NOTIF_BELUM_ABSEN_LEAD_MINUTES', 15),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Jeda Toleransi Reminder Belum Input Absensi Siswa (menit)
+    |--------------------------------------------------------------------------
+    | Notifikasi dikirim ke guru sekian menit SETELAH jam_selesai kelasnya,
+    | kalau absensi siswa untuk kelas itu masih belum diisi.
+    */
+    'notif_belum_input_absensi_grace_minutes' => (int) env('NOTIF_BELUM_INPUT_ABSENSI_GRACE_MINUTES', 20),
+
 ];
