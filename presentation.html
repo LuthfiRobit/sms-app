@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentasi Aplikasi Ma'rifat - SMS App</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at center, #0e3725 0%, #04140e 100%);
+            --accent-green: #10b981;
+            --accent-gold: #fbbf24;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.07);
+            --glass-hover: rgba(255, 255, 255, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            user-select: none;
+        }
+
+        /* Top Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-green) 0%, var(--accent-gold) 100%);
+            transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+
+        /* Presentation Container */
+        .slider-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            padding: 2rem;
+        }
+
+        /* Slides styling */
+        .slide {
+            position: absolute;
+            width: 90%;
+            max-width: 1200px;
+            height: 75vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.95) translateY(20px);
+            pointer-events: none;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            z-index: 1;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        /* Slide Content Layouts */
+        .slide-title-wrapper {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .slide-title-wrapper h2 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .slide-title-wrapper h2 span {
+            color: var(--accent-gold);
+        }
+
+        .slide-title-wrapper p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Title Slide Custom Layout */
+        .title-slide {
+            align-items: center;
+            text-align: center;
+        }
+
+        .title-slide .app-logo {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(251, 191, 36, 0.1) 100%);
+            border: 1px solid var(--glass-border);
+            width: 90px;
+            height: 90px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .title-slide .app-logo i {
+            font-size: 2.8rem;
+            background: linear-gradient(90deg, var(--accent-gold) 0%, var(--accent-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .title-slide h1 {
+            font-size: 5rem;
+            font-weight: 800;
+            letter-spacing: -2px;
+            line-height: 1;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #a7f3d0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .title-slide h1 span {
+            background: linear-gradient(90deg, var(--accent-gold) 0%, var(--accent-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .title-slide p.tagline {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            max-width: 600px;
+            margin-bottom: 2rem;
+            line-height: 1.4;
+        }
+
+        /* Glass Cards Grid */
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.75rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-green);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .glass-card:hover {
+            background: var(--glass-hover);
+            transform: translateY(-5px);
+            border-color: rgba(16, 185, 129, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .glass-card:hover::before {
+            opacity: 1;
+        }
+
+        .glass-card.highlight {
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .glass-card.highlight::before {
+            background: var(--accent-gold);
+            opacity: 1;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            color: var(--accent-green);
+            margin-bottom: 1.25rem;
+            display: inline-block;
+        }
+
+        .glass-card.highlight .card-icon {
+            color: var(--accent-gold);
+        }
+
+        .glass-card h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #ffffff;
+        }
+
+        .glass-card p {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-muted);
+        }
+
+        /* List Styling inside slides */
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 1.25rem;
+            border-radius: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .list-item:hover {
+            background: var(--glass-hover);
+            border-color: rgba(16, 185, 129, 0.2);
+            transform: translateX(5px);
+        }
+
+        .list-item-icon {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border-radius: 10px;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .list-item.highlight .list-item-icon {
+            background: rgba(251, 191, 36, 0.1);
+            color: var(--accent-gold);
+        }
+
+        .list-item-content h4 {
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .list-item-content p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* Split Screen Slide Layout */
+        .split-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2.5rem;
+            align-items: center;
+            width: 100%;
+        }
+
+        .split-left {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .split-right {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+            min-height: 350px;
+            position: relative;
+        }
+
+        .split-right::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(251, 191, 36, 0.05) 100%);
+            border-radius: 24px;
+            pointer-events: none;
+        }
+
+        .code-box {
+            font-family: monospace;
+            background: #020a07;
+            padding: 1.25rem;
+            border-radius: 12px;
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #a7f3d0;
+            overflow-x: auto;
+        }
+
+        /* Badges */
+        .accent-badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 0.35rem 0.75rem;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            align-self: flex-start;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Bottom Controls Bar */
+        .controls-bar {
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(4, 16, 11, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .controls-left {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .controls-right {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1.1rem;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent-green);
+            color: #ffffff;
+            border-color: var(--accent-green);
+            transform: scale(1.05);
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        .slide-counter {
+            font-weight: 600;
+            color: var(--text-main);
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+
+        /* Responsive styling */
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+                height: auto;
+            }
+            .slider-wrapper {
+                padding: 1rem;
+                height: auto;
+            }
+            .slide {
+                position: relative;
+                height: auto;
+                opacity: 0;
+                display: none;
+                transform: none;
+            }
+            .slide.active {
+                display: flex;
+            }
+            .split-layout {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .title-slide h1 {
+                font-size: 3.2rem;
+            }
+            .controls-bar {
+                padding: 1rem;
+                position: sticky;
+                bottom: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Progress Bar Indicator -->
+    <div class="progress-container">
+        <div class="progress-bar" id="top-progress-bar"></div>
+    </div>
+
+    <!-- Slides Wrapper -->
+    <div class="slider-wrapper">
+
+        <!-- Slide 1: Welcome -->
+        <div class="slide active title-slide" data-slide-index="1">
+            <div class="app-logo">
+                <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            <h1>MA'RIFAT<span>.</span></h1>
+            <p class="tagline" style="font-weight: 600; color: #ffffff; font-size: 1.8rem; margin-bottom: 0.25rem;">Ma'arif Integrated Facility</p>
+            <p class="tagline" style="font-size: 1.1rem; margin-top: 0px; max-width: 700px;">Sistem Informasi &amp; Layanan Sekolah Terpadu — Menghubungkan Seluruh Ekosistem Sekolah dalam Satu Platform</p>
+            <div class="accent-badge" style="align-self: center; background: rgba(251, 191, 36, 0.1); color: var(--accent-gold); border-color: rgba(251, 191, 36, 0.2);">
+                Web Admin Panel &amp; Mobile App Guru
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;">
+                Gunakan tombol arah <i class="bi bi-arrow-left-square-fill mx-1"></i> <i class="bi bi-arrow-right-square-fill mx-1"></i> di keyboard untuk navigasi presentasi.
+            </div>
+        </div>
+
+        <!-- Slide 2: Latar Belakang — Kondisi Sebelum MA'RIFAT -->
+        <div class="slide" data-slide-index="2">
+            <div class="slide-title-wrapper">
+                <h2>Kondisi Saat Ini <span>di Sekolah Kita</span></h2>
+                <p>Tantangan administrasi yang selama ini menghambat efisiensi kerja pendidikan</p>
+            </div>
+            <div class="grid-cards" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="glass-card">
+                    <div class="card-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                    <h3>Administrasi Masih Manual</h3>
+                    <p>RPP, presensi, dan laporan masih berbentuk tumpukan berkas fisik. Sulit dicari, mudah hilang, dan memakan tempat penyimpanan.</p>
+                </div>
+                <div class="glass-card highlight">
+                    <div class="card-icon"><i class="bi bi-eye-slash"></i></div>
+                    <h3>Tidak Ada Pantauan KBM</h3>
+                    <p>Kepala Sekolah tidak dapat mengetahui secara langsung apakah proses KBM sesuai RPP, berapa pertemuan yang sudah dilaksanakan, dan sejauh mana capaian materi.</p>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon"><i class="bi bi-person-x"></i></div>
+                    <h3>Komunikasi Terfragmentasi</h3>
+                    <p>Informasi antara Guru, Tata Usaha, Wakasek, dan Orang Tua tersebar di berbagai saluran — WhatsApp, dokumen terpisah, dan arsip kertas yang tidak terkoordinasi.</p>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon"><i class="bi bi-calendar-x"></i></div>
+                    <h3>Presensi Tidak Akurat</h3>
+                    <p>Pencatatan kehadiran siswa maupun guru dilakukan secara manual setiap hari. Rentan terhadap kesalahan pencatatan dan manipulasi data.</p>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon"><i class="bi bi-wallet2"></i></div>
+                    <h3>SPP Tidak Transparan</h3>
+                    <p>Orang tua harus datang langsung ke sekolah untuk membayar dan mengecek tagihan SPP. Tidak ada notifikasi otomatis atau riwayat pembayaran digital.</p>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon"><i class="bi bi-clipboard2-x"></i></div>
+                    <h3>Pelaporan Membutuhkan Waktu Lama</h3>
+                    <p>Pembuatan laporan akhir semester, rekapitulasi absensi, dan data nilai siswa memerlukan waktu berhari-hari karena harus dikerjakan ulang secara manual.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Visi MA'RIFAT -->
+        <div class="slide" data-slide-index="3">
+            <div class="slide-title-wrapper">
+                <h2>Mengapa <span>MA'RIFAT Hadir?</span></h2>
+                <p>Menjawab kebutuhan nyata sekolah dengan solusi digital yang menyeluruh</p>
+            </div>
+            <div class="split-layout">
+                <div class="split-left">
+                    <div class="accent-badge">Visi &amp; Misi Platform</div>
+                    <p style="font-size: 1.05rem; line-height: 1.7; color: #ffffff; margin-bottom: 1rem;">
+                        <strong>MA'RIFAT</strong> — <em>Ma'arif Integrated Facility</em> — adalah platform digital terpadu yang dirancang khusus untuk lingkungan sekolah Islam Ma'arif. Hadir sebagai jawaban atas tantangan administrasi yang kompleks dan fragmentasi informasi antar-pihak di sekolah.
+                    </p>
+                    <div class="list-item" style="padding: 0.75rem 1rem;">
+                        <div class="list-item-icon" style="font-size: 1rem; padding: 0.35rem;"><i class="bi bi-bullseye"></i></div>
+                        <div class="list-item-content">
+                            <h4 style="font-size: 1rem;">Satu Pintu, Semua Layanan</h4>
+                            <p style="font-size: 0.85rem;">Seluruh urusan akademik, keuangan, dan manajemen sekolah dapat diakses dan dikelola dari satu platform yang terintegrasi.</p>
+                        </div>
+                    </div>
+                    <div class="list-item highlight" style="padding: 0.75rem 1rem;">
+                        <div class="list-item-icon" style="font-size: 1rem; padding: 0.35rem;"><i class="bi bi-shield-check"></i></div>
+                        <div class="list-item-content">
+                            <h4 style="font-size: 1rem;">Data Akurat &amp; Terpercaya</h4>
+                            <p style="font-size: 0.85rem;">Semua data tersimpan aman, dapat diaudit kapan saja, dan meminimalkan risiko manipulasi atau kehilangan dokumen penting.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="split-right" style="justify-content: flex-start; padding: 1.75rem;">
+                    <h3 style="color: var(--accent-gold); margin-bottom: 1rem; font-size: 1.1rem;"><i class="bi bi-stars me-2"></i>Dampak yang Diharapkan</h3>
+                    <ul style="list-style-type: none; display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.93rem;">
+                        <li style="display: flex; align-items: flex-start; gap: 0.6rem;">
+                            <i class="bi bi-check-circle-fill text-success" style="margin-top: 2px; flex-shrink: 0;"></i>
+                            <span><strong style="color: #fff;">Guru</strong> lebih fokus mengajar karena administrasi harian terselesaikan lebih cepat dan mudah.</span>
+                        </li>
+                        <li style="display: flex; align-items: flex-start; gap: 0.6rem;">
+                            <i class="bi bi-check-circle-fill text-success" style="margin-top: 2px; flex-shrink: 0;"></i>
+                            <span><strong style="color: #fff;">Kepala Sekolah &amp; Wakasek</strong> dapat memantau performa KBM dan keuangan sekolah secara real-time tanpa harus menunggu laporan mingguan.</span>
+                        </li>
+                        <li style="display: flex; align-items: flex-start; gap: 0.6rem;">
+                            <i class="bi bi-check-circle-fill text-success" style="margin-top: 2px; flex-shrink: 0;"></i>
+                            <span><strong style="color: #fff;">Orang Tua</strong> mendapat informasi perkembangan anak secara transparan — nilai, kehadiran, hingga tagihan SPP — kapan saja dari handphone.</span>
+                        </li>
+                        <li style="display: flex; align-items: flex-start; gap: 0.6rem;">
+                            <i class="bi bi-check-circle-fill text-success" style="margin-top: 2px; flex-shrink: 0;"></i>
+                            <span><strong style="color: #fff;">Tata Usaha</strong> tidak lagi merekap data secara manual. Semua laporan tersedia otomatis dan dapat diunduh kapan saja untuk kebutuhan akreditasi.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Garis Besar MA'RIFAT — Ekosistem -->
+        <div class="slide" data-slide-index="4">
+            <div class="slide-title-wrapper">
+                <h2>Ekosistem <span>MA'RIFAT</span></h2>
+                <p>Satu platform yang menjangkau seluruh pemangku kepentingan sekolah</p>
+            </div>
+            <div class="grid-cards" style="grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div class="glass-card" style="padding: 1.25rem;">
+                    <div class="card-icon" style="font-size: 1.6rem; margin-bottom: 0.75rem;"><i class="bi bi-people-fill"></i></div>
+                    <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Orang Tua</h3>
+                    <p style="font-size: 0.85rem;">Pendaftaran siswa baru, pembayaran SPP via Virtual Account, notifikasi tagihan otomatis, dan pemantauan Raport Online anak secara langsung.</p>
+                </div>
+                <div class="glass-card highlight" style="padding: 1.25rem;">
+                    <div class="card-icon" style="font-size: 1.6rem; margin-bottom: 0.75rem;"><i class="bi bi-person-badge-fill"></i></div>
+                    <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Guru</h3>
+                    <p style="font-size: 0.85rem;">Penyusunan RPP digital, pengelolaan jadwal KBM, absensi harian siswa via handphone, penginputan nilai, dan penerbitan raport secara otomatis.</p>
+                </div>
+                <div class="glass-card" style="padding: 1.25rem;">
+                    <div class="card-icon" style="font-size: 1.6rem; margin-bottom: 0.75rem;"><i class="bi bi-building-fill-check"></i></div>
+                    <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Tata Usaha (TU)</h3>
+                    <p style="font-size: 0.85rem;">Verifikasi pendaftaran siswa baru, kontrol data murid &amp; kelas, rekap kehadiran, dan pengelolaan data keuangan sekolah.</p>
+                </div>
+                <div class="glass-card" style="padding: 1.25rem;">
+                    <div class="card-icon" style="font-size: 1.6rem; margin-bottom: 0.75rem;"><i class="bi bi-diagram-3-fill"></i></div>
+                    <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Wakil Kepala Sekolah</h3>
+                    <p style="font-size: 0.85rem;">Distribusi indikator kinerja guru, monitoring capaian kurikulum, pengelolaan kesiswaan, sarpras, dan pelaporan program humas sekolah.</p>
+                </div>
+                <div class="glass-card highlight" style="padding: 1.25rem;">
+                    <div class="card-icon" style="font-size: 1.6rem; margin-bottom: 0.75rem;"><i class="bi bi-award-fill"></i></div>
+                    <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Kepala Sekolah</h3>
+                    <p style="font-size: 0.85rem;">Dashboard eksekutif: pantauan KBM real-time, monitoring kehadiran guru, capaian kurikulum, dan ringkasan keuangan sekolah dalam satu layar.</p>
+                </div>
+                <div class="glass-card" style="padding: 1.25rem;">
+                    <div class="card-icon" style="font-size: 1.6rem; margin-bottom: 0.75rem;"><i class="bi bi-phone-fill"></i></div>
+                    <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Aplikasi Mobile Guru</h3>
+                    <p style="font-size: 0.85rem;">Aplikasi handphone khusus guru untuk absensi siswa di kelas, verifikasi kehadiran guru via GPS &amp; swafoto, dan akses materi ajar kapan saja.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Fitur yang Sudah Tersedia Saat Ini -->
+        <div class="slide" data-slide-index="5">
+            <div class="slide-title-wrapper">
+                <h2>Fitur yang <span>Sudah Tersedia</span></h2>
+                <p>Modul yang telah selesai dibangun dan siap digunakan</p>
+            </div>
+            <div class="split-layout">
+                <div class="split-left">
+                    <div class="accent-badge">Modul Akademik &amp; KBM</div>
+                    <div class="list-item" style="padding: 0.75rem 1rem;">
+                        <div class="list-item-icon" style="font-size: 1rem; padding: 0.35rem;"><i class="bi bi-journal-bookmark-fill"></i></div>
+                        <div class="list-item-content">
+                            <h4 style="font-size: 1rem;">Manajemen RPP Digital</h4>
+                            <p style="font-size: 0.85rem;">Penyusunan, penyimpanan, dan pencetakan RPP secara otomatis sesuai format kurikulum yang berlaku.</p>
+                        </div>
+                    </div>
+                    <div class="list-item highlight" style="padding: 0.75rem 1rem;">
+                        <div class="list-item-icon" style="font-size: 1rem; padding: 0.35rem;"><i class="bi bi-person-check-fill"></i></div>
+                        <div class="list-item-content">
+                            <h4 style="font-size: 1rem;">Absensi Siswa &amp; Guru Digital</h4>
+                            <p style="font-size: 0.85rem;">Pencatatan kehadiran via handphone guru. Verifikasi kehadiran guru melalui GPS lokasi dan swafoto wajah.</p>
+                        </div>
+                    </div>
+                    <div class="list-item" style="padding: 0.75rem 1rem;">
+                        <div class="list-item-icon" style="font-size: 1rem; padding: 0.35rem;"><i class="bi bi-calendar3"></i></div>
+                        <div class="list-item-content">
+                            <h4 style="font-size: 1rem;">Jadwal KBM Terintegrasi</h4>
+                            <p style="font-size: 0.85rem;">Jadwal mengajar guru otomatis tersinkronisasi dengan aplikasi handphone. Guru tahu persis kapan dan di kelas mana harus mengajar hari ini.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="split-right" style="justify-content: flex-start; padding: 1.75rem;">
+                    <div class="accent-badge" style="margin-bottom: 1rem;">Modul Manajemen Sekolah</div>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.9rem;">
+                        <div style="display: flex; align-items: flex-start; gap: 0.6rem;">
+                            <i class="bi bi-check-circle-fill text-success" style="margin-top: 2px; flex-shrink: 0;"></i>
+                            <span><strong style="color:#fff;">Materi Belajar Terstruktur</strong> — Guru dapat mengunggah materi ajar per pertemuan, otomatis tampil di HP saat absensi dilakukan.</span>
+                        </div>
+                        <div style="display: flex; align-items: flex-start; gap: 0.6rem;">
+                            <i class="bi bi-check-circle-fill text-success" style="margin-top: 2px; flex-shrink: 0;"></i>
+                            <span><strong style="color:#fff;">Dashboard Kepala Sekolah</strong> — Ringkasan KBM, kehadiran guru, dan capaian materi dalam satu halaman utama.</span>
+                        </div>
+                        <div style="display: flex; align-items: flex-start; gap: 0.6rem;">
+                            <i class="bi bi-check-circle-fill text-success" style="margin-top: 2px; flex-shrink: 0;"></i>
+                            <span><strong style="color:#fff;">Manajemen Data Master</strong> — Data kelas, siswa, guru, mata pelajaran, dan tahun ajaran dikelola secara terpusat.</span>
+                        </div>
+                        <div style="display: flex; align-items: flex-start; gap: 0.6rem;">
+                            <i class="bi bi-check-circle-fill text-success" style="margin-top: 2px; flex-shrink: 0;"></i>
+                            <span><strong style="color:#fff;">Hak Akses Bertingkat</strong> — Setiap pengguna hanya dapat mengakses fitur sesuai perannya (Guru, TU, Wakasek, Kepala Sekolah).</span>
+                        </div>
+                        <div style="display: flex; align-items: flex-start; gap: 0.6rem;">
+                            <i class="bi bi-check-circle-fill text-success" style="margin-top: 2px; flex-shrink: 0;"></i>
+                            <span><strong style="color:#fff;">Aplikasi Handphone Guru</strong> — Siap diunduh dan digunakan untuk mendampingi guru langsung di dalam kelas.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Alur Kerja KBM -->
+        <div class="slide" data-slide-index="6">
+            <div class="slide-title-wrapper">
+                <h2>Alur KBM <span>Sehari-Hari</span></h2>
+                <p>Bagaimana MA'RIFAT mendampingi guru dari persiapan hingga selesai mengajar</p>
+            </div>
+            <div class="split-layout">
+                <div class="split-left">
+                    <div class="accent-badge">Alur Kegiatan Guru Harian</div>
+                    <div class="list-item" style="padding: 0.75rem 1rem;">
+                        <div class="list-item-icon" style="font-size: 1rem; padding: 0.35rem;"><i class="bi bi-1-circle-fill"></i></div>
+                        <div class="list-item-content">
+                            <h4 style="font-size: 1rem;">Admin Menyiapkan RPP &amp; Jadwal</h4>
+                            <p style="font-size: 0.85rem;">Format RPP &amp; jadwal KBM disiapkan sekali oleh admin sesuai kurikulum yang berlaku di sekolah.</p>
+                        </div>
+                    </div>
+                    <div class="list-item" style="padding: 0.75rem 1rem;">
+                        <div class="list-item-icon" style="font-size: 1rem; padding: 0.35rem;"><i class="bi bi-2-circle-fill"></i></div>
+                        <div class="list-item-content">
+                            <h4 style="font-size: 1rem;">Guru Mengisi Materi Ajar per Pertemuan</h4>
+                            <p style="font-size: 0.85rem;">Guru menyusun rencana materi tiap sesi dengan mudah melalui web, kapan saja dan di mana saja.</p>
+                        </div>
+                    </div>
+                    <div class="list-item highlight" style="padding: 0.75rem 1rem;">
+                        <div class="list-item-icon" style="font-size: 1rem; padding: 0.35rem;"><i class="bi bi-3-circle-fill"></i></div>
+                        <div class="list-item-content">
+                            <h4 style="font-size: 1rem;">Di Kelas: Absen → Materi Langsung Muncul</h4>
+                            <p style="font-size: 0.85rem;">Guru buka HP, absenkan siswa — sistem langsung menampilkan materi ajar yang sesuai pertemuan hari itu di layar guru.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="split-right">
+                    <h3 class="mb-3" style="color: var(--accent-gold);"><i class="bi bi-eye-fill me-2"></i>Manfaat bagi Kepala Sekolah</h3>
+                    <p style="font-size: 0.95rem; margin-bottom: 1rem; line-height: 1.6;">Setiap sesi absensi yang dilakukan guru secara otomatis menciptakan rekam jejak KBM yang dapat dipantau Kepala Sekolah secara langsung.</p>
+                    <div style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.9rem;">
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <i class="bi bi-graph-up-arrow text-success"></i>
+                            <span>Berapa % materi yang sudah diajarkan dari total RPP</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <i class="bi bi-calendar-check-fill text-success"></i>
+                            <span>Berapa pertemuan yang sudah terlaksana vs. yang direncanakan</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <i class="bi bi-person-check-fill text-success"></i>
+                            <span>Tingkat kehadiran rata-rata siswa di setiap kelas dan mata pelajaran</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Aplikasi Mobile Guru -->
+        <div class="slide" data-slide-index="7">
+            <div class="slide-title-wrapper">
+                <h2>Aplikasi Handphone <span>Khusus Guru</span></h2>
+                <p>Pendamping mengajar guru langsung dari genggaman tangan</p>
+            </div>
+            <div class="grid-cards">
+                <div class="glass-card">
+                    <div class="card-icon"><i class="bi bi-phone-vibrate"></i></div>
+                    <h3>Jadwal Hari Ini</h3>
+                    <p>Guru langsung melihat daftar kelas yang harus diajar hari ini, lengkap dengan jam, ruangan, dan mata pelajaran secara berurutan.</p>
+                </div>
+                <div class="glass-card highlight">
+                    <div class="card-icon"><i class="bi bi-camera-fill"></i></div>
+                    <h3>Verifikasi Kehadiran Guru</h3>
+                    <p>Kehadiran guru diverifikasi secara otomatis menggunakan teknologi pencatatan lokasi (GPS) dan swafoto wajah, memastikan kehadiran yang jujur dan akurat.</p>
+                </div>
+                <div class="glass-card">
+                    <div class="card-icon"><i class="bi bi-journal-richtext"></i></div>
+                    <h3>Panduan Mengajar di Genggaman</h3>
+                    <p>Materi RPP yang sudah dibuat tampil rapi di layar handphone. Guru tidak perlu membawa dokumen cetak ke kelas.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Pantauan & Manfaat Manajemen -->
+        <div class="slide" data-slide-index="8">
+            <div class="slide-title-wrapper">
+                <h2>Manfaat untuk <span>Manajemen Sekolah</span></h2>
+                <p>Memudahkan Kepala Sekolah, Wakasek, dan TU bekerja lebih efektif</p>
+            </div>
+            <div class="split-layout">
+                <div class="split-left">
+                    <div class="accent-badge">Kepala Sekolah &amp; Wakasek</div>
+                    <div class="list-item">
+                        <div class="list-item-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                        <div class="list-item-content">
+                            <h4>Pantauan KBM Real-Time</h4>
+                            <p>Ketahui setiap saat: guru mana yang sedang mengajar, di kelas mana, dan materi apa yang sedang disampaikan — tanpa perlu menunggu laporan.</p>
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-item-icon"><i class="bi bi-bar-chart-fill"></i></div>
+                        <div class="list-item-content">
+                            <h4>Laporan Capaian Kurikulum Otomatis</h4>
+                            <p>Laporan persentase pemenuhan RPP dan tingkat kehadiran siswa tersedia otomatis — siap untuk evaluasi akhir semester atau kebutuhan akreditasi.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="split-right" style="justify-content: flex-start; padding: 1.75rem;">
+                    <div class="accent-badge" style="margin-bottom: 1rem; background: rgba(251, 191, 36, 0.1); color: var(--accent-gold); border-color: rgba(251, 191, 36, 0.2);">Tata Usaha &amp; Administrasi</div>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.92rem;">
+                        <div style="display: flex; align-items: flex-start; gap: 0.6rem;">
+                            <i class="bi bi-check-circle-fill text-success" style="margin-top: 2px; flex-shrink: 0;"></i>
+                            <span><strong style="color:#fff;">Arsip Digital Selamanya</strong> — Dokumen RPP, nilai, dan raport tersimpan permanen di server, tidak akan hilang atau rusak.</span>
+                        </div>
+                        <div style="display: flex; align-items: flex-start; gap: 0.6rem;">
+                            <i class="bi bi-check-circle-fill text-success" style="margin-top: 2px; flex-shrink: 0;"></i>
+                            <span><strong style="color:#fff;">Paperless &amp; Hemat Biaya</strong> — Mengurangi kebutuhan cetak kertas untuk presensi, RPP, dan laporan bulanan secara signifikan.</span>
+                        </div>
+                        <div style="display: flex; align-items: flex-start; gap: 0.6rem;">
+                            <i class="bi bi-check-circle-fill text-success" style="margin-top: 2px; flex-shrink: 0;"></i>
+                            <span><strong style="color:#fff;">Data Terpusat</strong> — Semua data siswa, guru, kelas, dan keuangan berada di satu tempat, mudah dicari dan diperbarui kapan saja.</span>
+                        </div>
+                        <div style="display: flex; align-items: flex-start; gap: 0.6rem;">
+                            <i class="bi bi-check-circle-fill text-success" style="margin-top: 2px; flex-shrink: 0;"></i>
+                            <span><strong style="color:#fff;">Siap untuk Akreditasi</strong> — Laporan &amp; dokumen administrasi dapat diunduh dan dicetak sewaktu-waktu sesuai kebutuhan.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Rencana Pengembangan ke Depan -->
+        <div class="slide" data-slide-index="9">
+            <div class="slide-title-wrapper">
+                <h2>Pengembangan <span>ke Depan</span></h2>
+                <p>Fitur-fitur yang sedang dan akan dikembangkan untuk melengkapi ekosistem MA'RIFAT</p>
+            </div>
+            <div class="grid-cards" style="grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div class="glass-card" style="padding: 1.25rem;">
+                    <div class="card-icon" style="font-size: 1.6rem; margin-bottom: 0.75rem;"><i class="bi bi-receipt-cutoff"></i></div>
+                    <h3 style="font-size: 1rem; margin-bottom: 0.4rem;">Pembayaran SPP Online</h3>
+                    <p style="font-size: 0.82rem;">Orang tua dapat membayar tagihan SPP langsung dari handphone via transfer bank, QRIS, atau dompet digital. Notifikasi pembayaran otomatis dikirim ke TU.</p>
+                </div>
+                <div class="glass-card highlight" style="padding: 1.25rem;">
+                    <div class="card-icon" style="font-size: 1.6rem; margin-bottom: 0.75rem;"><i class="bi bi-stars"></i></div>
+                    <h3 style="font-size: 1rem; margin-bottom: 0.4rem;">Raport Online &amp; Nilai Digital</h3>
+                    <p style="font-size: 0.82rem;">Guru menginput nilai langsung di aplikasi. Raport otomatis terangkum dan dapat dilihat oleh orang tua secara online — tidak perlu hadir ke sekolah.</p>
+                </div>
+                <div class="glass-card" style="padding: 1.25rem;">
+                    <div class="card-icon" style="font-size: 1.6rem; margin-bottom: 0.75rem;"><i class="bi bi-person-plus-fill"></i></div>
+                    <h3 style="font-size: 1rem; margin-bottom: 0.4rem;">Pendaftaran Siswa Baru Online</h3>
+                    <p style="font-size: 0.82rem;">Calon siswa baru mendaftar secara online dari rumah. TU memverifikasi dan memproses berkas secara digital — mengurangi antrean di sekolah.</p>
+                </div>
+                <div class="glass-card" style="padding: 1.25rem;">
+                    <div class="card-icon" style="font-size: 1.6rem; margin-bottom: 0.75rem;"><i class="bi bi-chat-dots-fill"></i></div>
+                    <h3 style="font-size: 1rem; margin-bottom: 0.4rem;">Komunikasi Guru — Orang Tua</h3>
+                    <p style="font-size: 0.82rem;">Notifikasi langsung ke orang tua ketika anak tidak hadir, tugas baru diberikan, atau ada pengumuman penting dari sekolah.</p>
+                </div>
+                <div class="glass-card" style="padding: 1.25rem;">
+                    <div class="card-icon" style="font-size: 1.6rem; margin-bottom: 0.75rem;"><i class="bi bi-trophy-fill"></i></div>
+                    <h3 style="font-size: 1rem; margin-bottom: 0.4rem;">Penilaian Kinerja Guru</h3>
+                    <p style="font-size: 0.82rem;">Kepala Sekolah dapat mengevaluasi kinerja guru berdasarkan data nyata: tingkat kehadiran, ketercapaian RPP, dan keteraturan absensi kelas.</p>
+                </div>
+                <div class="glass-card" style="padding: 1.25rem;">
+                    <div class="card-icon" style="font-size: 1.6rem; margin-bottom: 0.75rem;"><i class="bi bi-bar-chart-steps"></i></div>
+                    <h3 style="font-size: 1rem; margin-bottom: 0.4rem;">Dashboard Analitik Sekolah</h3>
+                    <p style="font-size: 0.82rem;">Grafik dan laporan visual perbandingan antar-kelas, tren kehadiran siswa, dan capaian kurikulum per semester untuk mendukung pengambilan keputusan.</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Mengapa Sekarang? -->
+        <div class="slide" data-slide-index="10">
+            <div class="slide-title-wrapper">
+                <h2>Mengapa <span>Sekarang?</span></h2>
+                <p>Momentum yang tepat untuk memulai transformasi digital sekolah kita</p>
+            </div>
+            <div class="split-layout">
+                <div class="split-left">
+                    <div class="accent-badge">Kondisi &amp; Peluang</div>
+                    <div class="list-item">
+                        <div class="list-item-icon"><i class="bi bi-arrow-up-right-circle-fill"></i></div>
+                        <div class="list-item-content">
+                            <h4>Tuntutan Digitalisasi Pendidikan</h4>
+                            <p>Pemerintah dan Kemendikbud mendorong seluruh institusi pendidikan untuk mengadopsi sistem digital dalam tata kelola dan pembelajaran.</p>
+                        </div>
+                    </div>
+                    <div class="list-item highlight">
+                        <div class="list-item-icon"><i class="bi bi-trophy-fill"></i></div>
+                        <div class="list-item-content">
+                            <h4>Keunggulan Kompetitif Sekolah</h4>
+                            <p>Sekolah yang telah go digital terbukti lebih diminati orang tua karena dianggap lebih modern, transparan, dan profesional dalam pengelolaan.</p>
+                        </div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-item-icon"><i class="bi bi-shield-fill-check"></i></div>
+                        <div class="list-item-content">
+                            <h4>Kesiapan untuk Akreditasi</h4>
+                            <p>Dokumentasi digital yang lengkap dan terstruktur sangat memudahkan proses akreditasi sekolah — semua bukti kinerja tersedia dalam sistem.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="split-right" style="text-align: center; justify-content: center; align-items: center; gap: 1.25rem;">
+                    <i class="bi bi-rocket-takeoff-fill" style="font-size: 3.5rem; color: var(--accent-gold); display: block; margin-bottom: 0.5rem;"></i>
+                    <h3 style="font-size: 1.4rem; color: #ffffff; margin-bottom: 0.75rem; font-weight: 700;">MA'RIFAT Sudah Siap.</h3>
+                    <p style="font-size: 1rem; line-height: 1.6; color: var(--text-muted);">Platform ini sudah dikembangkan dan diuji secara khusus untuk lingkungan sekolah Ma'arif. Tidak perlu menunggu lagi — kita sudah memiliki infrastruktur digitalnya.</p>
+                    <div class="accent-badge" style="margin: 0.75rem auto 0; align-self: center;">Tersedia: Web Admin + Mobile App</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Penutup -->
+        <div class="slide title-slide" data-slide-index="11">
+            <div class="app-logo" style="background: rgba(16, 185, 129, 0.15);">
+                <i class="bi bi-award-fill"></i>
+            </div>
+            <h1>Terima Kasih<span>!</span></h1>
+            <p class="tagline" style="font-size: 1.3rem; max-width: 700px;">"MA'RIFAT hadir bukan sekadar aplikasi — melainkan langkah nyata membangun sekolah yang lebih modern, transparan, dan berdaya saing tinggi."</p>
+            
+            <div style="display: flex; gap: 1.5rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
+                <div class="accent-badge" style="font-size: 0.9rem; padding: 0.5rem 1.25rem;">
+                    <i class="bi bi-globe2 me-2"></i>Web Admin Panel
+                </div>
+                <div class="accent-badge" style="font-size: 0.9rem; padding: 0.5rem 1.25rem; background: rgba(251, 191, 36, 0.1); color: var(--accent-gold); border-color: rgba(251, 191, 36, 0.2);">
+                    <i class="bi bi-phone-vibrate me-2"></i>Mobile App Guru
+                </div>
+                <div class="accent-badge" style="font-size: 0.9rem; padding: 0.5rem 1.25rem; background: rgba(99, 102, 241, 0.1); color: #a5b4fc; border-color: rgba(99, 102, 241, 0.2);">
+                    <i class="bi bi-people-fill me-2"></i>Untuk Semua Pemangku Sekolah
+                </div>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1.5rem;">Siap berdiskusi lebih lanjut? Kami terbuka untuk sesi demo langsung.</p>
+        </div>
+
+    </div>
+
+    <!-- Bottom Controls Bar -->
+    <div class="controls-bar">
+        <div class="controls-left">
+            <i class="bi bi-mortarboard-fill text-success me-2"></i>MA'RIFAT — Ma'arif Integrated Facility
+        </div>
+        <div class="controls-right">
+            <button class="nav-btn" id="prev-btn" title="Sebelumnya"><i class="bi bi-chevron-left"></i></button>
+            <div class="slide-counter" id="counter">1 / 11</div>
+            <button class="nav-btn" id="next-btn" title="Berikutnya"><i class="bi bi-chevron-right"></i></button>
+        </div>
+
+    </div>
+
+    <!-- JavaScript Slider Navigation -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.slide');
+            const totalSlides = slides.length;
+            let currentSlideIndex = 0;
+
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const counter = document.getElementById('counter');
+            const progressBar = document.getElementById('top-progress-bar');
+
+            function showSlide(index) {
+                if (index < 0) index = 0;
+                if (index >= totalSlides) index = totalSlides - 1;
+
+                slides.forEach((slide, i) => {
+                    if (i === index) {
+                        slide.classList.add('active');
+                    } else {
+                        slide.classList.remove('active');
+                    }
+                });
+
+                currentSlideIndex = index;
+                counter.textContent = `${currentSlideIndex + 1} / ${totalSlides}`;
+
+                const progressWidth = ((currentSlideIndex) / (totalSlides - 1)) * 100;
+                progressBar.style.width = `${progressWidth}%`;
+
+                prevBtn.style.opacity = currentSlideIndex === 0 ? '0.3' : '1';
+                prevBtn.style.pointerEvents = currentSlideIndex === 0 ? 'none' : 'auto';
+                
+                nextBtn.style.opacity = currentSlideIndex === totalSlides - 1 ? '0.3' : '1';
+                nextBtn.style.pointerEvents = currentSlideIndex === totalSlides - 1 ? 'none' : 'auto';
+            }
+
+            prevBtn.addEventListener('click', function() {
+                if (currentSlideIndex > 0) {
+                    showSlide(currentSlideIndex - 1);
+                }
+            });
+
+            nextBtn.addEventListener('click', function() {
+                if (currentSlideIndex < totalSlides - 1) {
+                    showSlide(currentSlideIndex + 1);
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowRight' || e.key === 'Space' || e.key === ' ') {
+                    if (currentSlideIndex < totalSlides - 1) {
+                        showSlide(currentSlideIndex + 1);
+                        e.preventDefault();
+                    }
+                } else if (e.key === 'ArrowLeft') {
+                    if (currentSlideIndex > 0) {
+                        showSlide(currentSlideIndex - 1);
+                        e.preventDefault();
+                    }
+                }
+            });
+
+            showSlide(0);
+        });
+    </script>
+</body>
+</body>
+</html>

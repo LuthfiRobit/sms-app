@@ -12,17 +12,22 @@
             </div>
             <div class="card-body">
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold">Lembaga <span class="text-danger">*</span></label>
-                        <select class="form-select" id="sel-lembaga">
-                            <option value="">-- Pilih Lembaga --</option>
-                            @foreach($lembagaList as $l)
-                                <option value="{{ $l->id }}" {{ app('active_lembaga_id') == $l->id ? 'selected' : '' }}>
-                                    [{{ $l->kode }}] {{ $l->nama }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                    @if($guruAktif)
+                        {{-- Login sebagai guru: lembaga otomatis dari identitas akun, tidak perlu dipilih. --}}
+                        <input type="hidden" id="sel-lembaga" value="{{ $guruAktif->lembaga_id }}">
+                    @else
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Lembaga <span class="text-danger">*</span></label>
+                            <select class="form-select" id="sel-lembaga">
+                                <option value="">-- Pilih Lembaga --</option>
+                                @foreach($lembagaList as $l)
+                                    <option value="{{ $l->id }}" {{ app('active_lembaga_id') == $l->id ? 'selected' : '' }}>
+                                        [{{ $l->kode }}] {{ $l->nama }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Rombel <span class="text-danger">*</span></label>
                         <select class="form-select" id="sel-rombel">

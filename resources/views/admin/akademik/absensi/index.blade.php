@@ -69,17 +69,28 @@
                 </div>
                 <div class="modal-body">
                     <div class="row g-3 mb-3">
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold">Lembaga <span class="text-danger">*</span></label>
-                            <select class="form-select" name="lembaga_id" id="tambah-lembaga" required>
-                                <option value="">-- Pilih Lembaga --</option>
-                                @foreach($lembagaList as $l)
-                                    <option value="{{ $l->id }}" {{ app('active_lembaga_id') == $l->id ? 'selected' : '' }}>
-                                        [{{ $l->kode }}] {{ $l->nama }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                        @if($guruAktif)
+                            {{-- Login sebagai guru: Lembaga & Guru otomatis dari identitas akun. --}}
+                            <input type="hidden" name="lembaga_id" id="tambah-lembaga" value="{{ $guruAktif->lembaga_id }}">
+                            <input type="hidden" name="guru_id" id="tambah-guru" value="{{ $guruAktif->id }}">
+                            <div class="col-md-12">
+                                <div class="alert alert-light border py-2 mb-0">
+                                    <small class="text-muted d-block">Guru</small><strong>{{ $guruAktif->nama_lengkap }}</strong>
+                                </div>
+                            </div>
+                        @else
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Lembaga <span class="text-danger">*</span></label>
+                                <select class="form-select" name="lembaga_id" id="tambah-lembaga" required>
+                                    <option value="">-- Pilih Lembaga --</option>
+                                    @foreach($lembagaList as $l)
+                                        <option value="{{ $l->id }}" {{ app('active_lembaga_id') == $l->id ? 'selected' : '' }}>
+                                            [{{ $l->kode }}] {{ $l->nama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
                         <div class="col-md-4">
                             <label class="form-label fw-bold">Rombel <span class="text-danger">*</span></label>
                             <select class="form-select" name="rombel_id" id="tambah-rombel" required>
@@ -100,6 +111,7 @@
                                 @endforeach
                             </select>
                         </div>
+                        @if(!$guruAktif)
                         <div class="col-md-4">
                             <label class="form-label fw-bold">Guru</label>
                             <select class="form-select" name="guru_id" id="tambah-guru">
@@ -109,6 +121,7 @@
                                 @endforeach
                             </select>
                         </div>
+                        @endif
                         <div class="col-md-3">
                             <label class="form-label fw-bold">Tanggal <span class="text-danger">*</span></label>
                             <input type="date" class="form-control" name="tanggal" value="{{ date('Y-m-d') }}" required>
