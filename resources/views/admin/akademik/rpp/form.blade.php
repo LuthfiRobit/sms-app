@@ -157,7 +157,7 @@
                     <small class="text-muted">Isi data pada setiap bagian — sistem akan menggabungkannya menjadi RPP utuh.</small>
                 </div>
                 <div>
-                    @if(!$rpp && !$guruAktif && app()->environment(['local', 'testing']))
+                    @if(!$rpp && app()->environment(['local', 'testing']))
                         <button type="button" class="btn btn-sm btn-outline-warning me-2 rounded-pill px-3" id="btn-dummy">
                             <i class="bi bi-magic me-1"></i>Isi Data Dummy
                         </button>
