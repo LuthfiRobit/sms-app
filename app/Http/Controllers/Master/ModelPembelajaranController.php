@@ -48,6 +48,8 @@ class ModelPembelajaranController extends Controller
         $data = $request->validate([
             'nama' => 'required|string|max:150|unique:model_pembelajaran,nama',
             'deskripsi' => 'nullable|string',
+            'label_artefak' => 'nullable|string|max:150',
+            'deskripsi_artefak' => 'nullable|string',
             'urutan' => 'nullable|integer',
             'status' => 'required|in:aktif,nonaktif',
         ]);
@@ -73,6 +75,8 @@ class ModelPembelajaranController extends Controller
         $data = $request->validate([
             'nama' => 'required|string|max:150|unique:model_pembelajaran,nama,'.$id,
             'deskripsi' => 'nullable|string',
+            'label_artefak' => 'nullable|string|max:150',
+            'deskripsi_artefak' => 'nullable|string',
             'urutan' => 'nullable|integer',
             'status' => 'required|in:aktif,nonaktif',
         ]);

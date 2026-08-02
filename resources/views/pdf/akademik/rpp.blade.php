@@ -79,9 +79,16 @@
 <table class="poin-table">
 <tbody>
 @foreach($bagian->poin as $poin)
-    @php $nilai = $rpp->nilaiUntuk($poin); @endphp
+    @php
+        $nilai = $rpp->nilaiUntuk($poin);
+        // Sama seperti tampilan form/detailnya: label poin ini mengikuti Model
+        // Pembelajaran RPP-nya. Kalau modelnya tidak punya artefak khas (mis.
+        // LOK-R), lewati barisnya sama sekali daripada tampil kosong di PDF resmi.
+        $labelArtefakRpp = $poin->kode === 'artefak_model' ? $rpp->modelPembelajaran?->label_artefak : null;
+    @endphp
+    @continue($poin->kode === 'artefak_model' && ! $labelArtefakRpp)
     <tr>
-    <td class="label-col">{{ $poin->label }}</td>
+    <td class="label-col">{{ $poin->kode === 'artefak_model' ? $labelArtefakRpp : $poin->label }}</td>
     <td>
     @if($poin->tipe === 'model_pembelajaran')
         @php $intiByFase = $rpp->inti->groupBy(fn ($i) => $i->sintaks?->meta_fase); @endphp

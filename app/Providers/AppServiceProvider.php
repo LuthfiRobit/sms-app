@@ -35,6 +35,8 @@ use App\Repositories\Akademik\RppPoinRepository;
 use App\Repositories\Akademik\RppPoinRepositoryInterface;
 use App\Repositories\Akademik\RppRepository;
 use App\Repositories\Akademik\RppRepositoryInterface;
+use App\Repositories\Akademik\RppSupervisiRepository;
+use App\Repositories\Akademik\RppSupervisiRepositoryInterface;
 use App\Repositories\DeviceTokenRepository;
 use App\Repositories\DeviceTokenRepositoryInterface;
 use App\Repositories\Kinerja\KpiRepository;
@@ -166,6 +168,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(RppBagianRepositoryInterface::class, RppBagianRepository::class);
         $this->app->bind(RppPoinRepositoryInterface::class, RppPoinRepository::class);
         $this->app->bind(RppMasterOpsiRepositoryInterface::class, RppMasterOpsiRepository::class);
+        $this->app->bind(RppSupervisiRepositoryInterface::class, RppSupervisiRepository::class);
         $this->app->bind(AbsensiRepositoryInterface::class, AbsensiRepository::class);
         $this->app->bind(AbsensiGuruRepositoryInterface::class, AbsensiGuruRepository::class);
         $this->app->bind(DeviceTokenRepositoryInterface::class, DeviceTokenRepository::class);

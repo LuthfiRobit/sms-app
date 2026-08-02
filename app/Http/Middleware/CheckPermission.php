@@ -64,6 +64,7 @@ class CheckPermission
         'admin.akademik.rpp-template.opsi.destroy' => 'admin.akademik.rpp-template.index',
         'admin.akademik.verifikasi-rpp.list' => 'admin.akademik.verifikasi-rpp.index',
         'admin.akademik.verifikasi-rpp.aksi' => 'admin.akademik.verifikasi-rpp.index',
+        'admin.akademik.supervisi-rpp.list' => 'admin.akademik.supervisi-rpp.index',
         'admin.master.model-pembelajaran.list' => 'admin.master.model-pembelajaran.index',
         'admin.master.model-pembelajaran.sintaks' => 'admin.master.model-pembelajaran.index',
         'admin.master.model-pembelajaran.sintaks.sync' => 'admin.master.model-pembelajaran.index',

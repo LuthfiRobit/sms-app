@@ -1,14 +1,27 @@
 @php
     $nilai = $rpp?->nilaiUntuk($poin);
+
+    // "Artefak Khas Model Pembelajaran" (kode tetap 'artefak_model', tipe
+    // teks_panjang biasa — lihat RppTemplateSeeder) — label & hint-nya
+    // dioverride sesuai Model Pembelajaran yang aktif, baik saat render awal
+    // (di sini) maupun saat guru ganti model di form (lihat script di bawah).
+    $isArtefakModel = $poin->kode === 'artefak_model';
+    if ($isArtefakModel) {
+        $selectedModelIdArtefak = $rpp?->model_pembelajaran_id ?? ($modelList->first()->id ?? null);
+        $modelUntukArtefak = $modelList->firstWhere('id', $selectedModelIdArtefak);
+        $artefakLabel = $modelUntukArtefak?->label_artefak ?: $poin->label;
+        $artefakHint = $modelUntukArtefak?->deskripsi_artefak ?: 'Bisa diformat (tebal, miring, daftar, dll) lewat toolbar di atas.';
+        $artefakTersembunyi = ! $modelUntukArtefak?->label_artefak;
+    }
 @endphp
 
 @if($poin->tipe === 'model_pembelajaran')
     @include('admin.akademik.rpp._poin-inti', ['poin' => $poin])
 @else
-<div class="card rpp-point-card mb-4 border rounded-3 shadow-sm" style="transition: border-color 0.2s ease, box-shadow 0.2s ease;">
+<div class="card rpp-point-card mb-4 border rounded-3 shadow-sm {{ ($isArtefakModel && $artefakTersembunyi) ? 'd-none' : '' }}" id="poin-card-{{ $poin->id }}" style="transition: border-color 0.2s ease, box-shadow 0.2s ease;">
     <div class="card-body p-4">
         <label class="form-label fw-bold text-dark fs-6 d-flex align-items-center justify-content-between mb-2">
-            <span>{{ $poin->label }}</span>
+            <span id="poin-label-{{ $poin->id }}">{{ $isArtefakModel ? $artefakLabel : $poin->label }}</span>
             @if($poin->is_required)
                 <span class="badge bg-light-danger text-danger border border-danger-subtle px-2 py-1" style="font-size: 10px;">Wajib</span>
             @endif
@@ -26,7 +39,7 @@
                      terstruktur (jangan disamakan, HTML rich-text akan merusak
                      parsing "satu baris = satu item" di poin lain). --}}
                 <textarea class="form-control rpp-wysiwyg" id="poin-teks-{{ $poin->id }}" name="poin[{{ $poin->id }}]" rows="4">{{ $nilai->value_teks ?? '' }}</textarea>
-                <div class="form-text text-muted"><i class="bi bi-info-circle me-1"></i>Bisa diformat (tebal, miring, daftar, dll) lewat toolbar di atas.</div>
+                <div class="form-text text-muted" id="poin-hint-{{ $poin->id }}"><i class="bi bi-info-circle me-1"></i><span>{{ $isArtefakModel ? $artefakHint : 'Bisa diformat (tebal, miring, daftar, dll) lewat toolbar di atas.' }}</span></div>
                 @break
 
             @case('daftar_poin')
@@ -96,4 +109,30 @@
         @endswitch
     </div>
 </div>
+@endif
+
+@if($isArtefakModel)
+@push('scripts')
+<script>
+const MODEL_ARTEFAK = @json($modelList->mapWithKeys(fn ($m) => [$m->id => ['label' => $m->label_artefak, 'deskripsi' => $m->deskripsi_artefak]]));
+
+$(document).on('change', '#model_pembelajaran_id', function () {
+    const info = MODEL_ARTEFAK[$(this).val()] || {};
+    const $card = $('#poin-card-{{ $poin->id }}');
+
+    if (!info.label) {
+        $card.addClass('d-none');
+    } else {
+        $card.removeClass('d-none');
+        $('#poin-label-{{ $poin->id }}').text(info.label);
+        $('#poin-hint-{{ $poin->id }} span').text(info.deskripsi || 'Bisa diformat (tebal, miring, daftar, dll) lewat toolbar di atas.');
+    }
+
+    // Konten lama tidak relevan lagi untuk model baru — kosongkan (mirror
+    // perilaku blok Inti yang juga membuang isi lama saat model berganti).
+    const editor = rppEditors['poin-teks-{{ $poin->id }}'];
+    if (editor) { editor.setData(''); } else { $('#poin-teks-{{ $poin->id }}').val(''); }
+});
+</script>
+@endpush
 @endif

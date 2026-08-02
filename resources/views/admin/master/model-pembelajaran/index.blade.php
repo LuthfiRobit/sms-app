@@ -51,6 +51,15 @@
                         <label class="form-label">Deskripsi</label>
                         <textarea class="form-control" id="model-deskripsi" rows="2"></textarea>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Label Artefak Khas <span class="text-muted fw-normal">(opsional)</span></label>
+                        <input type="text" class="form-control" id="model-label-artefak" maxlength="150" placeholder="mis. Rumusan Masalah, Perencanaan Proyek">
+                        <div class="form-text">Kalau diisi, RPP yang memakai model ini akan menampilkan satu field tambahan dengan label ini (mis. "Rumusan Masalah" untuk PBL) — beda dari tahapan Inti yang menjabarkan urutan kegiatan. Kosongkan kalau model ini tidak punya artefak khas.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contoh/Penjelasan Artefak <span class="text-muted fw-normal">(opsional)</span></label>
+                        <textarea class="form-control" id="model-deskripsi-artefak" rows="2" placeholder="mis. Masalah/skenario kontekstual yang akan disajikan ke murid sebagai titik awal penyelidikan."></textarea>
+                    </div>
                     <div class="row g-3">
                         <div class="col-6">
                             <label class="form-label">Urutan</label>
@@ -158,6 +167,8 @@ $(document).ready(function () {
             $('#model-id').val(d.id);
             $('#model-nama').val(d.nama);
             $('#model-deskripsi').val(d.deskripsi);
+            $('#model-label-artefak').val(d.label_artefak);
+            $('#model-deskripsi-artefak').val(d.deskripsi_artefak);
             $('#model-urutan').val(d.urutan);
             $('#model-status').val(d.status);
             $('#modal-model-title').text('Edit Model Pembelajaran');
@@ -172,6 +183,8 @@ $(document).ready(function () {
             _token: '{{ csrf_token() }}',
             nama: $('#model-nama').val(),
             deskripsi: $('#model-deskripsi').val(),
+            label_artefak: $('#model-label-artefak').val(),
+            deskripsi_artefak: $('#model-deskripsi-artefak').val(),
             urutan: $('#model-urutan').val(),
             status: $('#model-status').val(),
         };

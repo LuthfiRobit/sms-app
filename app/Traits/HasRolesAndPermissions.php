@@ -91,6 +91,31 @@ trait HasRolesAndPermissions
     }
 
     /**
+     * super_admin bypass + single permission — the pattern every sidebar menu
+     * item uses to decide visibility. Kept separate from hasPermissionTo()
+     * (which CheckPermission middleware relies on as the actual security
+     * boundary, no bypass) so this stays scoped to "is this nav item visible."
+     *
+     * @param string|null $permission
+     * @return bool
+     */
+    public function canViewMenu(?string $permission): bool
+    {
+        return $this->hasRole('super_admin') || $this->hasPermissionTo($permission);
+    }
+
+    /**
+     * super_admin bypass + any-of permissions — for menu section/group visibility checks.
+     *
+     * @param array $permissions
+     * @return bool
+     */
+    public function canViewAnyMenu(array $permissions): bool
+    {
+        return $this->hasRole('super_admin') || $this->hasAnyPermission($permissions);
+    }
+
+    /**
      * Load all permissions into memory to prevent N+1 queries.
      * Includes both Role-based permissions and Direct permissions.
      */

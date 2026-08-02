@@ -9,7 +9,7 @@ class ModelPembelajaran extends Model
 {
     protected $table = 'model_pembelajaran';
 
-    protected $fillable = ['nama', 'deskripsi', 'urutan', 'status'];
+    protected $fillable = ['nama', 'deskripsi', 'label_artefak', 'deskripsi_artefak', 'urutan', 'status'];
 
     public function sintaks(): HasMany
     {

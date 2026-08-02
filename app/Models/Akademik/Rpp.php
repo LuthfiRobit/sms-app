@@ -61,6 +61,11 @@ class Rpp extends Model
         return $this->hasMany(RppSubmateri::class)->orderBy('urutan');
     }
 
+    public function supervisi(): HasMany
+    {
+        return $this->hasMany(RppSupervisi::class)->latest('tanggal_supervisi');
+    }
+
     /**
      * Cari nilai poin tertentu dari relasi nilaiPoin yang sudah di-load —
      * dipakai form edit & PDF supaya lookup poin->nilai tidak N+1 query.

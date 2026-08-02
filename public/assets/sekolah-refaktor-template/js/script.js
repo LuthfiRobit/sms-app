@@ -182,6 +182,29 @@ function add_scroller() {
   if (navbarContent && !navbarContent.SimpleBar) {
     new SimpleBar(navbarContent);
   }
+
+  // This app has no SPA routing — every menu click is a full page reload, so
+  // the sidebar's custom scrollbar always resets to the top even though the
+  // active item's submenu re-opens further down (see the "active menu item
+  // list" block below, which tags it with the .active class). Scroll that
+  // item back into view so the user isn't forced to re-scroll on every click.
+  scrollSidebarToActiveItem(navbarContent);
+}
+
+function scrollSidebarToActiveItem(navbarContent) {
+  if (!navbarContent) {
+    return;
+  }
+
+  // Both the leaf link's <li> and its ancestor .pc-hasmenu group get .active
+  // (see the "active menu item list" block below) — document order puts the
+  // ancestor first, so the last match is always the deepest/leaf item.
+  var activeItems = navbarContent.querySelectorAll('li.active');
+  var activeItem = activeItems[activeItems.length - 1];
+
+  if (activeItem) {
+    activeItem.scrollIntoView({ block: 'center' });
+  }
 }
 
 // Menu click start

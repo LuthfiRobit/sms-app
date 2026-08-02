@@ -53,8 +53,15 @@ class RppTemplateSeeder extends Seeder
 
             // Pengalaman Belajar
             ['rpp_bagian_id' => $pengalaman->id, 'kode' => 'pendahuluan', 'label' => 'Pendahuluan', 'tipe' => 'daftar_poin', 'is_required' => true, 'urutan' => 1],
-            ['rpp_bagian_id' => $pengalaman->id, 'kode' => 'inti', 'label' => 'Inti', 'tipe' => 'model_pembelajaran', 'is_required' => true, 'urutan' => 2],
-            ['rpp_bagian_id' => $pengalaman->id, 'kode' => 'penutup', 'label' => 'Penutup', 'tipe' => 'daftar_poin', 'is_required' => true, 'urutan' => 3],
+            // Artefak Khas Model — konten substansi (mis. rumusan masalah, rencana
+            // proyek) yang jadi pijakan tahapan Inti, bukan urutan kegiatannya
+            // sendiri. Reuse tipe teks_panjang biasa; yang membuatnya "adaptif per
+            // model" murni override label/hint di view (lihat _poin-input,
+            // _poin-display, dan pdf/akademik/rpp) berdasar kode ini, sumber
+            // labelnya dari model_pembelajaran.label_artefak/deskripsi_artefak.
+            ['rpp_bagian_id' => $pengalaman->id, 'kode' => 'artefak_model', 'label' => 'Artefak Khas Model Pembelajaran', 'tipe' => 'teks_panjang', 'is_required' => false, 'urutan' => 2],
+            ['rpp_bagian_id' => $pengalaman->id, 'kode' => 'inti', 'label' => 'Inti', 'tipe' => 'model_pembelajaran', 'is_required' => true, 'urutan' => 3],
+            ['rpp_bagian_id' => $pengalaman->id, 'kode' => 'penutup', 'label' => 'Penutup', 'tipe' => 'daftar_poin', 'is_required' => true, 'urutan' => 4],
 
             // Asesmen — Formatif Proses & Sumatif diganti ke teks_panjang: contoh
             // dokumen nyata isinya bukan cuma daftar poin pendek, tapi ada tabel
@@ -127,6 +134,10 @@ class RppTemplateSeeder extends Seeder
         foreach ($sintaksDiscoveryLearning as $s) {
             $discoveryLearning->sintaks()->firstOrCreate(['urutan' => $s['urutan']], $s);
         }
+        $discoveryLearning->update([
+            'label_artefak' => 'Stimulus / Rangsangan Awal',
+            'deskripsi_artefak' => 'Pertanyaan, fenomena, atau media pemantik yang akan disajikan di awal untuk memicu rasa ingin tahu murid.',
+        ]);
 
         // LOK-R — Literasi, Orientasi, Kolaborasi, Refleksi. Ditemukan dari
         // contoh dokumen "RPP KBC_KLS 5 B. INDO_ IDE POKOK": tahapan Literasi
@@ -146,5 +157,90 @@ class RppTemplateSeeder extends Seeder
         foreach ($sintaksLokr as $s) {
             $lokr->sintaks()->firstOrCreate(['urutan' => $s['urutan']], $s);
         }
+
+        // 4 model pembelajaran lain (PBL, Cooperative Learning, PjBL, Inquiry
+        // Learning) — dari bahan referensi "5 Model Pembelajaran Wajib Guru
+        // Inovatif Abad 21" (bahanperubahan/). Sintaks tiap model dikelompokkan
+        // ke meta_fase Memahami/Mengaplikasi/Merefleksi mengikuti pola pembagian
+        // Discovery Learning di atas (fase-fase awal = Memahami, fase tengah =
+        // Mengaplikasi, fase penutup = Merefleksi).
+        $pbl = ModelPembelajaran::firstOrCreate(
+            ['nama' => 'Problem Based Learning (PBL)'],
+            ['deskripsi' => 'Murid belajar lewat pemecahan masalah kontekstual secara individu maupun kelompok.', 'urutan' => 3]
+        );
+        $sintaksPbl = [
+            ['nama_sintaks' => 'Orientasi siswa pada masalah', 'meta_fase' => 'Memahami', 'urutan' => 1],
+            ['nama_sintaks' => 'Mengorganisasikan siswa untuk belajar', 'meta_fase' => 'Memahami', 'urutan' => 2],
+            ['nama_sintaks' => 'Membimbing penyelidikan individu maupun kelompok', 'meta_fase' => 'Mengaplikasi', 'urutan' => 3],
+            ['nama_sintaks' => 'Mengembangkan dan menyajikan hasil karya', 'meta_fase' => 'Mengaplikasi', 'urutan' => 4],
+            ['nama_sintaks' => 'Menganalisis dan mengevaluasi proses pemecahan masalah', 'meta_fase' => 'Merefleksi', 'urutan' => 5],
+        ];
+        foreach ($sintaksPbl as $s) {
+            $pbl->sintaks()->firstOrCreate(['urutan' => $s['urutan']], $s);
+        }
+        $pbl->update([
+            'label_artefak' => 'Rumusan Masalah',
+            'deskripsi_artefak' => 'Masalah/skenario kontekstual dan otentik yang akan disajikan ke murid sebagai titik awal penyelidikan.',
+        ]);
+
+        $cooperative = ModelPembelajaran::firstOrCreate(
+            ['nama' => 'Cooperative Learning'],
+            ['deskripsi' => 'Murid belajar berkelompok secara heterogen untuk mencapai tujuan bersama.', 'urutan' => 4]
+        );
+        $sintaksCooperative = [
+            ['nama_sintaks' => 'Menyampaikan tujuan dan memotivasi siswa', 'meta_fase' => 'Memahami', 'urutan' => 1],
+            ['nama_sintaks' => 'Menyajikan informasi', 'meta_fase' => 'Memahami', 'urutan' => 2],
+            ['nama_sintaks' => 'Mengorganisasikan siswa ke dalam kelompok belajar', 'meta_fase' => 'Mengaplikasi', 'urutan' => 3],
+            ['nama_sintaks' => 'Membimbing kelompok bekerja dan belajar', 'meta_fase' => 'Mengaplikasi', 'urutan' => 4],
+            ['nama_sintaks' => 'Evaluasi', 'meta_fase' => 'Merefleksi', 'urutan' => 5],
+            ['nama_sintaks' => 'Memberikan penghargaan', 'meta_fase' => 'Merefleksi', 'urutan' => 6],
+        ];
+        foreach ($sintaksCooperative as $s) {
+            $cooperative->sintaks()->firstOrCreate(['urutan' => $s['urutan']], $s);
+        }
+        $cooperative->update([
+            'label_artefak' => 'Pembagian Kelompok & Peran',
+            'deskripsi_artefak' => 'Dasar pembentukan kelompok (heterogen) dan pembagian peran/tugas tiap anggota.',
+        ]);
+
+        $pjbl = ModelPembelajaran::firstOrCreate(
+            ['nama' => 'Project Based Learning (PjBL)'],
+            ['deskripsi' => 'Murid belajar lewat pengerjaan proyek nyata dari pertanyaan esensial sampai evaluasi hasil.', 'urutan' => 5]
+        );
+        $sintaksPjbl = [
+            ['nama_sintaks' => 'Mulai dengan pertanyaan esensial', 'meta_fase' => 'Memahami', 'urutan' => 1],
+            ['nama_sintaks' => 'Merancang perencanaan proyek', 'meta_fase' => 'Memahami', 'urutan' => 2],
+            ['nama_sintaks' => 'Menyusun jadwal', 'meta_fase' => 'Mengaplikasi', 'urutan' => 3],
+            ['nama_sintaks' => 'Mengawasi jalannya proyek', 'meta_fase' => 'Mengaplikasi', 'urutan' => 4],
+            ['nama_sintaks' => 'Penilaian hasil', 'meta_fase' => 'Merefleksi', 'urutan' => 5],
+            ['nama_sintaks' => 'Evaluasi pengalaman', 'meta_fase' => 'Merefleksi', 'urutan' => 6],
+        ];
+        foreach ($sintaksPjbl as $s) {
+            $pjbl->sintaks()->firstOrCreate(['urutan' => $s['urutan']], $s);
+        }
+        $pjbl->update([
+            'label_artefak' => 'Perencanaan Proyek',
+            'deskripsi_artefak' => 'Produk yang ditargetkan, alat & bahan, serta gambaran jadwal pengerjaan proyek.',
+        ]);
+
+        $inquiry = ModelPembelajaran::firstOrCreate(
+            ['nama' => 'Inquiry Learning'],
+            ['deskripsi' => 'Murid menyelidiki sendiri jawaban dari masalah/pertanyaan lewat hipotesis, data, dan analisis.', 'urutan' => 6]
+        );
+        $sintaksInquiry = [
+            ['nama_sintaks' => 'Orientasi', 'meta_fase' => 'Memahami', 'urutan' => 1],
+            ['nama_sintaks' => 'Merumuskan masalah', 'meta_fase' => 'Memahami', 'urutan' => 2],
+            ['nama_sintaks' => 'Merumuskan hipotesis', 'meta_fase' => 'Mengaplikasi', 'urutan' => 3],
+            ['nama_sintaks' => 'Mengumpulkan data', 'meta_fase' => 'Mengaplikasi', 'urutan' => 4],
+            ['nama_sintaks' => 'Menganalisis data', 'meta_fase' => 'Merefleksi', 'urutan' => 5],
+            ['nama_sintaks' => 'Membuat kesimpulan', 'meta_fase' => 'Merefleksi', 'urutan' => 6],
+        ];
+        foreach ($sintaksInquiry as $s) {
+            $inquiry->sintaks()->firstOrCreate(['urutan' => $s['urutan']], $s);
+        }
+        $inquiry->update([
+            'label_artefak' => 'Rumusan Masalah & Hipotesis Awal',
+            'deskripsi_artefak' => 'Pertanyaan penyelidikan dan dugaan sementara (hipotesis) yang akan diuji murid.',
+        ]);
     }
 }

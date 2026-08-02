@@ -13,6 +13,7 @@ use App\Http\Controllers\Akademik\PengajuanRaportController;
 use App\Http\Controllers\Akademik\PerangkatMengajarController;
 use App\Http\Controllers\Akademik\RppComplianceController;
 use App\Http\Controllers\Akademik\RppController;
+use App\Http\Controllers\Akademik\RppSupervisiController;
 use App\Http\Controllers\Akademik\RppTemplateController;
 use App\Http\Controllers\Akademik\VerifikasiMateriController;
 use App\Http\Controllers\Akademik\VerifikasiRaportController;
@@ -262,6 +263,18 @@ Route::middleware(['auth', 'permission', 'lembaga.scope'])->group(function () {
             Route::get('verifikasi-rpp', [VerifikasiRppController::class, 'index'])->name('verifikasi-rpp.index');
             Route::get('verifikasi-rpp/list', [VerifikasiRppController::class, 'list'])->name('verifikasi-rpp.list');
             Route::post('verifikasi-rpp/{id}/aksi', [VerifikasiRppController::class, 'verifikasi'])->name('verifikasi-rpp.aksi');
+
+            // Supervisi RPP (Instrumen Perencanaan/Pelaksanaan/Asesmen Pembelajaran)
+            Route::prefix('supervisi-rpp')->name('supervisi-rpp.')->group(function () {
+                Route::get('/', [RppSupervisiController::class, 'index'])->name('index');
+                Route::get('list', [RppSupervisiController::class, 'list'])->name('list');
+                Route::get('create/{rpp}', [RppSupervisiController::class, 'create'])->name('create');
+                Route::post('/', [RppSupervisiController::class, 'store'])->name('store');
+                Route::get('{id}', [RppSupervisiController::class, 'show'])->name('show');
+                Route::get('{id}/edit', [RppSupervisiController::class, 'edit'])->name('edit');
+                Route::put('{id}', [RppSupervisiController::class, 'update'])->name('update');
+                Route::delete('{id}', [RppSupervisiController::class, 'destroy'])->name('destroy');
+            });
 
             // Absensi Siswa
             Route::get('absensi/rekap', [AbsensiController::class, 'rekap'])->name('absensi.rekap');

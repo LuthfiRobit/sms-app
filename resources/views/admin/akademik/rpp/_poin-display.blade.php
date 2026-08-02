@@ -1,9 +1,19 @@
 @php
     $nilai = $rpp->nilaiUntuk($poin);
+
+    // Sama seperti _poin-input.blade.php: poin ini label-nya mengikuti Model
+    // Pembelajaran RPP ini. Kalau modelnya tidak punya artefak khas (mis.
+    // LOK-R), sembunyikan seluruh poin daripada tampil kosong dengan label generik.
+    if ($poin->kode === 'artefak_model') {
+        $labelArtefakRpp = $rpp->modelPembelajaran?->label_artefak;
+        if (! $labelArtefakRpp) {
+            return;
+        }
+    }
 @endphp
 
 <div class="mb-3">
-    <div class="fw-bold">{{ $poin->label }}</div>
+    <div class="fw-bold">{{ $poin->kode === 'artefak_model' ? $labelArtefakRpp : $poin->label }}</div>
 
     @if($poin->tipe === 'model_pembelajaran')
         @php $intiByFase = $rpp->inti->groupBy(fn ($i) => $i->sintaks?->meta_fase); @endphp

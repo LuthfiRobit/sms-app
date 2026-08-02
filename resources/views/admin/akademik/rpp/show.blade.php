@@ -26,6 +26,9 @@
                     @if(auth()->user()->hasPermissionTo('admin.akademik.rpp.update'))
                         <a href="{{ route('admin.akademik.rpp.edit', $rpp->id) }}" class="btn btn-sm btn-primary"><i class="bi bi-pencil me-1"></i>Edit</a>
                     @endif
+                    @if(auth()->user()->hasPermissionTo('admin.akademik.supervisi-rpp.index'))
+                        <a href="{{ route('admin.akademik.supervisi-rpp.create', $rpp->id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-clipboard-check me-1"></i>Supervisi</a>
+                    @endif
                     <a href="{{ route('admin.akademik.rpp.index') }}" class="btn btn-sm btn-secondary"><i class="bi bi-arrow-left me-1"></i>Kembali</a>
                 </div>
             </div>
